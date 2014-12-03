@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="module_vignelli" default="compile.module.vignelli">
+  <dirname property="module.vignelli.basedir" file="${ant.file.module_vignelli}"/>
+  
+  <property name="module.jdk.home.vignelli" value="${project.jdk.home}"/>
+  <property name="module.jdk.bin.vignelli" value="${project.jdk.bin}"/>
+  <property name="module.jdk.classpath.vignelli" value="${project.jdk.classpath}"/>
+  
+  <property name="compiler.args.vignelli" value="-encoding UTF-8 -source 1.6 ${compiler.args}"/>
+  
+  <property name="vignelli.output.dir" value="${module.vignelli.basedir}/out/production/vignelli"/>
+  <property name="vignelli.testoutput.dir" value="${module.vignelli.basedir}/out/test/vignelli"/>
+  
+  <path id="vignelli.module.bootclasspath">
+    <!-- Paths to be included in compilation bootclasspath -->
+  </path>
+  
+  <path id="vignelli.module.production.classpath">
+    <path refid="${module.jdk.classpath.vignelli}"/>
+  </path>
+  
+  <path id="vignelli.runtime.production.module.classpath">
+    <pathelement location="${vignelli.output.dir}"/>
+  </path>
+  
+  <path id="vignelli.module.classpath">
+    <path refid="${module.jdk.classpath.vignelli}"/>
+    <pathelement location="${vignelli.output.dir}"/>
+  </path>
+  
+  <path id="vignelli.runtime.module.classpath">
+    <pathelement location="${vignelli.testoutput.dir}"/>
+    <pathelement location="${vignelli.output.dir}"/>
+  </path>
+  
+  
+  <patternset id="excluded.from.module.vignelli">
+    <patternset refid="ignored.files"/>
+  </patternset>
+  
+  <patternset id="excluded.from.compilation.vignelli">
+    <patternset refid="excluded.from.module.vignelli"/>
+  </patternset>
+  
+  <path id="vignelli.module.sourcepath">
+    <dirset dir="${module.vignelli.basedir}">
+      <include name="src"/>
+    </dirset>
+  </path>
+  
+  
+  <target name="compile.module.vignelli" depends="compile.module.vignelli.production,compile.module.vignelli.tests" description="Compile module vignelli"/>
+  
+  <target name="compile.module.vignelli.production" depends="register.custom.compilers" description="Compile module vignelli; production classes">
+    <mkdir dir="${vignelli.output.dir}"/>
+    <javac2 destdir="${vignelli.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.vignelli}/javac" includeantruntime="false">
+      <compilerarg line="${compiler.args.vignelli}"/>
+      <bootclasspath refid="vignelli.module.bootclasspath"/>
+      <classpath refid="vignelli.module.production.classpath"/>
+      <src refid="vignelli.module.sourcepath"/>
+      <patternset refid="excluded.from.compilation.vignelli"/>
+    </javac2>
+    
+    <copy todir="${vignelli.output.dir}">
+      <fileset dir="${module.vignelli.basedir}/src">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="compile.module.vignelli.tests" depends="register.custom.compilers,compile.module.vignelli.production" description="compile module vignelli; test classes" unless="skip.tests"/>
+  
+  <target name="clean.module.vignelli" description="cleanup module">
+    <delete dir="${vignelli.output.dir}"/>
+    <delete dir="${vignelli.testoutput.dir}"/>
+  </target>
+  
+  <property name="vignelli.plugin.path.jar" value="${module.vignelli.basedir}/vignelli.jar"/>
+  
+  <!-- Build archive for plugin 'vignelli' -->
+  <target name="plugin.build.jar.vignelli" depends="compile.module.vignelli" description="Build plugin archive for module &#39;vignelli&#39;">
+    <jar destfile="${vignelli.plugin.path.jar}" duplicate="preserve">
+      <zipfileset dir="${module.vignelli.basedir}/out/production/vignelli"/>
+      <zipfileset file="${module.vignelli.basedir}/META-INF/plugin.xml" prefix="META-INF"/>
+      <manifest>
+        <attribute name="Created-By" value="IntelliJ IDEA"/>
+        <attribute name="Manifest-Version" value="1.0"/>
+      </manifest>
+    </jar>
+  </target>
+</project>
