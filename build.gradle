@@ -7,6 +7,8 @@
  * user guide available at http://gradle.org/docs/2.0/userguide/tutorial_java_projects.html
  */
 
+apply plugin: 'com.jfrog.artifactory'
+
 ant.importBuild 'vignelli.xml'
 
 task build(dependsOn: all)
