@@ -95,9 +95,7 @@ artifactory {
 publishing {
     publications {
         vignelli(MavenPublication) {
-            artifact file("${buildDir}/vignelli.jar")
-            version version
-            groupId group
+            from components.java
         }
     }
 }
