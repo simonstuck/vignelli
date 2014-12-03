@@ -76,7 +76,7 @@
     <delete dir="${vignelli.testoutput.dir}"/>
   </target>
   
-  <property name="vignelli.plugin.path.jar" value="${module.vignelli.basedir}/vignelli.jar"/>
+  <property name="vignelli.plugin.path.jar" value="${module.vignelli.basedir}/build/vignelli.jar"/>
   
   <!-- Build archive for plugin 'vignelli' -->
   <target name="plugin.build.jar.vignelli" depends="compile.module.vignelli" description="Build plugin archive for module &#39;vignelli&#39;">
