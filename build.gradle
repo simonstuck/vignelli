@@ -7,8 +7,40 @@
  * user guide available at http://gradle.org/docs/2.0/userguide/tutorial_java_projects.html
  */
 
+buildscript {
+  repositories {
+    jcenter()
+  }
+  dependencies {
+    classpath(group: 'org.jfrog.buildinfo', name: 'build-info-extractor-gradle', version: '3.0.1')
+  }
+}
+
+
+repositories {
+  maven { url '' }
+}
+
 apply plugin: 'com.jfrog.artifactory'
 
 ant.importBuild 'vignelli.xml'
 
 task build(dependsOn: all)
+
+
+artifactory {
+  contextUrl = 'http://146.169.46.54:8081/artifactory'   //The base Artifactory URL if not overridden by the publisher/resolver
+    publish {
+      contextUrl = 'http://146.169.46.54:8081/artifactory'   // fix weird bug
+        repository {
+          repoKey = 'libs-snapshot-local'   //The Artifactory repository key to publish to
+            username = 'deployer-slave'          //The publisher user name
+            password = 'testtest'
+        } 
+    }
+  resolve {
+    repository {
+      repoKey = 'libs-snapshot-local'  //The Artifactory (preferably virtual) repository key to resolve from
+    }
+  }
+}
