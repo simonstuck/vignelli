@@ -48,5 +48,7 @@ crashlytics-build.properties
 .gradle
 build/
 
+vignelli.jar
+
 # Ignore Gradle GUI config
 # gradle-app.setting

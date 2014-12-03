@@ -7,6 +7,8 @@
  * user guide available at http://gradle.org/docs/2.0/userguide/tutorial_java_projects.html
  */
 
+ant.importBuild 'vignelli.xml'
+
 /*
 // Apply the java plugin to add support for Java
 apply plugin: 'java'
