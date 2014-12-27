@@ -26,6 +26,7 @@ apply plugin: 'com.jfrog.artifactory'
 apply plugin: 'maven-publish'
 apply plugin: 'java'
 apply plugin: 'net.saliman.properties'
+apply plugin: 'checkstyle'
 
 version = '0.0.1-SNAPSHOT'
 group = 'com.simonstuck'
@@ -35,12 +36,19 @@ configurations {
   antTask
 }
 
+checkstyle {
+  ignoreFailures = false
+}
 
 dependencies {
   repositories {
     mavenCentral()
     jcenter()
     flatDir dirs: 'lib'
+  }
+
+  dependencies {
+    checkstyle('com.puppycrawl.tools:checkstyle:6.1.1')
   }
 
   compile 'org.jdom:jdom:1.1'

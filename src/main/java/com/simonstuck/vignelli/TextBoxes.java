@@ -12,9 +12,16 @@ public class TextBoxes extends AnAction {
         super("Text_Boxes");
     }
 
-    public void actionPerformed(AnActionEvent e) {
-        Project project = e.getData(PlatformDataKeys.PROJECT);
-        String txt = Messages.showInputDialog(project, "What is your name?", "Input your name", Messages.getQuestionIcon());
-        Messages.showMessageDialog(project, "Hello, " + txt + "!\n I am glad to see you.", "Information", Messages.getInformationIcon());
+    /**
+     * Shows message dialog greeting the user.
+     * @param event Event corresponding to the action
+     */
+    public void actionPerformed(AnActionEvent event) {
+        Project project = event.getData(PlatformDataKeys.PROJECT);
+        String title = "What is your name?";
+        String query = "Input your name";
+        String txt = Messages.showInputDialog(project, title, query, Messages.getQuestionIcon());
+        String message = "Hello, " + txt + "!\n I am glad to see you.";
+        Messages.showMessageDialog(project, message, "Information", Messages.getInformationIcon());
     }
 }
