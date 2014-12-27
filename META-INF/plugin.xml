@@ -33,14 +33,8 @@
 
   <project-components>
     <!-- Add your project components here -->
+    <component>
+      <implementation-class>com.simonstuck.vignelli.VignelliProjectComponent</implementation-class>
+    </component>
   </project-components>
-
-  <actions>
-    <!-- Add your actions here -->
-      <group id="MyPlugin.SampleMenu" text="_Sample Menu" description="Sample menu">
-          <add-to-group group-id="MainMenu" anchor="last"  />
-          <action id="Myplugin.Textboxes" class="main.java.com.simonstuck.vignelli.TextBoxes" text="Text _Boxes" description="A test menu item" />
-      </group>
-  </actions>
-
 </idea-plugin>
