@@ -24,7 +24,7 @@
   -->
 
   <extensions defaultExtensionNs="com.intellij">
-    <!-- Add your extensions here -->
+    <inspectionToolProvider implementation="com.simonstuck.vignelli.inspection.VignelliInspectionToolProvider" />
   </extensions>
 
   <application-components>

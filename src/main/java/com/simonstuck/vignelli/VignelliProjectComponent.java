@@ -2,7 +2,6 @@ package com.simonstuck.vignelli;
 
 import com.intellij.openapi.components.ProjectComponent;
 import com.intellij.openapi.project.Project;
-import com.intellij.psi.PsiManager;
 import org.jetbrains.annotations.NotNull;
 
 public class VignelliProjectComponent implements ProjectComponent {
@@ -27,11 +26,8 @@ public class VignelliProjectComponent implements ProjectComponent {
     }
 
     public void projectOpened() {
-        PsiManager manager =  PsiManager.getInstance(project);
-        manager.addPsiTreeChangeListener(new VignelliPsiTreeChangeAdapter());
     }
 
     public void projectClosed() {
-        // called when project is being closed
     }
 }
