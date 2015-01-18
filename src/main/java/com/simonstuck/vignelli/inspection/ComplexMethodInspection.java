@@ -8,6 +8,8 @@ import com.intellij.codeInspection.ex.ProblemDescriptorImpl;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiIdentifier;
 import com.intellij.psi.PsiMethod;
+import com.simonstuck.vignelli.decomposition.graph.cfg.AugmentedControlFlowGraph;
+import com.simonstuck.vignelli.decomposition.graph.cfg.AugmentedControlFlowGraphFactory;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -23,10 +25,19 @@ public class ComplexMethodInspection extends BaseJavaLocalInspectionTool {
         ProblemDescriptor descriptor = new ProblemDescriptorImpl(method, method, message, null,
             ProblemHighlightType.GENERIC_ERROR_OR_WARNING, false, highlightRange, true);
 
+        performInspection(method);
+
         return new ProblemDescriptor[] { descriptor };
     }
 
-    @Nls
+    private void performInspection(PsiMethod method) {
+        AugmentedControlFlowGraphFactory factory = new AugmentedControlFlowGraphFactory();
+        factory.setMethod(method);
+        AugmentedControlFlowGraph graph = factory.makeGraph();
+        System.out.println("Analysing method: " + method.getName());
+        System.out.println(graph);
+    }
+
     @NotNull
     @Override
     public String getDisplayName() {

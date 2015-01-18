@@ -58,6 +58,8 @@ dependencies {
   antTask group: 'com.intellij', name: 'forms_rt', version: '12.1.0'
   antTask group: 'com.intellij', name: 'asm-all', version: '12.1.0-idea'
   antTask group: 'org.jdom', name: 'jdom', version: '1.1'
+
+  testCompile "org.mockito:mockito-core:1.+"
 }
 
 
