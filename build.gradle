@@ -27,6 +27,7 @@ apply plugin: 'maven-publish'
 apply plugin: 'java'
 apply plugin: 'net.saliman.properties'
 apply plugin: 'checkstyle'
+apply plugin: 'jacoco'
 
 version = '0.0.1-SNAPSHOT'
 group = 'com.simonstuck'
@@ -41,6 +42,8 @@ checkstyle {
 }
 
 task checkstyleTest(overwrite: true) << {};
+
+jacocoTestReport.dependsOn(test)
 
 dependencies {
   repositories {
