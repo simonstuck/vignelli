@@ -1,6 +1,7 @@
 package com.simonstuck.vignelli.decomposition.graph;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -36,5 +37,11 @@ public class GraphNodeTest {
         node.addOutgoingEdge(edge);
         assertEquals(node.getOutgoingEdges().size(), 1);
         assertEquals(node.getOutgoingEdges().iterator().next(), edge);
+    }
+
+    @Test
+    public void stringRepresentationShouldIncludeId() throws Exception {
+        String representation = node.toString();
+        assertTrue(representation.contains("" + TEST_ID));
     }
 }

@@ -1,6 +1,7 @@
 package com.simonstuck.vignelli.decomposition.graph;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
 import org.junit.Before;
@@ -30,5 +31,10 @@ public class GraphEdgeTest {
     @Test
     public void shouldReturnCorrectSource() throws Exception {
         assertEquals(edge.getSource(), src);
+    }
+
+    @Test
+    public void stringRepresentationShouldIncludeSourceFollowedByDestination() throws Exception {
+        assertTrue(edge.toString().matches(src + ".*" + dest));
     }
 }
