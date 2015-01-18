@@ -10,7 +10,6 @@ import com.intellij.psi.PsiIdentifier;
 import com.intellij.psi.PsiMethod;
 import com.simonstuck.vignelli.decomposition.graph.cfg.AugmentedControlFlowGraph;
 import com.simonstuck.vignelli.decomposition.graph.cfg.AugmentedControlFlowGraphFactory;
-import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

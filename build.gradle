@@ -40,6 +40,8 @@ checkstyle {
   ignoreFailures = false
 }
 
+task checkstyleTest(overwrite: true) << {};
+
 dependencies {
   repositories {
     mavenCentral()
