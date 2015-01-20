@@ -29,6 +29,10 @@ public class CFGNode extends GraphNode<CFGNode> implements Comparable<CFGNode> {
         return false;
     }
 
+    public PsiStatement getStatement() {
+        return statement;
+    }
+
     private boolean isFirst() {
         return getIncomingEdges().size() == 0;
     }

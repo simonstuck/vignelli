@@ -11,6 +11,7 @@ import com.intellij.psi.PsiMethod;
 import com.simonstuck.vignelli.decomposition.graph.cfg.AugmentedControlFlowGraph;
 import com.simonstuck.vignelli.decomposition.graph.cfg.AugmentedControlFlowGraphFactory;
 import com.simonstuck.vignelli.decomposition.graph.cfg.BasicBlockCollection;
+import com.simonstuck.vignelli.decomposition.graph.pdg.ProgramDependenceGraph;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -39,6 +40,9 @@ public class ComplexMethodInspection extends BaseJavaLocalInspectionTool {
         System.out.println(graph);
         System.out.println("basic blocks:");
         System.out.println(basicBlocks);
+        System.out.println("Program dependence graph...");
+        ProgramDependenceGraph pdg = new ProgramDependenceGraph(graph);
+        System.out.println("PDG: " + pdg);
     }
 
     @NotNull
