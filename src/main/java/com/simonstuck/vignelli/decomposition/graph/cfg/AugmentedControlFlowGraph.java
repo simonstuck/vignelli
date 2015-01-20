@@ -11,7 +11,7 @@ import com.simonstuck.vignelli.decomposition.graph.Graph;
  * - the one labelled 'false' goes to the statement following the branching statement
  *   if no branching occurred.
  */
-public class AugmentedControlFlowGraph extends Graph {
+public class AugmentedControlFlowGraph extends Graph<CFGNode> {
 
     private final PsiMethod method;
 

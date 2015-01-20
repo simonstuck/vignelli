@@ -14,13 +14,13 @@ public class GraphEdgeTest {
     private GraphNode src;
     private GraphNode dest;
 
-    private GraphEdge edge;
+    private GraphEdge<GraphNode> edge;
 
     @Before
     public void setUp() {
         src = mock(GraphNode.class);
         dest = mock(GraphNode.class);
-        edge = new GraphEdge(src, dest);
+        edge = new GraphEdge<GraphNode>(src, dest);
     }
 
     @Test

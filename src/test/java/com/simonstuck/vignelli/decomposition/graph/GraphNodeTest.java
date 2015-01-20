@@ -9,11 +9,11 @@ import org.junit.Test;
 public class GraphNodeTest {
 
     public static final int TEST_ID  = 42;
-    private GraphNode node;
+    private GraphNode<GraphNode> node;
 
     @Before
     public void setUp() {
-        node = new GraphNode(TEST_ID);
+        node = new GraphNode<GraphNode>(TEST_ID);
     }
 
     @Test
@@ -24,7 +24,7 @@ public class GraphNodeTest {
     @Test
     public void addingOneIncomingEdgeShouldResultInOneEdgeBeingSaved() throws Exception {
         GraphNode otherNode = new GraphNode(TEST_ID + 1);
-        GraphEdge edge = new GraphEdge(otherNode, node);
+        GraphEdge<GraphNode> edge = new GraphEdge<GraphNode>(otherNode, node);
         node.addIncomingEdge(edge);
         assertEquals(node.getIncomingEdges().size(), 1);
         assertEquals(node.getIncomingEdges().iterator().next(), edge);
@@ -32,8 +32,8 @@ public class GraphNodeTest {
 
     @Test
     public void addingOneOutgoingEdgeShouldResultInOneOutgoingEdgeBeingSaved() throws Exception {
-        GraphNode otherNode = new GraphNode(TEST_ID + 1);
-        GraphEdge edge = new GraphEdge(node, otherNode);
+        GraphNode<GraphNode> otherNode = new GraphNode<GraphNode>(TEST_ID + 1);
+        GraphEdge<GraphNode> edge = new GraphEdge<GraphNode>(node, otherNode);
         node.addOutgoingEdge(edge);
         assertEquals(node.getOutgoingEdges().size(), 1);
         assertEquals(node.getOutgoingEdges().iterator().next(), edge);

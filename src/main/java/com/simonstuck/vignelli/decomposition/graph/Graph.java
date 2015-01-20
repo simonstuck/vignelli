@@ -3,28 +3,28 @@ package com.simonstuck.vignelli.decomposition.graph;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-public class Graph {
-    private final Set<GraphNode> nodes;
-    private final Set<GraphEdge> edges;
+public class Graph<T extends GraphNode> {
+    private final Set<T> nodes;
+    private final Set<GraphEdge<T>> edges;
 
     public Graph() {
-        this.nodes = new LinkedHashSet<GraphNode>();
-        this.edges = new LinkedHashSet<GraphEdge>();
+        this.nodes = new LinkedHashSet<T>();
+        this.edges = new LinkedHashSet<GraphEdge<T>>();
     }
 
-    public Set<GraphNode> getNodes() {
+    public Set<T> getNodes() {
         return nodes;
     }
 
-    public Set<GraphEdge> getEdges() {
+    public Set<GraphEdge<T>> getEdges() {
         return edges;
     }
 
-    public void addNode(GraphNode node) {
+    public void addNode(T node) {
         nodes.add(node);
     }
 
-    public void addEdge(GraphEdge edge) {
+    public void addEdge(GraphEdge<T> edge) {
         edges.add(edge);
     }
 

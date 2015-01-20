@@ -11,13 +11,13 @@ import java.util.Set;
 
 public class GraphTest {
 
-    private Graph graph;
+    private Graph<GraphNode> graph;
     private final Set<GraphNode> nodes = new HashSet<GraphNode>();
-    private final Set<GraphEdge> edges = new HashSet<GraphEdge>();
+    private final Set<GraphEdge<GraphNode>> edges = new HashSet<GraphEdge<GraphNode>>();
 
     @Before
     public void setUp() {
-        graph = new Graph();
+        graph = new Graph<GraphNode>();
         GraphNode node1 = new GraphNode(1);
         GraphNode node2 = new GraphNode(2);
         GraphNode node3 = new GraphNode(3);
@@ -28,9 +28,9 @@ public class GraphTest {
         nodes.add(node3);
         nodes.add(node4);
 
-        GraphEdge edge1 = new GraphEdge(node1, node3);
-        GraphEdge edge2 = new GraphEdge(node1, node2);
-        GraphEdge edge3 = new GraphEdge(node2, node3);
+        GraphEdge<GraphNode> edge1 = new GraphEdge<GraphNode>(node1, node3);
+        GraphEdge<GraphNode> edge2 = new GraphEdge<GraphNode>(node1, node2);
+        GraphEdge<GraphNode> edge3 = new GraphEdge<GraphNode>(node2, node3);
 
         edges.add(edge1);
         edges.add(edge2);
@@ -40,7 +40,7 @@ public class GraphTest {
         for (GraphNode node : nodes) {
             graph.addNode(node);
         }
-        for (GraphEdge edge : edges) {
+        for (GraphEdge<GraphNode> edge : edges) {
             graph.addEdge(edge);
         }
     }
@@ -64,7 +64,7 @@ public class GraphTest {
 
     @Test
     public void noEdgesThatWereNotAddedAreReturned() throws Exception {
-        Set<GraphEdge> returnedEdges = graph.getEdges();
+        Set<GraphEdge<GraphNode>> returnedEdges = graph.getEdges();
         returnedEdges.removeAll(edges);
         assertTrue(returnedEdges.isEmpty());
     }
@@ -75,7 +75,7 @@ public class GraphTest {
             assertTrue(graph.toString().contains(node.toString()));
         }
 
-        for (GraphEdge edge : graph.getEdges()) {
+        for (GraphEdge<GraphNode> edge : graph.getEdges()) {
             assertTrue(graph.toString().contains(edge.toString()));
         }
     }

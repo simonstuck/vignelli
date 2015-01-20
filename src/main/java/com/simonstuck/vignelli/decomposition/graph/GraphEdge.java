@@ -1,19 +1,19 @@
 package com.simonstuck.vignelli.decomposition.graph;
 
-public class GraphEdge {
-    private final GraphNode src;
-    private final GraphNode dst;
+public class GraphEdge<T extends GraphNode> {
+    private final T src;
+    private final T dst;
 
-    public GraphEdge(GraphNode src, GraphNode dst) {
+    public GraphEdge(T src, T dst) {
         this.src = src;
         this.dst = dst;
     }
 
-    public GraphNode getSource() {
+    public T getSource() {
         return src;
     }
 
-    public GraphNode getDestination() {
+    public T getDestination() {
         return dst;
     }
 

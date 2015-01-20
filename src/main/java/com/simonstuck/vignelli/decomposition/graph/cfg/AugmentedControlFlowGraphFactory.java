@@ -14,7 +14,6 @@ import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiReturnStatement;
 import com.intellij.psi.PsiTryStatement;
 import com.simonstuck.vignelli.decomposition.graph.GraphEdge;
-import com.simonstuck.vignelli.decomposition.graph.GraphNode;
 import com.simonstuck.vignelli.decomposition.graph.GraphNodeIdGenerator;
 import com.simonstuck.vignelli.utils.IdGenerator;
 
@@ -50,7 +49,7 @@ public class AugmentedControlFlowGraphFactory {
         private final AugmentedControlFlowGraph graph;
 
         // Initially no previous nodes, i.e. the entry node
-        private final Set<GraphNode> previousNodes = new HashSet<GraphNode>();
+        private final Set<CFGNode> previousNodes = new HashSet<CFGNode>();
 
         public AugmentedControlFlowGraphGeneratorVisitor(IdGenerator<Integer> nodeIdGenerator, PsiMethod method) {
             this.nodeIdGenerator = nodeIdGenerator;
@@ -90,9 +89,9 @@ public class AugmentedControlFlowGraphFactory {
          * Attaches the given node to the graph and adds the required edges.
          * @param node The node to attach to the graph
          */
-        private void attachNodeToGraph(GraphNode node) {
-            for (GraphNode previousNode : previousNodes) {
-                node.addIncomingEdge(new GraphEdge(previousNode, node));
+        private void attachNodeToGraph(CFGNode node) {
+            for (CFGNode previousNode : previousNodes) {
+                node.addIncomingEdge(new GraphEdge<CFGNode>(previousNode, node));
             }
             // This statement is now the new previous node
             previousNodes.clear();
@@ -100,7 +99,7 @@ public class AugmentedControlFlowGraphFactory {
 
             // add this new node and its associated edges to the graph
             graph.addNode(node);
-            for (GraphEdge edge : node.getIncomingEdges()) {
+            for (GraphEdge<CFGNode> edge : node.getIncomingEdges()) {
                 graph.addEdge(edge);
             }
         }
@@ -112,50 +111,15 @@ public class AugmentedControlFlowGraphFactory {
         }
 
         @Override
-        public void visitBlockStatement(PsiBlockStatement statement) {
-            super.visitBlockStatement(statement);
-        }
-
-        @Override
-        public void visitBreakStatement(PsiBreakStatement statement) {
-            super.visitBreakStatement(statement);
-        }
-
-        @Override
-        public void visitContinueStatement(PsiContinueStatement statement) {
-            super.visitContinueStatement(statement);
-        }
-
-        @Override
         public void visitDeclarationStatement(PsiDeclarationStatement statement) {
             CFGNode node = new CFGNode(nodeIdGenerator.generateId(), statement);
             attachNodeToGraph(node);
         }
 
         @Override
-        public void visitEmptyStatement(PsiEmptyStatement statement) {
-            // ignore Empty statement
-        }
-
-        @Override
-        public void visitExpressionListStatement(PsiExpressionListStatement statement) {
-            super.visitExpressionListStatement(statement);
-        }
-
-        @Override
         public void visitExpressionStatement(PsiExpressionStatement statement) {
             CFGNode node = new CFGNode(nodeIdGenerator.generateId(), statement);
             attachNodeToGraph(node);
-        }
-
-        @Override
-        public void visitLabeledStatement(PsiLabeledStatement statement) {
-            super.visitLabeledStatement(statement);
-        }
-
-        @Override
-        public void visitReturnStatement(PsiReturnStatement statement) {
-            super.visitReturnStatement(statement);
         }
     }
 

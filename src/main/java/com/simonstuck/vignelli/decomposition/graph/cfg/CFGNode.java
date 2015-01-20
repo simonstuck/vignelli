@@ -1,10 +1,11 @@
 package com.simonstuck.vignelli.decomposition.graph.cfg;
 
 import com.intellij.psi.PsiStatement;
+import com.simonstuck.vignelli.decomposition.graph.GraphEdge;
 import com.simonstuck.vignelli.decomposition.graph.GraphNode;
 import org.jetbrains.annotations.NotNull;
 
-public class CFGNode extends GraphNode implements Comparable<CFGNode> {
+public class CFGNode extends GraphNode<CFGNode> implements Comparable<CFGNode> {
 
     protected final PsiStatement statement;
 
@@ -12,6 +13,34 @@ public class CFGNode extends GraphNode implements Comparable<CFGNode> {
         super(id);
         this.statement = statement;
     }
+
+    public boolean isLeader() {
+        return isFirst() || isJoin() || immediatelyFollowsBranchNode();
+
+    }
+
+    private boolean immediatelyFollowsBranchNode() {
+        for (GraphEdge<CFGNode> edge : getIncomingEdges()) {
+            CFGNode srcNode = edge.getSource();
+            if (srcNode.isBranch()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isFirst() {
+        return getIncomingEdges().size() == 0;
+    }
+
+    public boolean isBranch() {
+        return getOutgoingEdges().size() > 1;
+    }
+
+    private boolean isJoin() {
+        return getIncomingEdges().size() > 1;
+    }
+
 
     @Override
     public int hashCode() {
