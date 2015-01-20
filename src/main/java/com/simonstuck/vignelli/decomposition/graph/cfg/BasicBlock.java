@@ -60,6 +60,6 @@ public class BasicBlock {
 
     @Override
     public String toString() {
-        return leader.toString() + nodes.toString();
+        return "L: " + leader.toString() + " => " + nodes.toString();
     }
 }

@@ -74,4 +74,9 @@ public class BasicBlockCollection {
     private BasicBlock getLastBasicBlock() {
         return basicBlocks.get(basicBlocks.size() - 1);
     }
+
+    @Override
+    public String toString() {
+        return getBasicBlocks().toString();
+    }
 }

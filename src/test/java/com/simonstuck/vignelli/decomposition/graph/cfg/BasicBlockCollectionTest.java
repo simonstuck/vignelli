@@ -56,4 +56,11 @@ public class BasicBlockCollectionTest {
         Set<BasicBlock> blocks = collection.forwardReachableBlocks(startingBlock);
         assertTrue(blocks.contains(startingBlock));
     }
+
+    @Test
+    public void stringRepresentationMustIncludeAllBasicBlocks() throws Exception {
+        for (BasicBlock block : collection.getBasicBlocks()) {
+            assertTrue(collection.toString().contains(block.toString()));
+        }
+    }
 }

@@ -10,6 +10,7 @@ import com.intellij.psi.PsiIdentifier;
 import com.intellij.psi.PsiMethod;
 import com.simonstuck.vignelli.decomposition.graph.cfg.AugmentedControlFlowGraph;
 import com.simonstuck.vignelli.decomposition.graph.cfg.AugmentedControlFlowGraphFactory;
+import com.simonstuck.vignelli.decomposition.graph.cfg.BasicBlockCollection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -33,8 +34,11 @@ public class ComplexMethodInspection extends BaseJavaLocalInspectionTool {
         AugmentedControlFlowGraphFactory factory = new AugmentedControlFlowGraphFactory();
         factory.setMethod(method);
         AugmentedControlFlowGraph graph = factory.makeGraph();
+        BasicBlockCollection basicBlocks = new BasicBlockCollection(graph);
         System.out.println("Analysing method: " + method.getName());
         System.out.println(graph);
+        System.out.println("basic blocks:");
+        System.out.println(basicBlocks);
     }
 
     @NotNull
