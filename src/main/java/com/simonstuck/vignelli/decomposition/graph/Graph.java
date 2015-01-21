@@ -1,5 +1,7 @@
 package com.simonstuck.vignelli.decomposition.graph;
 
+import com.google.gson.Gson;
+
 import java.util.LinkedHashSet;
 import java.util.Set;
 

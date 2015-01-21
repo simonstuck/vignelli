@@ -40,6 +40,6 @@ public class GraphNode<T extends GraphNode> {
 
     @Override
     public String toString() {
-        return "[" + id + "]";
+        return "{" + id + "}";
     }
 }

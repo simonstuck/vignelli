@@ -3,10 +3,12 @@ package com.simonstuck.vignelli.decomposition.graph.pdg;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 
-import com.intellij.psi.JavaRecursiveElementVisitor;
 import com.intellij.psi.PsiLocalVariable;
+import com.intellij.psi.PsiVariable;
+import com.simonstuck.vignelli.decomposition.ast.util.PsiMethodUtil;
 import com.simonstuck.vignelli.decomposition.graph.Graph;
 import com.simonstuck.vignelli.decomposition.graph.GraphEdge;
+import com.simonstuck.vignelli.decomposition.graph.GraphNode;
 import com.simonstuck.vignelli.decomposition.graph.GraphNodeIdGenerator;
 import com.simonstuck.vignelli.decomposition.graph.cfg.AugmentedControlFlowGraph;
 import com.simonstuck.vignelli.decomposition.graph.cfg.BasicBlock;
@@ -45,18 +47,114 @@ public class ProgramDependenceGraph extends Graph<PDGNode> {
         dominationMapping = new HashMap<PDGNode, Set<BasicBlock>>(cfg.getSize());
 
         idGenerator = new GraphNodeIdGenerator();
-        localVariables = getLocalVariables(cfg);
+        localVariables = PsiMethodUtil.getLocalVariables(cfg.getMethod());
         methodEntryNode = new PDGMethodEntryNode(idGenerator.generateId(), cfg.getMethod());
-        addNode(methodEntryNode);
 
         createControlDependenciesFromEntryNode(cfg);
+        createDataDependencies();
     }
 
-    private Set<PsiLocalVariable> getLocalVariables(AugmentedControlFlowGraph cfg) {
-        LocalVariableDeclarationCollectorVisitor variableCollector = new LocalVariableDeclarationCollectorVisitor();
-        variableCollector.visitMethod(cfg.getMethod());
-        return variableCollector.getLocalVariables();
+    private void createDataDependencies() {
+        PDGNode firstPDGNode = getNodes().iterator().next();
+
+        for (PsiVariable variable : methodEntryNode.getDefinedVariables()) {
+            if (firstPDGNode.usesLocalVariable(variable)) {
+                PDGDataDependence dataDependence = new PDGDataDependence(methodEntryNode, firstPDGNode, variable);
+                addEdge(dataDependence);
+            }
+
+            if (!firstPDGNode.definesLocalVariable(variable)) {
+                dataDependenceSearch(methodEntryNode, variable, firstPDGNode, new LinkedHashSet<PDGNode>());
+            } else if (methodEntryNode.declaresLocalVariable(variable)) {
+                // create def-order data dependence edge
+                PDGDataDependence dataDependence = new PDGDataDependence(methodEntryNode, firstPDGNode, variable);
+                addEdge(dataDependence);
+            }
+        }
+
+        for (PDGNode node : getNodes()) {
+            for (PsiVariable variable : node.getDefinedVariables()) {
+                dataDependenceSearch(node, variable, firstPDGNode, new LinkedHashSet<PDGNode>());
+                outputDependenceSearch(node, variable, firstPDGNode, new LinkedHashSet<PDGNode>());
+            }
+            for (PsiVariable variable : node.getUsedVariables()) {
+                antiDependenceSearch(node, variable, firstPDGNode, new LinkedHashSet<PDGNode>());
+            }
+        }
     }
+
+    // FIXME: Refactor this for all three methods
+    private void dataDependenceSearch(PDGNode initialNode, PsiVariable variableInstruction, PDGNode currentNode, Set<PDGNode> visitedNodes) {
+        if (visitedNodes.contains(currentNode)) {
+            return;
+        }
+
+        System.out.println("data dependence search");
+        visitedNodes.add(currentNode);
+        CFGNode currentCFGNode = controlFlowDependenceNodeMapping.inverse().get(currentNode);
+        System.out.println("Current CFG node: " + currentCFGNode + " -- " + currentCFGNode.getStatement());
+        System.out.println("outgoing: " + currentCFGNode.getOutgoingEdges());
+        System.out.println("");
+
+        for (GraphEdge<CFGNode> edge : currentCFGNode.getOutgoingEdges()) {
+            System.out.println("Checking out edge: " + edge);
+            //TODO: Fix this for loopback
+            PDGNode dstPDGNode = controlFlowDependenceNodeMapping.get(edge.getDestination());
+            if (dstPDGNode.usesLocalVariable(variableInstruction)) {
+                System.out.println("we're using itL " + variableInstruction);
+                PDGDataDependence dataDependence = new PDGDataDependence(initialNode, dstPDGNode, variableInstruction);
+                addEdge(dataDependence);
+            }
+            if (!dstPDGNode.definesLocalVariable(variableInstruction)) {
+                dataDependenceSearch(initialNode, variableInstruction, dstPDGNode, visitedNodes);
+            } else if (initialNode.declaresLocalVariable(variableInstruction) && !initialNode.equals(dstPDGNode)) {
+                // create def-order data dependence
+                PDGDataDependence dataDependence = new PDGDataDependence(initialNode, dstPDGNode, variableInstruction);
+                addEdge(dataDependence);
+            }
+        }
+    }
+
+    private void antiDependenceSearch(PDGNode initialNode, PsiVariable variableInstruction, PDGNode currentNode, Set<PDGNode> visitedNodes) {
+        if (visitedNodes.contains(currentNode)) {
+            return;
+        }
+
+        visitedNodes.add(currentNode);
+        CFGNode currentCFGNode = controlFlowDependenceNodeMapping.inverse().get(currentNode);
+
+        for (GraphEdge<CFGNode> edge : currentCFGNode.getOutgoingEdges()) {
+            //TODO: Fix this for loopback
+            PDGNode dstPDGNode = controlFlowDependenceNodeMapping.get(edge.getDestination());
+            if(dstPDGNode.definesLocalVariable(variableInstruction)) {
+                PDGAntiDependence antiDependence = new PDGAntiDependence(initialNode, dstPDGNode, variableInstruction);
+                addEdge(antiDependence);
+            } else {
+                antiDependenceSearch(initialNode, variableInstruction, dstPDGNode, visitedNodes);
+            }
+        }
+    }
+
+    private void outputDependenceSearch(PDGNode initialNode, PsiVariable variableInstruction, PDGNode currentNode, Set<PDGNode> visitedNodes) {
+        if (visitedNodes.contains(currentNode)) {
+            return;
+        }
+
+        visitedNodes.add(currentNode);
+        CFGNode currentCFGNode = controlFlowDependenceNodeMapping.inverse().get(currentNode);
+
+        for (GraphEdge<CFGNode> edge : currentCFGNode.getOutgoingEdges()) {
+            //TODO: Fix this for loopback
+            PDGNode dstPDGNode = controlFlowDependenceNodeMapping.get(edge.getDestination());
+            if(dstPDGNode.definesLocalVariable(variableInstruction)) {
+                PDGOutputDependence outputDependence = new PDGOutputDependence(initialNode, dstPDGNode, variableInstruction);
+                addEdge(outputDependence);
+            } else {
+                outputDependenceSearch(initialNode, variableInstruction, dstPDGNode, visitedNodes);
+            }
+        }
+    }
+
 
     private void createControlDependenciesFromEntryNode(AugmentedControlFlowGraph cfg) {
         for (CFGNode node : cfg.getNodes()) {
@@ -73,6 +171,9 @@ public class ProgramDependenceGraph extends Graph<PDGNode> {
 
         PDGControlDependence controlDependence = new PDGControlDependence(previousNode, pdgNode);
         addEdge(controlDependence);
+        // Important: add edges to the nodes, too!
+        previousNode.addOutgoingEdge(controlDependence);
+        pdgNode.addIncomingEdge(controlDependence);
     }
 
     private PDGNode getPDGNode(CFGNode cfgNode) {
@@ -87,13 +188,14 @@ public class ProgramDependenceGraph extends Graph<PDGNode> {
     private PDGNode getDirectDominator(BasicBlock block) {
         // TODO: Add branch logic here
         PDGNode leader = getPDGNode(block.getLeader());
+        System.out.println("Leader of block: " + leader);
         for (GraphEdge<PDGNode> edge : leader.getIncomingEdges()) {
             PDGDependence dependence = (PDGDependence) edge;
             if (dependence.getType() == PDGDependence.PDGDependenceType.CONTROL) {
                 return dependence.getSource();
             }
         }
-        assert false; // We should never reach this point here
+//        assert false; // We should never reach this point here
 
         return null;
     }
@@ -179,22 +281,26 @@ public class ProgramDependenceGraph extends Graph<PDGNode> {
         return regionNodes;
     }
 
-    private class LocalVariableDeclarationCollectorVisitor extends JavaRecursiveElementVisitor {
+    public Set<PDGNode> getAssignmentNodesForVariable(PsiLocalVariable variable) {
+        Set<PDGNode> nodeCriteria = new LinkedHashSet<PDGNode>();
 
-        private final Set<PsiLocalVariable> localVariables = new HashSet<PsiLocalVariable>();
-
-        /**
-         * Gets the local variables that were collected.
-         * @return A new set with all the local variables.
-         */
-        public Set<PsiLocalVariable> getLocalVariables() {
-            return new HashSet<PsiLocalVariable>(localVariables);
+        for (PDGNode node : getNodes()) {
+            if (node.definesLocalVariable(variable) && !node.declaresLocalVariable(variable)) {
+                nodeCriteria.add(node);
+            }
         }
-
-        @Override
-        public void visitLocalVariable(PsiLocalVariable variable) {
-            localVariables.add(variable);
-            super.visitLocalVariable(variable);
-        }
+        return nodeCriteria;
     }
+
+//    public Set<PDGNode> getAssignmentNodesOfVariableCriterion(AbstractVariable localVariableCriterion) {
+//        Set<PDGNode> nodeCriteria = new LinkedHashSet<PDGNode>();
+//        for(GraphNode node : nodes) {
+//            PDGNode pdgNode = (PDGNode)node;
+//            if(pdgNode.definesLocalVariable(localVariableCriterion) &&
+//                    !pdgNode.declaresLocalVariable(localVariableCriterion))
+//                nodeCriteria.add(pdgNode);
+//        }
+//        return nodeCriteria;
+//    }
+
 }

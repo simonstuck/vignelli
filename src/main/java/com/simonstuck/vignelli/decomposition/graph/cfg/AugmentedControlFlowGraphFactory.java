@@ -91,7 +91,9 @@ public class AugmentedControlFlowGraphFactory {
          */
         private void attachNodeToGraph(CFGNode node) {
             for (CFGNode previousNode : previousNodes) {
-                node.addIncomingEdge(new GraphEdge<CFGNode>(previousNode, node));
+                GraphEdge<CFGNode> edge = new GraphEdge<CFGNode>(previousNode, node);
+                node.addIncomingEdge(edge);
+                previousNode.addOutgoingEdge(edge);
             }
             // This statement is now the new previous node
             previousNodes.clear();

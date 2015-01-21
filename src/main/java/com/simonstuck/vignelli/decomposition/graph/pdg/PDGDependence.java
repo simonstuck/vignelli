@@ -28,6 +28,6 @@ public class PDGDependence extends GraphEdge<PDGNode> {
      * Describes the type of a dependence.
      */
     public enum PDGDependenceType {
-        CONTROL
+        CONTROL, DATA, ANTI, OUTPUT
     }
 }
