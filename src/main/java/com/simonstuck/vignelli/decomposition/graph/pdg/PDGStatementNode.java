@@ -10,12 +10,20 @@ import com.simonstuck.vignelli.decomposition.graph.cfg.CFGNode;
 import java.util.Set;
 
 public class PDGStatementNode extends PDGNode {
+
+    /**
+     * Creates a new PDG statement node.
+     * @param id The unique id to use for this node
+     * @param cfgNode The associated cfg node
+     * @param localVariables The local variables of this method
+     */
     public PDGStatementNode(int id, CFGNode cfgNode, final Set<PsiLocalVariable> localVariables) {
         super(id);
         cfgNode.getStatement().accept(new JavaRecursiveElementVisitor() {
             @Override
             public void visitReferenceExpression(PsiReferenceExpression expression) {
                 super.visitReferenceExpression(expression);
+                // FIXME: use of instanceof is not good
                 if (expression.getParent() instanceof PsiAssignmentExpression) {
                     PsiAssignmentExpression parent = (PsiAssignmentExpression) expression.getParent();
                     PsiElement resolved = expression.resolve();

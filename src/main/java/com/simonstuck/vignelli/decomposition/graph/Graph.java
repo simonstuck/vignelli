@@ -28,6 +28,10 @@ public class Graph<T extends GraphNode> {
         edges.add(edge);
     }
 
+    public int getSize() {
+        return getNodes().size();
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();

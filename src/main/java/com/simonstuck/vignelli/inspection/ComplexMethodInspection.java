@@ -40,9 +40,9 @@ public class ComplexMethodInspection extends BaseJavaLocalInspectionTool {
         System.out.println(graph);
         System.out.println("basic blocks:");
         System.out.println(basicBlocks);
-        System.out.println("Program dependence graph...");
-        ProgramDependenceGraph pdg = new ProgramDependenceGraph(graph);
-        System.out.println("PDG: " + pdg);
+        ProgramDependenceGraph pdg = new ProgramDependenceGraph(graph, basicBlocks);
+        System.out.println("\nProgram dependence graph:");
+        System.out.println(pdg);
     }
 
     @NotNull

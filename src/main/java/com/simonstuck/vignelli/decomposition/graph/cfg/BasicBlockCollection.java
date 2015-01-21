@@ -48,6 +48,10 @@ public class BasicBlockCollection {
         return new ArrayList<BasicBlock>(basicBlocks);
     }
 
+    public BasicBlock getBasicBlock(CFGNode cfgNode) {
+        return nodeBlocks.get(cfgNode);
+    }
+
     /**
      * Returns all blocks that are reachable from the given block without loopback.
      * @param basicBlock The basic block to start from
