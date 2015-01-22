@@ -1,13 +1,16 @@
 package com.simonstuck.vignelli.decomposition.graph.pdg;
 
+import com.intellij.psi.PsiVariable;
 import com.simonstuck.vignelli.decomposition.graph.Graph;
 import com.simonstuck.vignelli.decomposition.graph.GraphEdge;
 import com.simonstuck.vignelli.decomposition.graph.cfg.BasicBlock;
 
+import javax.xml.crypto.Data;
 import java.util.Deque;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.Set;
+import java.util.TreeSet;
 
 public class PDGSlice extends Graph<PDGNode> {
     private final ProgramDependenceGraph pdg;
@@ -53,22 +56,36 @@ public class PDGSlice extends Graph<PDGNode> {
         return sliceNodes;
     }
 
-//    public Set<PDGNode> computeSlice(PDGNode nodeCriterion, AbstractVariable localVariableCriterion) {
-//        Set<PDGNode> sliceNodes = new LinkedHashSet<PDGNode>();
-//        if(nodeCriterion.definesLocalVariable(localVariableCriterion)) {
-//            sliceNodes.addAll(traverseBackward(nodeCriterion, new LinkedHashSet<PDGNode>()));
-//        }
-//        else if(nodeCriterion.usesLocalVariable(localVariableCriterion)) {
-//            Set<PDGNode> defNodes = getDefNodes(nodeCriterion, localVariableCriterion);
-//            for(PDGNode defNode : defNodes) {
-//                sliceNodes.addAll(traverseBackward(defNode, new LinkedHashSet<PDGNode>()));
-//            }
-//            if(defNodes.isEmpty()) {
-//                sliceNodes.addAll(traverseBackward(nodeCriterion, new LinkedHashSet<PDGNode>()));
-//            }
-//        }
-//        return sliceNodes;
-//    }
+    public Set<PDGNode> computeSlice(PDGNode nodeCriterion, PsiVariable localVariableCriterion) {
+        Set<PDGNode> sliceNodes = new LinkedHashSet<PDGNode>();
+
+        if (nodeCriterion.definesLocalVariable(localVariableCriterion)) {
+            sliceNodes.addAll(computeSlice(nodeCriterion));
+        } else if (nodeCriterion.usesLocalVariable(localVariableCriterion)) {
+            Set<PDGNode> defNodes = getDefNodes(nodeCriterion, localVariableCriterion);
+            for (PDGNode defNode : defNodes) {
+                sliceNodes.addAll(computeSlice(defNode));
+            }
+            if (defNodes.isEmpty()) {
+                sliceNodes.addAll(computeSlice(nodeCriterion));
+            }
+        }
+        return sliceNodes;
+    }
+
+    private Set<PDGNode> getDefNodes(PDGNode node, PsiVariable localVariable) {
+        Set<PDGNode> defNodes = new LinkedHashSet<PDGNode>();
+        for(GraphEdge<PDGNode> edge : node.getIncomingEdges()) {
+            PDGDependence dependence = (PDGDependence)edge;
+            if(getEdges().contains(dependence) && dependence.getType() == PDGDependence.PDGDependenceType.DATA) {
+                PDGDataDependence dataDependence = (PDGDataDependence)dependence;
+                if(dataDependence.getData().equals(localVariable)) {
+                    defNodes.add(dependence.getSource());
+                }
+            }
+        }
+        return defNodes;
+    }
 
     @Override
     public String toString() {

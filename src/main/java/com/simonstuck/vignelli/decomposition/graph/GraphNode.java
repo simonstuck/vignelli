@@ -39,6 +39,20 @@ public class GraphNode<T extends GraphNode> {
     }
 
     @Override
+    public int hashCode() {
+        return getId();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!getClass().isAssignableFrom(obj.getClass())) {
+            return false;
+        }
+        GraphNode<T> other = (GraphNode<T>) obj;
+        return getId() == other.getId();
+    }
+
+    @Override
     public String toString() {
         return "{" + id + "}";
     }

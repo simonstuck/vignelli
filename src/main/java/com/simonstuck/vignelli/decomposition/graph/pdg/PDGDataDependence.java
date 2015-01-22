@@ -9,4 +9,8 @@ public class PDGDataDependence extends PDGDependence {
         super(src, dst, PDGDependenceType.DATA);
         this.data = data;
     }
+
+    public PsiVariable getData() {
+        return data;
+    }
 }

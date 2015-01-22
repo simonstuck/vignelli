@@ -89,19 +89,13 @@ public class ProgramDependenceGraph extends Graph<PDGNode> {
             return;
         }
 
-        System.out.println("data dependence search");
         visitedNodes.add(currentNode);
         CFGNode currentCFGNode = controlFlowDependenceNodeMapping.inverse().get(currentNode);
-        System.out.println("Current CFG node: " + currentCFGNode + " -- " + currentCFGNode.getStatement());
-        System.out.println("outgoing: " + currentCFGNode.getOutgoingEdges());
-        System.out.println("");
 
         for (GraphEdge<CFGNode> edge : currentCFGNode.getOutgoingEdges()) {
-            System.out.println("Checking out edge: " + edge);
             //TODO: Fix this for loopback
             PDGNode dstPDGNode = controlFlowDependenceNodeMapping.get(edge.getDestination());
             if (dstPDGNode.usesLocalVariable(variableInstruction)) {
-                System.out.println("we're using itL " + variableInstruction);
                 PDGDataDependence dataDependence = new PDGDataDependence(initialNode, dstPDGNode, variableInstruction);
                 addEdge(dataDependence);
             }
@@ -109,6 +103,7 @@ public class ProgramDependenceGraph extends Graph<PDGNode> {
                 dataDependenceSearch(initialNode, variableInstruction, dstPDGNode, visitedNodes);
             } else if (initialNode.declaresLocalVariable(variableInstruction) && !initialNode.equals(dstPDGNode)) {
                 // create def-order data dependence
+                System.out.println("YEAHHBOI");
                 PDGDataDependence dataDependence = new PDGDataDependence(initialNode, dstPDGNode, variableInstruction);
                 addEdge(dataDependence);
             }
@@ -126,7 +121,7 @@ public class ProgramDependenceGraph extends Graph<PDGNode> {
         for (GraphEdge<CFGNode> edge : currentCFGNode.getOutgoingEdges()) {
             //TODO: Fix this for loopback
             PDGNode dstPDGNode = controlFlowDependenceNodeMapping.get(edge.getDestination());
-            if(dstPDGNode.definesLocalVariable(variableInstruction)) {
+            if (dstPDGNode.definesLocalVariable(variableInstruction)) {
                 PDGAntiDependence antiDependence = new PDGAntiDependence(initialNode, dstPDGNode, variableInstruction);
                 addEdge(antiDependence);
             } else {
@@ -290,6 +285,10 @@ public class ProgramDependenceGraph extends Graph<PDGNode> {
             }
         }
         return nodeCriteria;
+    }
+
+    public PDGMethodEntryNode getMethodEntryNode() {
+        return methodEntryNode;
     }
 
 //    public Set<PDGNode> getAssignmentNodesOfVariableCriterion(AbstractVariable localVariableCriterion) {

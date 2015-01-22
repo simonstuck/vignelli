@@ -1,8 +1,10 @@
 package com.simonstuck.vignelli.decomposition.graph.pdg;
 
-import com.intellij.psi.PsiLocalVariable;
+import com.intellij.psi.PsiVariable;
+import com.simonstuck.vignelli.decomposition.graph.GraphEdge;
 import com.simonstuck.vignelli.decomposition.graph.cfg.BasicBlock;
 
+import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -11,8 +13,23 @@ public class PDGSliceUnion {
     private final Set<PDGNode> nodeCriteria;
     private final Set<PDGNode> sliceNodes;
     private final PDGSlice subgraph;
+    private final Set<PsiVariable> passedParameters;
+    private final Set<PDGNode> indispensableNodes;
+    private final Set<PDGNode> removableNodes;
 
-    public PDGSliceUnion(ProgramDependenceGraph pdg, BasicBlock boundaryBlock, Set<PDGNode> nodeCriteria, PsiLocalVariable variableCriterion) {
+    public Set<PsiVariable> getPassedParameters() {
+        return new TreeSet<PsiVariable>(passedParameters);
+    }
+
+    public Set<PDGNode> getIndispensableNodes() {
+        return new TreeSet<PDGNode>(indispensableNodes);
+    }
+
+    public Set<PDGNode> getRemovableNodes() {
+        return new TreeSet<PDGNode>(removableNodes);
+    }
+
+    public PDGSliceUnion(ProgramDependenceGraph pdg, BasicBlock boundaryBlock, Set<PDGNode> nodeCriteria, PsiVariable objectReference) {
         this.pdg = pdg;
         this.nodeCriteria = nodeCriteria;
         this.subgraph = new PDGSlice(pdg, boundaryBlock);
@@ -23,81 +40,84 @@ public class PDGSliceUnion {
             sliceNodes.addAll(subgraph.computeSlice(nodeCriterion));
         }
 
+        Set<PDGNode> remainingNodes = new TreeSet<PDGNode>();
+        remainingNodes.add(pdg.getMethodEntryNode());
+        for (PDGNode node : pdg.getNodes()) {
+            if (!sliceNodes.contains(node)) {
+                remainingNodes.add(node);
+            }
+        }
 
 
-//        Set<PDGNode> nCD = new LinkedHashSet<PDGNode>();
-//        Set<PDGNode> nDD = new LinkedHashSet<PDGNode>();
-//        for(GraphEdge edge : pdg.edges) {
-//            PDGDependence dependence = (PDGDependence)edge;
-//            PDGNode srcPDGNode = (PDGNode)dependence.src;
-//            PDGNode dstPDGNode = (PDGNode)dependence.dst;
-//            if(dependence instanceof PDGDataDependence) {
-//                PDGDataDependence dataDependence = (PDGDataDependence)dependence;
-//                if(remainingNodes.contains(srcPDGNode) && sliceNodes.contains(dstPDGNode))
-//                    passedParameters.add(dataDependence.getData());
-//                if(sliceNodes.contains(srcPDGNode) && remainingNodes.contains(dstPDGNode) &&
-//                        !dataDependence.getData().equals(localVariableCriterion))
-//                    nDD.add(srcPDGNode);
-//            }
-//            else if(dependence instanceof PDGControlDependence) {
-//                if(sliceNodes.contains(srcPDGNode) && remainingNodes.contains(dstPDGNode))
-//                    nCD.add(srcPDGNode);
-//            }
-//        }
-//        Set<PDGNode> controlIndispensableNodes = new LinkedHashSet<PDGNode>();
-//        for(PDGNode p : nCD) {
-//            for(AbstractVariable usedVariable : p.usedVariables) {
-//                Set<PDGNode> pSliceNodes = subgraph.computeSlice(p, usedVariable);
-//                for(GraphNode node : pdg.nodes) {
-//                    PDGNode q = (PDGNode)node;
-//                    if(pSliceNodes.contains(q) || q.equals(p))
-//                        controlIndispensableNodes.add(q);
-//                }
-//            }
-//            if(p.usedVariables.isEmpty()) {
-//                Set<PDGNode> pSliceNodes = subgraph.computeSlice(p);
-//                for(GraphNode node : pdg.nodes) {
-//                    PDGNode q = (PDGNode)node;
-//                    if(pSliceNodes.contains(q) || q.equals(p))
-//                        controlIndispensableNodes.add(q);
-//                }
-//            }
-//        }
-//        Set<PDGNode> dataIndispensableNodes = new LinkedHashSet<PDGNode>();
-//        for(PDGNode p : nDD) {
-//            for(AbstractVariable definedVariable : p.definedVariables) {
-//                Set<PDGNode> pSliceNodes = subgraph.computeSlice(p, definedVariable);
-//                for(GraphNode node : pdg.nodes) {
-//                    PDGNode q = (PDGNode)node;
-//                    if(pSliceNodes.contains(q))
-//                        dataIndispensableNodes.add(q);
-//                }
-//            }
-//        }
-//        this.indispensableNodes = new TreeSet<PDGNode>();
-//        indispensableNodes.addAll(controlIndispensableNodes);
-//        indispensableNodes.addAll(dataIndispensableNodes);
-//        Set<PDGNode> throwStatementNodesToBeAddedToDuplicatedNodesDueToIndispensableNodes = new TreeSet<PDGNode>();
-//        for(PDGNode throwNode : throwStatementNodes) {
-//            for(PDGNode indispensableNode : indispensableNodes) {
-//                if(isNestedInside(throwNode, indispensableNode)) {
-//                    throwStatementNodesToBeAddedToDuplicatedNodesDueToIndispensableNodes.add(throwNode);
-//                    break;
-//                }
-//            }
-//        }
-//        for(PDGNode throwNode : throwStatementNodesToBeAddedToDuplicatedNodesDueToRemainingNodes) {
-//            indispensableNodes.addAll(subgraph.computeSlice(throwNode));
-//        }
-//        for(PDGNode throwNode : throwStatementNodesToBeAddedToDuplicatedNodesDueToIndispensableNodes) {
-//            indispensableNodes.addAll(subgraph.computeSlice(throwNode));
-//        }
-//        this.removableNodes = new LinkedHashSet<PDGNode>();
-//        for(GraphNode node : pdg.nodes) {
-//            PDGNode pdgNode = (PDGNode)node;
-//            if(!remainingNodes.contains(pdgNode) && !indispensableNodes.contains(pdgNode))
-//                removableNodes.add(pdgNode);
-//        }
+        this.passedParameters = new LinkedHashSet<PsiVariable>();
+        Set<PDGNode> nCD = new LinkedHashSet<PDGNode>();
+        Set<PDGNode> nDD = new LinkedHashSet<PDGNode>();
+
+        //TODO: What's going on here?!
+        for (GraphEdge<PDGNode> edge : pdg.getEdges()) {
+            PDGDependence dependence = (PDGDependence)edge;
+
+            if (dependence.getType() == PDGDependence.PDGDependenceType.DATA) {
+                PDGDataDependence dataDep = (PDGDataDependence) dependence;
+                if (remainingNodes.contains(dataDep.getSource()) && sliceNodes.contains(dataDep.getDestination())) {
+                    passedParameters.add(dataDep.getData());
+                }
+                if (sliceNodes.contains(dataDep.getSource()) && remainingNodes.contains(dataDep.getDestination()) && !dataDep.getData().equals(objectReference)) {
+                    nDD.add(dataDep.getSource());
+                }
+            } else if (dependence.getType() == PDGDependence.PDGDependenceType.CONTROL) {
+                if (sliceNodes.contains(dependence.getSource()) && remainingNodes.contains(dependence.getDestination())) {
+                    nCD.add(dependence.getSource());
+                }
+            }
+        }
+
+        System.out.println("nCD = " + nCD);
+        System.out.println("nDD = " + nDD);
+
+
+
+        Set<PDGNode> controlIndispensableNodes = new LinkedHashSet<PDGNode>();
+        for (PDGNode p : nCD) {
+            for (PsiVariable usedVariable : p.getUsedVariables()) {
+                Set<PDGNode> pSliceNodes = subgraph.computeSlice(p, usedVariable);
+                for (PDGNode q : pdg.getNodes()) {
+                    if (pSliceNodes.contains(q) || q.equals(p)) {
+                        controlIndispensableNodes.add(q);
+                    }
+                }
+            }
+            if (p.usedVariables.isEmpty()) {
+                Set<PDGNode> pSliceNodes = subgraph.computeSlice(p);
+                for (PDGNode q : pdg.getNodes()) {
+                    if (pSliceNodes.contains(q) || q.equals(p)) {
+                        controlIndispensableNodes.add(q);
+                    }
+                }
+            }
+        }
+        Set<PDGNode> dataIndispensableNodes = new LinkedHashSet<PDGNode>();
+        for (PDGNode p : nDD) {
+            for (PsiVariable definedVariable : p.getDefinedVariables()) {
+                Set<PDGNode> pSliceNodes = subgraph.computeSlice(p, definedVariable);
+                for (PDGNode q : pdg.getNodes()) {
+                    if (pSliceNodes.contains(q)) {
+                        dataIndispensableNodes.add(q);
+                    }
+                }
+            }
+        }
+        this.indispensableNodes = new TreeSet<PDGNode>();
+        indispensableNodes.addAll(controlIndispensableNodes);
+        indispensableNodes.addAll(dataIndispensableNodes);
+
+
+        this.removableNodes = new LinkedHashSet<PDGNode>();
+        for(PDGNode node : pdg.getNodes()) {
+            if(!remainingNodes.contains(node) && !indispensableNodes.contains(node)) {
+                removableNodes.add(node);
+            }
+        }
     }
 
     private boolean isSliceEqualToMethodBody() {
@@ -180,6 +200,9 @@ public class PDGSliceUnion {
                 ", nodeCriteria=" + nodeCriteria +
                 ", sliceNodes=" + sliceNodes +
                 ", subgraph=" + subgraph +
+                ", passedParameters=" + passedParameters +
+                ", indispensableNodes=" + indispensableNodes +
+                ", removableNodes=" + removableNodes +
                 '}';
     }
 }

@@ -30,4 +30,18 @@ public class PDGDependence extends GraphEdge<PDGNode> {
     public enum PDGDependenceType {
         CONTROL, DATA, ANTI, OUTPUT
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof PDGDependence)) {
+            return false;
+        }
+        PDGDependence other = (PDGDependence) obj;
+        return super.equals(other) && getType() == other.getType();
+    }
+
+    @Override
+    public String toString() {
+        return "{" + getType() + " " + super.toString() + "}";
+    }
 }
