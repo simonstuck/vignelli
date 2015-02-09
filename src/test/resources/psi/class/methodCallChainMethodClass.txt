@@ -1,0 +1,15 @@
+Bar bar;
+
+void test() {
+    bar.hello().world();
+}
+
+class Bar {
+    Baz hello() {
+        return new Baz();
+    }
+}
+
+class Baz {
+    void world() {}
+}
