@@ -42,12 +42,12 @@ public class IdentificationCollection<T extends Identification> implements Itera
 
     @Override
     public IdentificationCollection<T> filter(Predicate<T> predicate) {
-        @SuppressWarnings("unchecked") IdentificationCollection<T> result = filter(predicate, getClass());
+        @SuppressWarnings("unchecked") IdentificationCollection<T> result = filterWithReturnType(predicate, getClass());
         return result;
     }
 
     public IdentificationCollection<T> filterIdentifications(final IdentificationCollection<T> toRemove) {
-        @SuppressWarnings("unchecked") IdentificationCollection<T> result = filterIdentifications(toRemove, getClass());
+        @SuppressWarnings("unchecked") IdentificationCollection<T> result = filterIdentificationsWithReturnType(toRemove, getClass());
         return result;
     }
 
@@ -56,7 +56,7 @@ public class IdentificationCollection<T extends Identification> implements Itera
         return identifications.iterator();
     }
 
-    protected <R extends IdentificationCollection<T>> R filter(Predicate<T> predicate, Class<R> clazz) {
+    protected <R extends IdentificationCollection<T>> R filterWithReturnType(Predicate<T> predicate, Class<R> clazz) {
         try {
             R filtered = clazz.newInstance();
             for (T identification : identifications) {
@@ -74,8 +74,9 @@ public class IdentificationCollection<T extends Identification> implements Itera
     }
 
 
-    protected <R extends IdentificationCollection<T>> R filterIdentifications(final IdentificationCollection<T> toRemove, Class<R> clazz) {
-        return filter(new Predicate<T>() {
+    protected <R extends IdentificationCollection<T>> R filterIdentificationsWithReturnType(
+            final IdentificationCollection<T> toRemove, Class<R> clazz) {
+        return filterWithReturnType(new Predicate<T>() {
             @Override
             public boolean test(T identification) {
                 return !toRemove.contains(identification);

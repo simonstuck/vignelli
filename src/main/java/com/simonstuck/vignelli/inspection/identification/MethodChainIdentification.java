@@ -20,6 +20,10 @@ public class MethodChainIdentification implements Identification {
         return new MethodChainIdentification(finalCall);
     }
 
+    /**
+     * Gets the method call qualifier.
+     * @return The methodcall that this identification's final call depends on, otherwise empty.
+     */
     public Optional<MethodChainIdentification> getMethodCallQualifier() {
         final PsiReferenceExpression methodExpression = finalCall.getMethodExpression();
         final PsiExpression qualifierExpression = methodExpression.getQualifierExpression();
@@ -32,6 +36,11 @@ public class MethodChainIdentification implements Identification {
         }
     }
 
+    /**
+     * Gets all method call qualifiers for this final call.
+     * This recursively calls getMethodCallQualifier() recursively and collects all qualifiers.
+     * @return A set of all recursive qualifiers
+     */
     public Set<MethodChainIdentification> getAllMethodCallQualifiers() {
         Optional<MethodChainIdentification> directQualifier = getMethodCallQualifier();
         if (!directQualifier.isPresent()) {
