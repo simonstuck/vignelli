@@ -4,11 +4,11 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
-public class IdentificationsTest {
+public class IdentificationCollectionTest {
 
     @Test
     public void returnsAnIteratorOverEmptySetWhenItContainsNoIdentifications() throws Exception {
-        Identifications<MethodChainIdentification> ids = new Identifications<MethodChainIdentification>();
+        IdentificationCollection<MethodChainIdentification> ids = new IdentificationCollection<MethodChainIdentification>();
         assertFalse(ids.iterator().hasNext());
     }
 }

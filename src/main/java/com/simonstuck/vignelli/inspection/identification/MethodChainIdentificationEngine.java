@@ -1,74 +1,59 @@
 package com.simonstuck.vignelli.inspection.identification;
 
 import com.intellij.psi.JavaRecursiveElementVisitor;
-import com.intellij.psi.PsiClassType;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiExpression;
-import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiMethodCallExpression;
-import com.intellij.psi.PsiReferenceExpression;
-import com.intellij.psi.PsiType;
+
+import java.util.HashSet;
+import java.util.Set;
 
 public class MethodChainIdentificationEngine {
 
-    public Identifications<MethodChainIdentification> identifyMethodChains(PsiMethod method) {
-        final Identifications<MethodChainIdentification> identifications = new Identifications<MethodChainIdentification>();
+    /**
+     * Identifies all method chains in the given {@link PsiElement}.
+     * @param element The element in which to search for method chains.
+     * @return A new
+     */
+    public MethodChainIdentificationCollection identifyMethodChains(PsiElement element) {
+        final MethodChainIdentificationCollection candidates = computeIdentificationCandidates(element);
+        final MethodChainIdentificationCollection toIgnore = candidates.getQualifiersIdentificationCollection();
+
+        return candidates.filterIdentifications(toIgnore).filter(new MethodChainIdentification.MultipleCallsPredicate());
+    }
+
+    /**
+     * Computes all the candidates that may be identified as method call chain instances.
+     * @param element The element in which to search for possible identifications
+     * @return A new {@link MethodChainIdentificationCollection} with all candidates
+     */
+    private MethodChainIdentificationCollection computeIdentificationCandidates(PsiElement element) {
+        MethodChainIdentificationCollection candidates = new MethodChainIdentificationCollection();
+
+        final Set<PsiMethodCallExpression> methodCalls = getMethodCalls(element);
+
+        for (PsiMethodCallExpression methodCall : methodCalls) {
+            candidates.add(MethodChainIdentification.createWithFinalCall(methodCall));
+        }
+        return candidates;
+    }
+
+    /**
+     * Returns all method calls contained in the given element.
+     * @param element The element in which to search for method calls.
+     * @return A set of all method calls
+     */
+    private Set<PsiMethodCallExpression> getMethodCalls(PsiElement element) {
+        final Set<PsiMethodCallExpression> methodCalls = new HashSet<PsiMethodCallExpression>();
 
         JavaRecursiveElementVisitor visitor = new JavaRecursiveElementVisitor() {
             @Override
             public void visitMethodCallExpression(PsiMethodCallExpression expression) {
                 super.visitMethodCallExpression(expression);
-                if (isCallChain(expression)) {
-                    System.out.println("This is a call chain!");
-                }
-            }
-
-            @Override
-            public void visitElement(PsiElement element) {
-                super.visitElement(element);
+                methodCalls.add(expression);
             }
         };
-        method.accept(visitor);
 
-        return new Identifications<MethodChainIdentification>();
-    }
-
-    private boolean isCallChain(PsiElement element) {
-        PsiClassType aClassType1 = getQualifierExpressionType(element);
-        if (aClassType1 == null) {
-            return false;
-        }
-        boolean first = true;
-        while (true) {
-            final PsiMethodCallExpression methodCallExpression = (PsiMethodCallExpression)element;
-            final PsiReferenceExpression methodExpression = methodCallExpression.getMethodExpression();
-            final PsiExpression qualifierExpression = methodExpression.getQualifierExpression();
-            PsiClassType expressionType = getQualifierExpressionType(qualifierExpression);
-            if (!first) {
-                if (expressionType == null) {
-                    return !(qualifierExpression instanceof PsiMethodCallExpression &&
-                            ((PsiMethodCallExpression) qualifierExpression).getMethodExpression().getQualifierExpression() == null);
-                }
-            }
-
-            first = false;
-            if (!aClassType1.equals(expressionType)) {
-                return false;
-            }
-
-            aClassType1 = expressionType;
-            element = qualifierExpression;
-        }
-    }
-
-    private PsiClassType getQualifierExpressionType(PsiElement qualifier) {
-        if (!(qualifier instanceof PsiMethodCallExpression)) {
-            return null;
-        }
-        final PsiMethodCallExpression methodCallExpression = (PsiMethodCallExpression)qualifier;
-        final PsiReferenceExpression methodExpression = methodCallExpression.getMethodExpression();
-        final PsiExpression qualifierExpression = methodExpression.getQualifierExpression();
-        final PsiType type = qualifierExpression != null ? qualifierExpression.getType() : null;
-        return type instanceof PsiClassType ? (PsiClassType)type : null;
+        element.accept(visitor);
+        return methodCalls;
     }
 }

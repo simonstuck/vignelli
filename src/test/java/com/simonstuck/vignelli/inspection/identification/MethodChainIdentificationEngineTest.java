@@ -20,7 +20,7 @@ public class MethodChainIdentificationEngineTest extends LightIdeaTestCase {
 
     public void testIdentifyMethodChainsReturnsIdentificationsInstance() throws Exception {
         PsiMethod method = getEmptyMethod();
-        Identifications<MethodChainIdentification> ids = engine.identifyMethodChains(method);
+        IdentificationCollection<MethodChainIdentification> ids = engine.identifyMethodChains(method);
         assertNotNull(ids);
     }
 
