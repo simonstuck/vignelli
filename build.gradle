@@ -41,6 +41,10 @@ checkstyle {
   ignoreFailures = false
 }
 
+test {
+  classpath = project.sourceSets.test.runtimeClasspath + files("${jdk_home}/lib/tools.jar")
+}
+
 task checkstyleTest(overwrite: true) << {};
 
 jacocoTestReport.dependsOn(test)
