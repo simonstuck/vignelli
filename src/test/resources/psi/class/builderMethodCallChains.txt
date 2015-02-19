@@ -1,0 +1,19 @@
+Builder builder;
+
+void test() {
+    builder.attr().attrB().attrC();
+}
+
+class Builder {
+    Builder attrA() {
+        return this;
+    }
+
+    Builder attrB() {
+        return this;
+    }
+
+    Builder attrC() {
+        return this;
+    }
+}

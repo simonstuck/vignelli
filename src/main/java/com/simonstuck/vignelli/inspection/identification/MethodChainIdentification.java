@@ -3,6 +3,7 @@ package com.simonstuck.vignelli.inspection.identification;
 import com.intellij.psi.PsiExpression;
 import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.PsiReferenceExpression;
+import com.intellij.psi.PsiType;
 
 import java.util.HashSet;
 import java.util.Optional;
@@ -52,6 +53,10 @@ public class MethodChainIdentification implements Identification {
         }
     }
 
+    public PsiType getMethodCallType() {
+        return finalCall.getType();
+    }
+
     @Override
     public int hashCode() {
         return finalCall.hashCode();
@@ -65,12 +70,5 @@ public class MethodChainIdentification implements Identification {
 
         MethodChainIdentification other = (MethodChainIdentification) obj;
         return other.finalCall.equals(finalCall);
-    }
-
-    public static class MultipleCallsPredicate implements Predicate<MethodChainIdentification> {
-        @Override
-        public boolean test(MethodChainIdentification methodChainIdentification) {
-            return methodChainIdentification.getMethodCallQualifier().isPresent();
-        }
     }
 }

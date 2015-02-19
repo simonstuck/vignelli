@@ -3,6 +3,8 @@ package com.simonstuck.vignelli.inspection.identification;
 import com.intellij.psi.JavaRecursiveElementVisitor;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiMethodCallExpression;
+import com.simonstuck.vignelli.inspection.identification.predicates.MethodChainDifferentAdjacentTypesPredicate;
+import com.simonstuck.vignelli.inspection.identification.predicates.MethodChainMultipleCallsPredicate;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -18,7 +20,10 @@ public class MethodChainIdentificationEngine {
         final MethodChainIdentificationCollection candidates = computeIdentificationCandidates(element);
         final MethodChainIdentificationCollection toIgnore = candidates.getQualifiersIdentificationCollection();
 
-        return candidates.filterIdentifications(toIgnore).filter(new MethodChainIdentification.MultipleCallsPredicate());
+        return candidates.
+                filterIdentifications(toIgnore).
+                filter(new MethodChainDifferentAdjacentTypesPredicate()).
+                filter(new MethodChainMultipleCallsPredicate());
     }
 
     /**

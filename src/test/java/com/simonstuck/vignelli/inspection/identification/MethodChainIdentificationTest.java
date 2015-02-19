@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 import com.intellij.psi.PsiExpression;
 import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.PsiReferenceExpression;
+import com.intellij.psi.PsiType;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -51,6 +52,12 @@ public class MethodChainIdentificationTest {
         Optional<MethodChainIdentification> qualifier = id.getMethodCallQualifier();
         assertEquals(Optional.<MethodChainIdentification>empty(), qualifier);
         verify(finalCallMock).getMethodExpression();
+    }
+
+    @Test
+    public void shouldReturnTypeOfFinalCallAsType() throws Exception {
+        when(finalCallMock.getType()).thenReturn(PsiType.BOOLEAN);
+        assertEquals(PsiType.BOOLEAN, id.getMethodCallType());
     }
 
     @Test

@@ -41,6 +41,23 @@ public class MethodChainIdentificationEngineTest extends LightIdeaTestCase {
         assertEquals(1, engine.identifyMethodChains(method).size());
     }
 
+    public void testDoesNotIdentifyBuilderCalls() throws Exception {
+        String builderCallMethodClass = IOUtils.readFile("src/test/resources/psi/class/builderMethodCallChains.txt");
+        PsiClass clazz = getJavaFacade().getElementFactory().createClassFromText(builderCallMethodClass, null);
+        PsiMethod method = clazz.getMethods()[0];
+        assertEquals(0, engine.identifyMethodChains(method).size());
+    }
+
+    public void testIdentifiesChainsOfMultipleBuilders() throws Exception {
+        // a.attrA().attrB().bb().attrA().attrB().cc();
+        //   a1      .a2    .b3  .b4     .b5     .c()
+        // is collapsed chain of a.b.c
+        String builderCallsNestedMethodClass = IOUtils.readFile("src/test/resources/psi/class/twoBuilderTypesCallChain.txt");
+        PsiClass clazz = getJavaFacade().getElementFactory().createClassFromText(builderCallsNestedMethodClass, null);
+        PsiMethod method = clazz.getMethods()[0];
+        assertEquals(1, engine.identifyMethodChains(method).size());
+    }
+
     private PsiMethod getEmptyMethod() throws IOException {
         String emptyMethod = IOUtils.readFile("src/test/resources/psi/method/emptyMethod.txt");
         return getJavaFacade().getElementFactory().createMethodFromText(emptyMethod, null);
