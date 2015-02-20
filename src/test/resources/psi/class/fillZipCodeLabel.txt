@@ -25,12 +25,12 @@ class Address {
 class ZipCode {
     @Override
     public String toString() {
-        return "12345"
+        return "12345";
     }
 }
 
 class Label {
-    public addLine(String line) {
+    public void addLine(String line) {
         // do something
     }
 }

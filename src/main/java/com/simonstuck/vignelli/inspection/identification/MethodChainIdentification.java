@@ -8,7 +8,6 @@ import com.intellij.psi.PsiType;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Predicate;
 
 public class MethodChainIdentification implements Identification {
     private PsiMethodCallExpression finalCall;
@@ -57,6 +56,14 @@ public class MethodChainIdentification implements Identification {
         return finalCall.getType();
     }
 
+    public PsiMethodCallExpression getFirstCall() {
+        return finalCall;
+    }
+
+    public PsiMethodCallExpression getFinalCall() {
+        return finalCall;
+    }
+
     @Override
     public int hashCode() {
         return finalCall.hashCode();
@@ -70,5 +77,24 @@ public class MethodChainIdentification implements Identification {
 
         MethodChainIdentification other = (MethodChainIdentification) obj;
         return other.finalCall.equals(finalCall);
+    }
+
+    @Override
+    public String getName() {
+        return "Train Wreck";
+    }
+
+    @Override
+    public String getShortDescription() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("This appears to be a train wreck in your code:\n\n");
+        sb.append("<code>#ref</code>\n\n");
+        sb.append("What is a train wreck you might wonder, well, here's the answer:");
+        return sb.toString();
+    }
+
+    @Override
+    public String getLongDescription() {
+        return "There is a train wreck in your code that you need to fix. This is a big problem.";
     }
 }
