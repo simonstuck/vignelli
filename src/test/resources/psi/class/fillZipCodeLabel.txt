@@ -1,0 +1,36 @@
+Customer customer;
+Label label;
+
+void prepare() {
+    ZipCode zip = customer.getAddress().getZipCode();
+    label.addLine(zip.toString());
+}
+
+class Customer {
+    Address address;
+
+    Address getAddress() {
+        return address;
+    }
+}
+
+class Address {
+    ZipCode zip;
+
+    ZipCode getZipCode() {
+        return zip;
+    }
+}
+
+class ZipCode {
+    @Override
+    public String toString() {
+        return "12345"
+    }
+}
+
+class Label {
+    public addLine(String line) {
+        // do something
+    }
+}

@@ -58,6 +58,12 @@ public class MethodChainIdentificationEngineTest extends LightIdeaTestCase {
         assertEquals(1, engine.identifyMethodChains(method).size());
     }
 
+    public void testIdentifiesOneMethodChainForZipCodeInLabelFiller() throws Exception {
+        String fillZipCodeLabelClass = IOUtils.readFile("src/test/resources/psi/class/fillZipCodeLabel.txt");
+        PsiClass clazz = getJavaFacade().getElementFactory().createClassFromText(fillZipCodeLabelClass, null);
+        assertEquals(1, engine.identifyMethodChains(clazz).size());
+    }
+
     private PsiMethod getEmptyMethod() throws IOException {
         String emptyMethod = IOUtils.readFile("src/test/resources/psi/method/emptyMethod.txt");
         return getJavaFacade().getElementFactory().createMethodFromText(emptyMethod, null);
