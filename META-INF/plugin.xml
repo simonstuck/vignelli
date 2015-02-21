@@ -42,5 +42,8 @@
         <component>
             <implementation-class>com.simonstuck.vignelli.VignelliProjectComponent</implementation-class>
         </component>
+        <component>
+            <implementation-class>com.simonstuck.vignelli.inspection.ProblemIdentificationCache</implementation-class>
+        </component>
     </project-components>
 </idea-plugin>

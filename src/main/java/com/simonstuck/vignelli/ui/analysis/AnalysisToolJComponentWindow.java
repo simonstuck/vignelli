@@ -1,9 +1,9 @@
 package com.simonstuck.vignelli.ui.analysis;
 
 import com.intellij.openapi.project.Project;
-import com.intellij.ui.JBColor;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.messages.MessageBusConnection;
+import com.simonstuck.vignelli.inspection.ProblemIdentificationCache;
 import com.simonstuck.vignelli.inspection.ProblemIdentificationCollectionListener;
 import com.simonstuck.vignelli.inspection.VignelliLocalInspectionTool;
 import com.simonstuck.vignelli.inspection.identification.Identification;
@@ -46,10 +46,6 @@ public class AnalysisToolJComponentWindow extends JPanel {
         JComponent problemListPane = new ProblemListPane(dataModel);
         JScrollPane scrollPane = new JBScrollPane(problemListPane);
         scrollPane.setMinimumSize(new Dimension(MIN_PROBLEM_LIST_WIDTH, getHeight()));
-
-        problemListPane.setOpaque(true);
-        problemListPane.setBackground(JBColor.CYAN);
-
         return scrollPane;
     }
 
@@ -59,7 +55,15 @@ public class AnalysisToolJComponentWindow extends JPanel {
 
     private void subscribeToChanges(Project project) {
         MessageBusConnection connection = project.getMessageBus().connect();
-        connection.subscribe(VignelliLocalInspectionTool.INSPECTION_IDENTIFICATION_TOPIC, new UIProblemIdentificationCollectionListener());
+        UIProblemIdentificationCollectionListener listener = new UIProblemIdentificationCollectionListener();
+        connection.subscribe(VignelliLocalInspectionTool.INSPECTION_IDENTIFICATION_TOPIC, listener);
+
+        initDataStoreWithExistingProblems(project, listener);
+    }
+
+    private void initDataStoreWithExistingProblems(Project project, UIProblemIdentificationCollectionListener listener) {
+        ProblemIdentificationCache problemIdentificationCache = project.getComponent(ProblemIdentificationCache.class);
+        listener.accept(problemIdentificationCache.getAllProblems());
     }
 
     private class UIProblemIdentificationCollectionListener implements ProblemIdentificationCollectionListener {

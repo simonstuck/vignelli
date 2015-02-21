@@ -32,6 +32,10 @@ public class IdentificationCollection<T extends Identification> implements Itera
         identifications.add(identification);
     }
 
+    public void addAll(IdentificationCollection<? extends T> os) {
+        identifications.addAll(os.identifications);
+    }
+
     public void addAll(Collection<? extends T> os) {
         identifications.addAll(os);
     }

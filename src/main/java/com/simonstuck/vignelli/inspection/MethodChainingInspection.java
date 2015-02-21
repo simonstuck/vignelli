@@ -44,21 +44,10 @@ public class MethodChainingInspection extends VignelliLocalInspectionTool {
             problemDescriptors.add(descriptor);
         }
 
+        ProblemIdentificationCache cache = manager.getProject().getComponent(ProblemIdentificationCache.class);
+        cache.updateProblems(problemDescriptors);
+
         return problemDescriptors.toArray(new ProblemDescriptor[problemDescriptors.size()]);
-    }
-
-    @Override
-    public void inspectionFinished(@NotNull LocalInspectionToolSession session, @NotNull ProblemsHolder problemsHolder) {
-        super.inspectionFinished(session, problemsHolder);
-
-        final Set<ProblemDescriptor> newProblems = new HashSet<ProblemDescriptor>(problemsHolder.getResults());
-        final IdentificationCollection<ProblemIdentification> result = new IdentificationCollection<ProblemIdentification>();
-        // add new problems
-        for (ProblemDescriptor problemDescriptor : newProblems) {
-            ProblemIdentification id = ProblemIdentification.createWithProblemDescriptor(problemDescriptor);
-            result.add(id);
-        }
-        problemsHolder.getProject().getMessageBus().syncPublisher(INSPECTION_IDENTIFICATION_TOPIC).accept(result);
     }
 
     @Nls
