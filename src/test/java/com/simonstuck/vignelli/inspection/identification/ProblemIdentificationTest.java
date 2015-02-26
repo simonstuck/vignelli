@@ -1,5 +1,6 @@
 package com.simonstuck.vignelli.inspection.identification;
 
+import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.TestCase.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -29,6 +30,7 @@ public class ProblemIdentificationTest {
                 .build();
 
         assertTrue(identificationA.equals(identificationB));
+        assertEquals(identificationA.hashCode(), identificationB.hashCode());
     }
 
     @Test
