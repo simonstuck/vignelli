@@ -15,7 +15,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ProblemIdentificationCache implements ProjectComponent {
+public class ProblemIdentificationCacheComponent implements ProjectComponent {
     /**
      * When subscribed to this topic, clients will receive regular updates about the problems in the currently selected file.
      */
@@ -25,19 +25,26 @@ public class ProblemIdentificationCache implements ProjectComponent {
     private static final String COMPONENT_NAME = "Vignelli Problem Identification Cache";
 
     private final Map<VirtualFile, IdentificationCollection<ProblemIdentification>> problemIdentifications;
-    private final MessageBus messageBus;
+    private final ProblemFileSelectionListener problemFileSelectionListener;
+    private final Project project;
 
-    private VirtualFile selectedFile;
+    protected VirtualFile selectedFile;
 
 
     /**
-     * Creates a new {@link com.simonstuck.vignelli.inspection.ProblemIdentificationCache}.
+     * Creates a new {@link ProblemIdentificationCacheComponent}.
      * @param project The project for which the cache is created
      */
-    public ProblemIdentificationCache(Project project) {
+    public ProblemIdentificationCacheComponent(Project project) {
+        this.project = project;
         problemIdentifications = new HashMap<VirtualFile, IdentificationCollection<ProblemIdentification>>();
-        messageBus = project.getMessageBus();
-        messageBus.connect(project).subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, new ProblemFileSelectionListener());
+        problemFileSelectionListener = new ProblemFileSelectionListener();
+        subscribeToFileSelectionChanges(project);
+    }
+
+    protected void subscribeToFileSelectionChanges(Project project) {
+        MessageBus messageBus = project.getMessageBus();
+        messageBus.connect(project).subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, problemFileSelectionListener);
     }
 
     /**
@@ -48,14 +55,16 @@ public class ProblemIdentificationCache implements ProjectComponent {
      */
     public void updateFileProblems(VirtualFile file, IdentificationCollection<ProblemIdentification> problems) {
         problemIdentifications.put(file, problems);
-        broadcastCurrentProblems();
+        if (file.equals(selectedFile)) {
+            broadcastCurrentProblems(problems);
+        }
     }
 
     /**
      * Broadcast the problems for the current file to all subscribers to the INSPECTION_IDENTIFICATION_TOPIC.
      */
-    private void broadcastCurrentProblems() {
-        messageBus.syncPublisher(INSPECTION_IDENTIFICATION_TOPIC).accept(selectedFileProblems());
+    protected void broadcastCurrentProblems(IdentificationCollection<ProblemIdentification> problems) {
+        project.getMessageBus().syncPublisher(INSPECTION_IDENTIFICATION_TOPIC).accept(problems);
     }
 
     /**
@@ -63,7 +72,12 @@ public class ProblemIdentificationCache implements ProjectComponent {
      * @return The problems for the file that is currently selected
      */
     public IdentificationCollection<ProblemIdentification> selectedFileProblems() {
-        return problemIdentifications.get(selectedFile);
+        IdentificationCollection<ProblemIdentification> result = problemIdentifications.get(selectedFile);
+        if (result != null) {
+            return result;
+        } else {
+            return new IdentificationCollection<ProblemIdentification>();
+        }
     }
 
     @Override
@@ -98,7 +112,7 @@ public class ProblemIdentificationCache implements ProjectComponent {
         @Override
         public void selectionChanged(@NotNull FileEditorManagerEvent event) {
             selectedFile = event.getNewFile();
-            broadcastCurrentProblems();
+            broadcastCurrentProblems(selectedFileProblems());
         }
     }
 }

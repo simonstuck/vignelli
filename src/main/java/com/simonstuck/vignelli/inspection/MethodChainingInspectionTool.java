@@ -3,10 +3,8 @@ package com.simonstuck.vignelli.inspection;
 import com.intellij.codeInspection.BaseJavaLocalInspectionTool;
 import com.intellij.codeInspection.InspectionManager;
 import com.intellij.codeInspection.ProblemDescriptor;
-import com.intellij.codeInspection.ProblemHighlightType;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.JavaRecursiveElementVisitor;
-import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiMethod;
 import com.simonstuck.vignelli.inspection.identification.IdentificationCollection;
@@ -15,6 +13,7 @@ import com.simonstuck.vignelli.inspection.identification.MethodChainIdentificati
 import com.simonstuck.vignelli.inspection.identification.MethodChainIdentificationEngine;
 import com.simonstuck.vignelli.inspection.identification.ProblemIdentification;
 import com.simonstuck.vignelli.inspection.identification.ProblemIdentificationBuilder;
+
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -27,7 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class MethodChainingInspection extends BaseJavaLocalInspectionTool {
+public class MethodChainingInspectionTool extends BaseJavaLocalInspectionTool {
 
     private static final String METHOD_CHAIN_IDENTIFICATION_NAME = "Train Wreck";
     private static final String METHOD_CHAIN_IDENTIFICATION_DESCRIPTION_LONG = "A long description";
@@ -35,37 +34,44 @@ public class MethodChainingInspection extends BaseJavaLocalInspectionTool {
 
     private final Map<PsiMethod, Collection<ProblemDescriptor>> methodProblemsMap = new HashMap<PsiMethod, Collection<ProblemDescriptor>>();
 
-    public MethodChainingInspection() {
+    public MethodChainingInspectionTool() {
         engine = new MethodChainIdentificationEngine();
     }
 
     @Nullable
     @Override
     public ProblemDescriptor[] checkMethod(@NotNull PsiMethod method, @NotNull InspectionManager manager, boolean isOnTheFly) {
-        MethodChainIdentificationCollection methodChainIdentifications = engine.identifyMethodChains(method);
-        List<ProblemDescriptor> problemDescriptors = new ArrayList<ProblemDescriptor>(methodChainIdentifications.size());
-
         cleanMethodProblems(method.getContainingFile());
 
-        for (MethodChainIdentification identification : methodChainIdentifications) {
-            ProblemDescriptor descriptor = getProblemDescriptor(manager, identification);
-            problemDescriptors.add(descriptor);
-        }
-
+        MethodChainIdentificationCollection methodChainIdentifications = engine.identifyMethodChains(method);
+        List<ProblemDescriptor> problemDescriptors = createProblemDescriptors(manager, methodChainIdentifications);
         methodProblemsMap.put(method, problemDescriptors);
         notifyProblemCacheIfNecessary(manager);
-
 
         return problemDescriptors.toArray(new ProblemDescriptor[problemDescriptors.size()]);
     }
 
-    private ProblemDescriptor getProblemDescriptor(InspectionManager manager, MethodChainIdentification identification) {
-        String message = identification.shortDescription();
-        PsiElement start = identification.getFirstCall();
-        PsiElement end = identification.getFinalCall();
-        return manager.createProblemDescriptor(start, end, message, ProblemHighlightType.GENERIC_ERROR_OR_WARNING, false);
+    /**
+     * Creates a list of problem descriptors for the given method chain identifications.
+     * @param manager The InspectionManager to be used to create {@link com.intellij.codeInspection.ProblemDescriptor}s
+     * @param methodChainIdentifications The collection of method chains
+     * @return A new list of problem descriptors
+     */
+    private List<ProblemDescriptor> createProblemDescriptors(InspectionManager manager, MethodChainIdentificationCollection methodChainIdentifications) {
+        List<ProblemDescriptor> problemDescriptors = new ArrayList<ProblemDescriptor>(methodChainIdentifications.size());
+        for (MethodChainIdentification identification : methodChainIdentifications) {
+            ProblemDescriptor descriptor = identification.problemDescriptor(manager);
+            problemDescriptors.add(descriptor);
+        }
+        return problemDescriptors;
     }
 
+    /**
+     * Performs housekeeping for problems that are being tracked and saved.
+     * <p>Keeps track of what methods still exist in the given file and if any have been removed,
+     * the corresponding problem descriptors for any potential problems are removed.</p>
+     * @param file The file for which to inspect all methods.
+     */
     private void cleanMethodProblems(PsiFile file) {
         Set<PsiMethod> definedMethods = getDefinedMethods(file);
         for (PsiMethod problemMethod : methodProblemsMap.keySet()) {
@@ -75,6 +81,12 @@ public class MethodChainingInspection extends BaseJavaLocalInspectionTool {
         }
     }
 
+    /**
+     * Computes the set of methods that are defined in a file.
+     * <p>Note that this includes methods in inner classes.</p>
+     * @param file The file to search for methods
+     * @return A set with all defined methods in the file
+     */
     private Set<PsiMethod> getDefinedMethods(PsiFile file) {
         final Set<PsiMethod> methods = new HashSet<PsiMethod>();
         JavaRecursiveElementVisitor methodFinder = new JavaRecursiveElementVisitor() {
@@ -89,7 +101,7 @@ public class MethodChainingInspection extends BaseJavaLocalInspectionTool {
     }
 
     private void notifyProblemCacheIfNecessary(InspectionManager manager) {
-        ProblemIdentificationCache cache = manager.getProject().getComponent(ProblemIdentificationCache.class);
+        ProblemIdentificationCacheComponent cache = manager.getProject().getComponent(ProblemIdentificationCacheComponent.class);
         IdentificationCollection<ProblemIdentification> result = new IdentificationCollection<ProblemIdentification>();
 
         for (Collection<ProblemDescriptor> problemDescriptors : methodProblemsMap.values()) {

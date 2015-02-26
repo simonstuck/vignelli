@@ -3,16 +3,15 @@ package com.simonstuck.vignelli.inspection;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 
-import com.intellij.openapi.project.Project;
 import org.junit.Before;
 import org.junit.Test;
 
-public class MethodChainingInspectionTest {
-    private MethodChainingInspection inspection;
+public class MethodChainingInspectionToolTest {
+    private MethodChainingInspectionTool inspection;
 
     @Before
     public void setUp() throws Exception {
-        inspection = new MethodChainingInspection();
+        inspection = new MethodChainingInspectionTool();
     }
 
     @Test

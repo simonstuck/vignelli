@@ -79,4 +79,22 @@ public class IdentificationCollection<T extends Identification> implements Itera
             }
         }, clazz);
     }
+
+    @Override
+    public boolean equals(Object other) {
+        if (this == other) {
+            return true;
+        }
+        if (other == null || getClass() != other.getClass()) {
+            return false;
+        }
+
+        IdentificationCollection that = (IdentificationCollection) other;
+        return identifications.equals(that.identifications);
+    }
+
+    @Override
+    public int hashCode() {
+        return identifications.hashCode();
+    }
 }

@@ -1,5 +1,9 @@
 package com.simonstuck.vignelli.inspection.identification;
 
+import com.intellij.codeInspection.InspectionManager;
+import com.intellij.codeInspection.ProblemDescriptor;
+import com.intellij.codeInspection.ProblemHighlightType;
+import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiExpression;
 import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.PsiReferenceExpression;
@@ -62,6 +66,15 @@ public class MethodChainIdentification implements Identification {
 
     public PsiMethodCallExpression getFinalCall() {
         return finalCall;
+    }
+
+    /**
+     * Returns the corresponding problem descriptor for the method chain.
+     * @param manager The inspection manager to use to create the problem descriptor
+     * @return A new problem descriptor.
+     */
+    public ProblemDescriptor problemDescriptor(InspectionManager manager) {
+        return manager.createProblemDescriptor(finalCall, finalCall, shortDescription(), ProblemHighlightType.GENERIC_ERROR_OR_WARNING, false);
     }
 
     @Override

@@ -3,7 +3,7 @@ package com.simonstuck.vignelli.ui;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.messages.MessageBusConnection;
-import com.simonstuck.vignelli.inspection.ProblemIdentificationCache;
+import com.simonstuck.vignelli.inspection.ProblemIdentificationCacheComponent;
 import com.simonstuck.vignelli.inspection.ProblemIdentificationCollectionListener;
 import com.simonstuck.vignelli.inspection.identification.IdentificationCollection;
 import com.simonstuck.vignelli.inspection.identification.ProblemIdentification;
@@ -72,14 +72,14 @@ class AnalysisToolJComponentWindow extends JPanel {
     private void subscribeToChanges(Project project) {
         MessageBusConnection connection = project.getMessageBus().connect();
         UIProblemIdentificationCollectionListener listener = new UIProblemIdentificationCollectionListener();
-        connection.subscribe(ProblemIdentificationCache.INSPECTION_IDENTIFICATION_TOPIC, listener);
+        connection.subscribe(ProblemIdentificationCacheComponent.INSPECTION_IDENTIFICATION_TOPIC, listener);
 
         initDataStoreWithExistingProblems(project, listener);
     }
 
     private void initDataStoreWithExistingProblems(Project project, UIProblemIdentificationCollectionListener listener) {
-        ProblemIdentificationCache problemIdentificationCache = project.getComponent(ProblemIdentificationCache.class);
-        listener.accept(problemIdentificationCache.selectedFileProblems());
+        ProblemIdentificationCacheComponent problemIdentificationCacheComponent = project.getComponent(ProblemIdentificationCacheComponent.class);
+        listener.accept(problemIdentificationCacheComponent.selectedFileProblems());
     }
 
     private class UIProblemIdentificationCollectionListener implements ProblemIdentificationCollectionListener {
