@@ -7,6 +7,7 @@ import com.simonstuck.vignelli.utils.IOUtils;
 import org.junit.Before;
 
 import java.io.IOException;
+import java.util.Collection;
 
 public class MethodChainIdentificationEngineTest extends LightIdeaTestCase {
 
@@ -20,7 +21,7 @@ public class MethodChainIdentificationEngineTest extends LightIdeaTestCase {
 
     public void testIdentifyMethodChainsReturnsIdentificationsInstance() throws Exception {
         PsiMethod method = getEmptyMethod();
-        IdentificationCollection<MethodChainIdentification> ids = engine.identifyMethodChains(method);
+        Collection<MethodChainIdentification> ids = engine.identifyMethodChains(method);
         assertNotNull(ids);
     }
 

@@ -7,9 +7,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.JavaRecursiveElementVisitor;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiMethod;
-import com.simonstuck.vignelli.inspection.identification.IdentificationCollection;
 import com.simonstuck.vignelli.inspection.identification.MethodChainIdentification;
-import com.simonstuck.vignelli.inspection.identification.MethodChainIdentificationCollection;
 import com.simonstuck.vignelli.inspection.identification.MethodChainIdentificationEngine;
 import com.simonstuck.vignelli.inspection.identification.ProblemIdentification;
 import com.simonstuck.vignelli.inspection.identification.ProblemIdentificationBuilder;
@@ -32,7 +30,7 @@ public class MethodChainingInspectionTool extends BaseJavaLocalInspectionTool {
     private static final String METHOD_CHAIN_IDENTIFICATION_DESCRIPTION_LONG = "A long description";
     private final MethodChainIdentificationEngine engine;
 
-    private final Map<PsiMethod, Collection<ProblemDescriptor>> methodProblemsMap = new HashMap<PsiMethod, Collection<ProblemDescriptor>>();
+    private final Map<PsiMethod, Collection<ProblemDescriptor>> methodProblemsMap = new HashMap<>();
 
     public MethodChainingInspectionTool() {
         engine = new MethodChainIdentificationEngine();
@@ -43,7 +41,7 @@ public class MethodChainingInspectionTool extends BaseJavaLocalInspectionTool {
     public ProblemDescriptor[] checkMethod(@NotNull PsiMethod method, @NotNull InspectionManager manager, boolean isOnTheFly) {
         cleanMethodProblems(method.getContainingFile());
 
-        MethodChainIdentificationCollection methodChainIdentifications = engine.identifyMethodChains(method);
+        Collection<MethodChainIdentification> methodChainIdentifications = engine.identifyMethodChains(method);
         List<ProblemDescriptor> problemDescriptors = createProblemDescriptors(manager, methodChainIdentifications);
         methodProblemsMap.put(method, problemDescriptors);
         notifyProblemCacheIfNecessary(manager);
@@ -57,8 +55,8 @@ public class MethodChainingInspectionTool extends BaseJavaLocalInspectionTool {
      * @param methodChainIdentifications The collection of method chains
      * @return A new list of problem descriptors
      */
-    private List<ProblemDescriptor> createProblemDescriptors(InspectionManager manager, MethodChainIdentificationCollection methodChainIdentifications) {
-        List<ProblemDescriptor> problemDescriptors = new ArrayList<ProblemDescriptor>(methodChainIdentifications.size());
+    private List<ProblemDescriptor> createProblemDescriptors(InspectionManager manager, Collection<MethodChainIdentification> methodChainIdentifications) {
+        List<ProblemDescriptor> problemDescriptors = new ArrayList<>(methodChainIdentifications.size());
         for (MethodChainIdentification identification : methodChainIdentifications) {
             ProblemDescriptor descriptor = identification.problemDescriptor(manager);
             problemDescriptors.add(descriptor);
@@ -74,11 +72,9 @@ public class MethodChainingInspectionTool extends BaseJavaLocalInspectionTool {
      */
     private void cleanMethodProblems(PsiFile file) {
         Set<PsiMethod> definedMethods = getDefinedMethods(file);
-        for (PsiMethod problemMethod : methodProblemsMap.keySet()) {
-            if (!definedMethods.contains(problemMethod)) {
-                methodProblemsMap.remove(problemMethod);
-            }
-        }
+        methodProblemsMap.keySet().stream()
+                .filter(problemMethod -> !definedMethods.contains(problemMethod))
+                .forEach(methodProblemsMap::remove);
     }
 
     /**
@@ -88,7 +84,7 @@ public class MethodChainingInspectionTool extends BaseJavaLocalInspectionTool {
      * @return A set with all defined methods in the file
      */
     private Set<PsiMethod> getDefinedMethods(PsiFile file) {
-        final Set<PsiMethod> methods = new HashSet<PsiMethod>();
+        final Set<PsiMethod> methods = new HashSet<>();
         JavaRecursiveElementVisitor methodFinder = new JavaRecursiveElementVisitor() {
             @Override
             public void visitMethod(PsiMethod method) {
@@ -102,7 +98,7 @@ public class MethodChainingInspectionTool extends BaseJavaLocalInspectionTool {
 
     private void notifyProblemCacheIfNecessary(InspectionManager manager) {
         ProblemIdentificationCacheComponent cache = manager.getProject().getComponent(ProblemIdentificationCacheComponent.class);
-        IdentificationCollection<ProblemIdentification> result = new IdentificationCollection<ProblemIdentification>();
+        Collection<ProblemIdentification> result = new ArrayList<>();
 
         for (Collection<ProblemDescriptor> problemDescriptors : methodProblemsMap.values()) {
             for (ProblemDescriptor problemDescriptor : problemDescriptors) {

@@ -5,16 +5,14 @@ import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.messages.MessageBusConnection;
 import com.simonstuck.vignelli.inspection.ProblemIdentificationCacheComponent;
 import com.simonstuck.vignelli.inspection.ProblemIdentificationCollectionListener;
-import com.simonstuck.vignelli.inspection.identification.IdentificationCollection;
 import com.simonstuck.vignelli.inspection.identification.ProblemIdentification;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.util.Collection;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 
 class AnalysisToolJComponentWindow extends JPanel {
 
@@ -50,13 +48,10 @@ class AnalysisToolJComponentWindow extends JPanel {
 
     private JScrollPane createProblemListPane() {
         final ProblemListPane problemListPane = new ProblemListPane(dataModel);
-        problemListPane.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-            @Override
-            public void valueChanged(ListSelectionEvent event) {
-                if (!event.getValueIsAdjusting()) {
-                    ProblemIdentification id = dataModel.getElementAt(problemListPane.getSelectedIndex());
-                    problemDescriptionPane.showDescription(id);
-                }
+        problemListPane.getSelectionModel().addListSelectionListener(event -> {
+            if (!event.getValueIsAdjusting()) {
+                ProblemIdentification id = dataModel.getElementAt(problemListPane.getSelectedIndex());
+                problemDescriptionPane.showDescription(id);
             }
         });
 
@@ -84,7 +79,7 @@ class AnalysisToolJComponentWindow extends JPanel {
 
     private class UIProblemIdentificationCollectionListener implements ProblemIdentificationCollectionListener {
         @Override
-        public void accept(IdentificationCollection<ProblemIdentification> identifications) {
+        public void accept(Collection<ProblemIdentification> identifications) {
             dataModel.replaceWithNewContents(identifications);
         }
     }

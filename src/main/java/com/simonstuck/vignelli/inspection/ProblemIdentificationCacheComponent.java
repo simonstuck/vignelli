@@ -8,11 +8,14 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.messages.MessageBus;
 import com.intellij.util.messages.Topic;
-import com.simonstuck.vignelli.inspection.identification.IdentificationCollection;
 import com.simonstuck.vignelli.inspection.identification.ProblemIdentification;
+
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
 
 public class ProblemIdentificationCacheComponent implements ProjectComponent {
@@ -24,7 +27,7 @@ public class ProblemIdentificationCacheComponent implements ProjectComponent {
 
     private static final String COMPONENT_NAME = "Vignelli Problem Identification Cache";
 
-    private final Map<VirtualFile, IdentificationCollection<ProblemIdentification>> problemIdentifications;
+    private final Map<VirtualFile, Collection<ProblemIdentification>> problemIdentifications;
     private final ProblemFileSelectionListener problemFileSelectionListener;
     private final Project project;
 
@@ -37,7 +40,7 @@ public class ProblemIdentificationCacheComponent implements ProjectComponent {
      */
     public ProblemIdentificationCacheComponent(Project project) {
         this.project = project;
-        problemIdentifications = new HashMap<VirtualFile, IdentificationCollection<ProblemIdentification>>();
+        problemIdentifications = new HashMap<>();
         problemFileSelectionListener = new ProblemFileSelectionListener();
         subscribeToFileSelectionChanges(project);
     }
@@ -53,7 +56,7 @@ public class ProblemIdentificationCacheComponent implements ProjectComponent {
      * @param file The file for which problems are updated
      * @param problems The new problems that were found
      */
-    public void updateFileProblems(VirtualFile file, IdentificationCollection<ProblemIdentification> problems) {
+    public void updateFileProblems(VirtualFile file, Collection<ProblemIdentification> problems) {
         problemIdentifications.put(file, problems);
         if (file.equals(selectedFile)) {
             broadcastCurrentProblems(problems);
@@ -63,7 +66,7 @@ public class ProblemIdentificationCacheComponent implements ProjectComponent {
     /**
      * Broadcast the problems for the current file to all subscribers to the INSPECTION_IDENTIFICATION_TOPIC.
      */
-    protected void broadcastCurrentProblems(IdentificationCollection<ProblemIdentification> problems) {
+    protected void broadcastCurrentProblems(Collection<ProblemIdentification> problems) {
         project.getMessageBus().syncPublisher(INSPECTION_IDENTIFICATION_TOPIC).accept(problems);
     }
 
@@ -71,12 +74,12 @@ public class ProblemIdentificationCacheComponent implements ProjectComponent {
      * Gets the problems for the currently selected file in the editor.
      * @return The problems for the file that is currently selected
      */
-    public IdentificationCollection<ProblemIdentification> selectedFileProblems() {
-        IdentificationCollection<ProblemIdentification> result = problemIdentifications.get(selectedFile);
+    public Collection<ProblemIdentification> selectedFileProblems() {
+        Collection<ProblemIdentification> result = problemIdentifications.get(selectedFile);
         if (result != null) {
             return result;
         } else {
-            return new IdentificationCollection<ProblemIdentification>();
+            return new ArrayList<>();
         }
     }
 
@@ -101,7 +104,7 @@ public class ProblemIdentificationCacheComponent implements ProjectComponent {
     private class ProblemFileSelectionListener implements FileEditorManagerListener {
         @Override
         public void fileOpened(@NotNull FileEditorManager source, @NotNull VirtualFile file) {
-            problemIdentifications.put(file, new IdentificationCollection<ProblemIdentification>());
+            problemIdentifications.put(file, new LinkedList<>());
         }
 
         @Override

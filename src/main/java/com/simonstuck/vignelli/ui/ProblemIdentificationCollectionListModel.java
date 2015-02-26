@@ -1,11 +1,11 @@
 package com.simonstuck.vignelli.ui;
 
-import com.simonstuck.vignelli.inspection.identification.IdentificationCollection;
 import com.simonstuck.vignelli.inspection.identification.ProblemIdentification;
 
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -16,8 +16,8 @@ import javax.swing.event.ListDataListener;
 class ProblemIdentificationCollectionListModel implements ListModel<ProblemIdentification> {
 
     @NotNull
-    private final Set<ListDataListener> listeners = new HashSet<ListDataListener>();
-    private final List<ProblemIdentification> problemIdentifications = new ArrayList<ProblemIdentification>();
+    private final Set<ListDataListener> listeners = new HashSet<>();
+    private final List<ProblemIdentification> problemIdentifications = new ArrayList<>();
 
     @Override
     public int getSize() {
@@ -44,18 +44,9 @@ class ProblemIdentificationCollectionListModel implements ListModel<ProblemIdent
      * <p>If some of the given identifications already exist, they remain intact and are not replaced.</p>
      * @param identifications The identifications to replace the previous contents with
      */
-    public void replaceWithNewContents(IdentificationCollection<ProblemIdentification> identifications) {
-        for (ProblemIdentification existingProblem : problemIdentifications) {
-            if (!identifications.contains(existingProblem)) {
-                remove(existingProblem);
-            }
-        }
-
-        for (ProblemIdentification newProblem : identifications) {
-            if (!problemIdentifications.contains(newProblem)) {
-                add(newProblem);
-            }
-        }
+    public void replaceWithNewContents(Collection<ProblemIdentification> identifications) {
+        problemIdentifications.stream().filter(existingProblem -> !identifications.contains(existingProblem)).forEach(this::remove);
+        identifications.stream().filter(newProblem -> !problemIdentifications.contains(newProblem)).forEach(this::add);
     }
 
     /**

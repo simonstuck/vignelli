@@ -5,7 +5,6 @@ import static org.mockito.Mockito.mock;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.simonstuck.vignelli.inspection.identification.IdentificationCollection;
 import com.simonstuck.vignelli.inspection.identification.ProblemIdentification;
 import com.simonstuck.vignelli.providers.CollectionOfMocksProvider;
 
@@ -32,7 +31,7 @@ public class ProblemIdentificationCacheComponentTest {
     @Test
     public void shouldUpdateProblemsForGivenFile() throws Exception {
         VirtualFile file = mock(VirtualFile.class);
-        IdentificationCollection<ProblemIdentification> problems = createSampleProblemIdentificationCollection();
+        Collection<ProblemIdentification> problems = CollectionOfMocksProvider.collectionOfSize(3, ProblemIdentification.class);
 
         cache.updateFileProblems(file, problems);
         cache.selectFile(file);
@@ -43,8 +42,8 @@ public class ProblemIdentificationCacheComponentTest {
     public void shouldOnlyReturnProblemsForCurrentlySelectedFile() throws Exception {
         VirtualFile fileA = mock(VirtualFile.class);
         VirtualFile fileB = mock(VirtualFile.class);
-        IdentificationCollection<ProblemIdentification> problemsA = createSampleProblemIdentificationCollection();
-        IdentificationCollection<ProblemIdentification> problemsB = createSampleProblemIdentificationCollection();
+        Collection<ProblemIdentification> problemsA = CollectionOfMocksProvider.collectionOfSize(3, ProblemIdentification.class);
+        Collection<ProblemIdentification> problemsB = CollectionOfMocksProvider.collectionOfSize(3, ProblemIdentification.class);
 
         cache.updateFileProblems(fileA, problemsA);
         cache.updateFileProblems(fileB, problemsB);
@@ -56,7 +55,7 @@ public class ProblemIdentificationCacheComponentTest {
     @Test
     public void shouldNotBroadcastChangesInFileThatIsNotCurrentlySelected() throws Exception {
         VirtualFile file = mock(VirtualFile.class);
-        IdentificationCollection<ProblemIdentification> problems = createSampleProblemIdentificationCollection();
+        Collection<ProblemIdentification> problems = CollectionOfMocksProvider.collectionOfSize(3, ProblemIdentification.class);
 
         cache.updateFileProblems(file, problems);
         assertEquals(null, cache.lastBroadcast);
@@ -65,17 +64,11 @@ public class ProblemIdentificationCacheComponentTest {
     @Test
     public void shouldBroadcastNewProblemsOnUpdateOfSelectedFile() throws Exception {
         VirtualFile file = mock(VirtualFile.class);
-        IdentificationCollection<ProblemIdentification> problems = createSampleProblemIdentificationCollection();
+        Collection<ProblemIdentification> problems = CollectionOfMocksProvider.collectionOfSize(3, ProblemIdentification.class);
 
         cache.selectFile(file);
         cache.updateFileProblems(file, problems);
         assertEquals(problems, cache.lastBroadcast);
     }
 
-    protected IdentificationCollection<ProblemIdentification> createSampleProblemIdentificationCollection() {
-        Collection<ProblemIdentification> mockedIds = CollectionOfMocksProvider.collectionOfSize(3, ProblemIdentification.class);
-        IdentificationCollection<ProblemIdentification> problems = new IdentificationCollection<ProblemIdentification>();
-        problems.addAll(mockedIds);
-        return problems;
-    }
 }

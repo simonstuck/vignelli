@@ -3,7 +3,6 @@ package com.simonstuck.vignelli.inspection.identification;
 import com.intellij.codeInspection.InspectionManager;
 import com.intellij.codeInspection.ProblemDescriptor;
 import com.intellij.codeInspection.ProblemHighlightType;
-import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiExpression;
 import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.PsiReferenceExpression;
@@ -48,7 +47,7 @@ public class MethodChainIdentification implements Identification {
     public Set<MethodChainIdentification> getAllMethodCallQualifiers() {
         Optional<MethodChainIdentification> directQualifier = getMethodCallQualifier();
         if (!directQualifier.isPresent()) {
-            return new HashSet<MethodChainIdentification>();
+            return new HashSet<>();
         } else {
             Set<MethodChainIdentification> result = directQualifier.get().getAllMethodCallQualifiers();
             result.add(directQualifier.get());
@@ -58,14 +57,6 @@ public class MethodChainIdentification implements Identification {
 
     public PsiType getMethodCallType() {
         return finalCall.getType();
-    }
-
-    public PsiMethodCallExpression getFirstCall() {
-        return finalCall;
-    }
-
-    public PsiMethodCallExpression getFinalCall() {
-        return finalCall;
     }
 
     /**
