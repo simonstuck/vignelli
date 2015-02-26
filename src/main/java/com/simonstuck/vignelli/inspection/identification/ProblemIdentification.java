@@ -59,7 +59,8 @@ public class ProblemIdentification implements Identification {
 
         ProblemIdentification that = (ProblemIdentification) other;
         ProblemDescriptor thatDescriptor = that.getProblemDescriptor();
-        return thatDescriptor.getStartElement().equals(problemDescriptor.getStartElement())
+        return that.name.equals(name)
+                && thatDescriptor.getStartElement().equals(problemDescriptor.getStartElement())
                 && thatDescriptor.getEndElement().equals(problemDescriptor.getEndElement())
                 && thatDescriptor.getDescriptionTemplate().equals(problemDescriptor.getDescriptionTemplate())
                 && thatDescriptor.getLineNumber() == problemDescriptor.getLineNumber()
@@ -71,6 +72,7 @@ public class ProblemIdentification implements Identification {
     @Override
     public int hashCode() {
         return new HashCodeBuilder()
+                .append(name)
                 .append(problemDescriptor.getStartElement())
                 .append(problemDescriptor.getEndElement())
                 .append(problemDescriptor.getDescriptionTemplate())
