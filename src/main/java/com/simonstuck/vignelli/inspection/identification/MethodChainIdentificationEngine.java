@@ -20,10 +20,10 @@ public class MethodChainIdentificationEngine {
         final MethodChainIdentificationCollection candidates = computeIdentificationCandidates(element);
         final MethodChainIdentificationCollection toIgnore = candidates.getQualifiersIdentificationCollection();
 
-        return candidates.
-                filterIdentifications(toIgnore).
-                filter(new MethodChainDifferentAdjacentTypesPredicate()).
-                filter(new MethodChainMultipleCallsPredicate());
+        return candidates
+                .filterIdentifications(toIgnore)
+                .filter(new MethodChainDifferentAdjacentTypesPredicate())
+                .filter(new MethodChainMultipleCallsPredicate());
     }
 
     /**

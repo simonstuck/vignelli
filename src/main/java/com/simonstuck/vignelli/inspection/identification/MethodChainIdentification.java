@@ -10,7 +10,7 @@ import java.util.Optional;
 import java.util.Set;
 
 public class MethodChainIdentification implements Identification {
-    private PsiMethodCallExpression finalCall;
+    private final PsiMethodCallExpression finalCall;
 
     private MethodChainIdentification(PsiMethodCallExpression finalCall) {
         this.finalCall = finalCall;
@@ -22,7 +22,7 @@ public class MethodChainIdentification implements Identification {
 
     /**
      * Gets the method call qualifier.
-     * @return The methodcall that this identification's final call depends on, otherwise empty.
+     * @return The method call that this identification's final call depends on, otherwise empty.
      */
     public Optional<MethodChainIdentification> getMethodCallQualifier() {
         final PsiReferenceExpression methodExpression = finalCall.getMethodExpression();
@@ -80,21 +80,18 @@ public class MethodChainIdentification implements Identification {
     }
 
     @Override
-    public String getName() {
+    public String name() {
         return "Train Wreck";
     }
 
     @Override
-    public String getShortDescription() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("This appears to be a train wreck in your code:\n\n");
-        sb.append("<code>#ref</code>\n\n");
-        sb.append("What is a train wreck you might wonder, well, here's the answer:");
-        return sb.toString();
+    public String shortDescription() {
+        return "This appears to be a train wreck in your code:\n\n" + "<code>#ref</code>\n\n"
+                + "What is a train wreck you might wonder, well, here's the answer:";
     }
 
     @Override
-    public String getLongDescription() {
+    public String longDescription() {
         return "There is a train wreck in your code that you need to fix. This is a big problem.";
     }
 }

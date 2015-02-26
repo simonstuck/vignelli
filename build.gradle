@@ -45,6 +45,14 @@ test {
   classpath = project.sourceSets.test.runtimeClasspath + files("${jdk_home}/lib/tools.jar")
 }
 
+jacocoTestReport {
+  afterEvaluate {
+    classDirectories = files(classDirectories.files.collect {
+      fileTree(dir: it, exclude: 'com/simonstuck/vignelli/ui/**')
+    })
+  }
+}
+
 task checkstyleTest(overwrite: true) << {};
 
 jacocoTestReport.dependsOn(test)

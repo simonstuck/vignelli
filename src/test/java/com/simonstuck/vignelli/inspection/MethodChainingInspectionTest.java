@@ -1,7 +1,9 @@
 package com.simonstuck.vignelli.inspection;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.mock;
 
+import com.intellij.openapi.project.Project;
 import org.junit.Before;
 import org.junit.Test;
 

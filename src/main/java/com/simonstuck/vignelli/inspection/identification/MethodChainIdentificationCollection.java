@@ -13,8 +13,8 @@ public class MethodChainIdentificationCollection extends IdentificationCollectio
     public MethodChainIdentificationCollection getQualifiersIdentificationCollection() {
         final MethodChainIdentificationCollection result = new MethodChainIdentificationCollection();
 
-        for (MethodChainIdentification iden : this) {
-            result.addAll(iden.getAllMethodCallQualifiers());
+        for (MethodChainIdentification identification : this) {
+            result.addAll(identification.getAllMethodCallQualifiers());
         }
         return result;
     }

@@ -8,13 +8,24 @@ public class ProblemIdentification implements Identification {
 
     @NotNull
     private final ProblemDescriptor problemDescriptor;
+    private final String name;
+    private final String shortDescription;
+    private final String longDescription;
 
-    private ProblemIdentification(@NotNull ProblemDescriptor problemDescriptor) {
+    /**
+     * Creates a new {@link com.simonstuck.vignelli.inspection.identification.ProblemIdentification}.
+     * <p>The new problem identification contains information about the problem.</p>
+     * @param problemDescriptor The problem descriptor associated with the problem
+     * @param name The name of the problem
+     * @param shortDescription A short description of the problem
+     * @param longDescription A longer description of the problem
+     */
+    public ProblemIdentification(@NotNull ProblemDescriptor problemDescriptor, String name,
+                                 String shortDescription, String longDescription) {
         this.problemDescriptor = problemDescriptor;
-    }
-
-    public static ProblemIdentification createWithProblemDescriptor(@NotNull ProblemDescriptor problemDescriptor) {
-        return new ProblemIdentification(problemDescriptor);
+        this.name = name;
+        this.shortDescription = shortDescription;
+        this.longDescription = longDescription;
     }
 
     @NotNull
@@ -23,34 +34,38 @@ public class ProblemIdentification implements Identification {
     }
 
     @Override
-    public String getName() {
-        return problemDescriptor.toString();
+    public String name() {
+        return name;
     }
 
     @Override
-    public String getShortDescription() {
-        return "";
+    public String shortDescription() {
+        return shortDescription;
     }
 
     @Override
-    public String getLongDescription() {
-        return "";
+    public String longDescription() {
+        return longDescription;
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+    public boolean equals(Object other) {
+        if (this == other) {
+            return true;
+        }
+        if (other == null || getClass() != other.getClass()) {
+            return false;
+        }
 
-        ProblemIdentification that = (ProblemIdentification) o;
+        ProblemIdentification that = (ProblemIdentification) other;
         ProblemDescriptor thatDescriptor = that.getProblemDescriptor();
-        return thatDescriptor.getStartElement().equals(problemDescriptor.getStartElement()) &&
-                thatDescriptor.getEndElement().equals(problemDescriptor.getEndElement()) &&
-                thatDescriptor.getDescriptionTemplate().equals(problemDescriptor.getDescriptionTemplate()) &&
-                thatDescriptor.getLineNumber() == problemDescriptor.getLineNumber() &&
-                thatDescriptor.isAfterEndOfLine() == problemDescriptor.isAfterEndOfLine() &&
-                thatDescriptor.getHighlightType() == problemDescriptor.getHighlightType() &&
-                thatDescriptor.getPsiElement() == problemDescriptor.getPsiElement();
+        return thatDescriptor.getStartElement().equals(problemDescriptor.getStartElement())
+                && thatDescriptor.getEndElement().equals(problemDescriptor.getEndElement())
+                && thatDescriptor.getDescriptionTemplate().equals(problemDescriptor.getDescriptionTemplate())
+                && thatDescriptor.getLineNumber() == problemDescriptor.getLineNumber()
+                && thatDescriptor.isAfterEndOfLine() == problemDescriptor.isAfterEndOfLine()
+                && thatDescriptor.getHighlightType() == problemDescriptor.getHighlightType()
+                && thatDescriptor.getPsiElement() == problemDescriptor.getPsiElement();
     }
 
     @Override
@@ -67,6 +82,6 @@ public class ProblemIdentification implements Identification {
 
     @Override
     public String toString() {
-        return getName() + ": " + getShortDescription();
+        return name() + ": " + problemDescriptor.getLineNumber();
     }
 }

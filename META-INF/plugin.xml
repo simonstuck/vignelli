@@ -30,7 +30,7 @@
                 implementation="com.simonstuck.vignelli.inspection.VignelliInspectionToolProvider"/>
 
         <toolWindow id="Vignelli Analysis" icon="/vignelli_icon.png" anchor="bottom"
-                    factoryClass="com.simonstuck.vignelli.ui.analysis.AnalysisToolWindowFactory"/>
+                    factoryClass="com.simonstuck.vignelli.ui.AnalysisToolWindowFactory"/>
     </extensions>
 
     <application-components>

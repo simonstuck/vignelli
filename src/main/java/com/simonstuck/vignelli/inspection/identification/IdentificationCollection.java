@@ -10,9 +10,9 @@ import java.util.function.Predicate;
 
 public class IdentificationCollection<T extends Identification> implements Iterable<T>, Filterable<IdentificationCollection<T>, T> {
 
-    protected Set<T> identifications = new HashSet<T>();
+    private final Set<T> identifications = new HashSet<T>();
 
-    public IdentificationCollection(Set<T> identifications) {
+    private IdentificationCollection(Set<T> identifications) {
         this.identifications.addAll(identifications);
     }
 
@@ -32,16 +32,8 @@ public class IdentificationCollection<T extends Identification> implements Itera
         identifications.add(identification);
     }
 
-    public void addAll(IdentificationCollection<? extends T> os) {
-        identifications.addAll(os.identifications);
-    }
-
     public void addAll(Collection<? extends T> os) {
         identifications.addAll(os);
-    }
-
-    public void remove(T identification) {
-        identifications.remove(identification);
     }
 
     @Override
@@ -60,7 +52,7 @@ public class IdentificationCollection<T extends Identification> implements Itera
         return identifications.iterator();
     }
 
-    protected <R extends IdentificationCollection<T>> R filterWithReturnType(Predicate<T> predicate, Class<R> clazz) {
+    <R extends IdentificationCollection<T>> R filterWithReturnType(Predicate<T> predicate, Class<R> clazz) {
         try {
             R filtered = clazz.newInstance();
             for (T identification : identifications) {
@@ -78,7 +70,7 @@ public class IdentificationCollection<T extends Identification> implements Itera
     }
 
 
-    protected <R extends IdentificationCollection<T>> R filterIdentificationsWithReturnType(
+    <R extends IdentificationCollection<T>> R filterIdentificationsWithReturnType(
             final IdentificationCollection<T> toRemove, Class<R> clazz) {
         return filterWithReturnType(new Predicate<T>() {
             @Override

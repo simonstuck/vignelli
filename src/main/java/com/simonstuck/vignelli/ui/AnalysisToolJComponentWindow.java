@@ -1,22 +1,28 @@
-package com.simonstuck.vignelli.ui.analysis;
+package com.simonstuck.vignelli.ui;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.messages.MessageBusConnection;
 import com.simonstuck.vignelli.inspection.ProblemIdentificationCache;
 import com.simonstuck.vignelli.inspection.ProblemIdentificationCollectionListener;
-import com.simonstuck.vignelli.inspection.VignelliLocalInspectionTool;
-import com.simonstuck.vignelli.inspection.identification.Identification;
 import com.simonstuck.vignelli.inspection.identification.IdentificationCollection;
+import com.simonstuck.vignelli.inspection.identification.ProblemIdentification;
 
-import javax.swing.*;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
-public class AnalysisToolJComponentWindow extends JPanel {
+class AnalysisToolJComponentWindow extends JPanel {
+
     private static final double RESIZE_WEIGHT = .5d;
     private static final int MIN_PROBLEM_LIST_WIDTH = 400;
 
-    private final IdentificationCollectionListModel dataModel = new IdentificationCollectionListModel();
+    private final ProblemIdentificationCollectionListModel dataModel = new ProblemIdentificationCollectionListModel();
+    private ProblemDescriptionPane problemDescriptionPane;
 
     public AnalysisToolJComponentWindow(Project project) {
         super();
@@ -32,8 +38,8 @@ public class AnalysisToolJComponentWindow extends JPanel {
     }
 
     private JSplitPane createSplitPane() {
+        problemDescriptionPane = createProblemDescriptionPane();
         JScrollPane scrollPane = createProblemListPane();
-        JComponent problemDescriptionPane = createProblemDescriptionPane();
 
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, scrollPane, problemDescriptionPane);
         splitPane.setSize(getSize());
@@ -43,37 +49,43 @@ public class AnalysisToolJComponentWindow extends JPanel {
     }
 
     private JScrollPane createProblemListPane() {
-        JComponent problemListPane = new ProblemListPane(dataModel);
+        final ProblemListPane problemListPane = new ProblemListPane(dataModel);
+        problemListPane.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent event) {
+                if (!event.getValueIsAdjusting()) {
+                    ProblemIdentification id = dataModel.getElementAt(problemListPane.getSelectedIndex());
+                    problemDescriptionPane.showDescription(id);
+                }
+            }
+        });
+
         JScrollPane scrollPane = new JBScrollPane(problemListPane);
         scrollPane.setMinimumSize(new Dimension(MIN_PROBLEM_LIST_WIDTH, getHeight()));
         return scrollPane;
     }
 
-    private JComponent createProblemDescriptionPane() {
+    private ProblemDescriptionPane createProblemDescriptionPane() {
         return new ProblemDescriptionPane();
     }
 
     private void subscribeToChanges(Project project) {
         MessageBusConnection connection = project.getMessageBus().connect();
         UIProblemIdentificationCollectionListener listener = new UIProblemIdentificationCollectionListener();
-        connection.subscribe(VignelliLocalInspectionTool.INSPECTION_IDENTIFICATION_TOPIC, listener);
+        connection.subscribe(ProblemIdentificationCache.INSPECTION_IDENTIFICATION_TOPIC, listener);
 
         initDataStoreWithExistingProblems(project, listener);
     }
 
     private void initDataStoreWithExistingProblems(Project project, UIProblemIdentificationCollectionListener listener) {
         ProblemIdentificationCache problemIdentificationCache = project.getComponent(ProblemIdentificationCache.class);
-        listener.accept(problemIdentificationCache.getAllProblems());
+        listener.accept(problemIdentificationCache.selectedFileProblems());
     }
 
     private class UIProblemIdentificationCollectionListener implements ProblemIdentificationCollectionListener {
         @Override
-        public void accept(IdentificationCollection<? extends Identification> identifications) {
-            for (Identification id : identifications) {
-                if (!dataModel.contains(id)) {
-                    dataModel.add(id);
-                }
-            }
+        public void accept(IdentificationCollection<ProblemIdentification> identifications) {
+            dataModel.replaceWithNewContents(identifications);
         }
     }
 }
