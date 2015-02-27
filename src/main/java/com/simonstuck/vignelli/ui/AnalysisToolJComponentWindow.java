@@ -51,8 +51,13 @@ class AnalysisToolJComponentWindow extends JPanel {
         final ProblemListPane problemListPane = new ProblemListPane(dataModel);
         problemListPane.getSelectionModel().addListSelectionListener(event -> {
             if (!event.getValueIsAdjusting()) {
-                ProblemIdentification id = dataModel.getElementAt(problemListPane.getSelectedIndex());
-                problemDescriptionPane.showDescription(id);
+                int index = problemListPane.getSelectedIndex();
+                if (index == -1) {
+                    problemDescriptionPane.showDefault();
+                } else {
+                    ProblemIdentification id = dataModel.getElementAt(index);
+                    problemDescriptionPane.showDescription(id);
+                }
             }
         });
 
