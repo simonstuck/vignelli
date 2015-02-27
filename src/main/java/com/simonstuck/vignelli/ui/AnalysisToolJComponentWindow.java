@@ -6,7 +6,6 @@ import com.intellij.util.messages.MessageBusConnection;
 import com.simonstuck.vignelli.inspection.ProblemIdentificationCacheComponent;
 import com.simonstuck.vignelli.inspection.ProblemIdentificationCollectionListener;
 import com.simonstuck.vignelli.inspection.identification.ProblemIdentification;
-import com.simonstuck.vignelli.ui.description.HTMLFileTemplate;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -38,9 +37,10 @@ class AnalysisToolJComponentWindow extends JPanel {
 
     private JSplitPane createSplitPane() {
         problemDescriptionPane = createProblemDescriptionPane();
-        JScrollPane scrollPane = createProblemListPane();
+        JScrollPane scrollDescriptionPane = new JBScrollPane(problemDescriptionPane);
+        JScrollPane scrollListPane = createProblemListPane();
 
-        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, scrollPane, problemDescriptionPane);
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, scrollListPane, scrollDescriptionPane);
         splitPane.setSize(getSize());
         splitPane.setResizeWeight(RESIZE_WEIGHT);
 
