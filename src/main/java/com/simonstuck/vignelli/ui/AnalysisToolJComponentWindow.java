@@ -6,6 +6,7 @@ import com.intellij.util.messages.MessageBusConnection;
 import com.simonstuck.vignelli.inspection.ProblemIdentificationCacheComponent;
 import com.simonstuck.vignelli.inspection.ProblemIdentificationCollectionListener;
 import com.simonstuck.vignelli.inspection.identification.ProblemIdentification;
+import com.simonstuck.vignelli.ui.description.HTMLFileTemplate;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
