@@ -8,7 +8,9 @@ import static org.mockito.Mockito.when;
 
 import com.intellij.codeInspection.ProblemDescriptor;
 import com.intellij.codeInspection.ProblemHighlightType;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
 
 import org.junit.Test;
 
@@ -54,6 +56,10 @@ public class ProblemIdentificationTest {
 
     private ProblemDescriptor createProblemDescriptor() {
         PsiElement element = mock(PsiElement.class);
+
+        PsiFile containingFile = mock(PsiFile.class);
+        when(containingFile.getVirtualFile()).thenReturn(mock(VirtualFile.class));
+        when(element.getContainingFile()).thenReturn(containingFile);
         ProblemDescriptor problemDescriptor = mock(ProblemDescriptor.class);
         when(problemDescriptor.getLineNumber()).thenReturn(1);
         when(problemDescriptor.getStartElement()).thenReturn(element);
