@@ -1,5 +1,6 @@
 package com.simonstuck.vignelli.ui;
 
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.messages.MessageBusConnection;
@@ -10,9 +11,7 @@ import com.simonstuck.vignelli.inspection.identification.ProblemIdentification;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.util.Collection;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
+import javax.swing.*;
 
 class AnalysisToolJComponentWindow extends JPanel {
 
@@ -50,14 +49,18 @@ class AnalysisToolJComponentWindow extends JPanel {
     private JScrollPane createProblemListPane() {
         final ProblemListPane problemListPane = new ProblemListPane(dataModel);
         problemListPane.getSelectionModel().addListSelectionListener(event -> {
-            if (!event.getValueIsAdjusting()) {
-                int index = problemListPane.getSelectedIndex();
-                if (index == -1) {
-                    problemDescriptionPane.showDefault();
-                } else {
-                    ProblemIdentification id = dataModel.getElementAt(index);
-                    problemDescriptionPane.showDescription(id);
-                }
+            synchronized (dataModel) {
+                ApplicationManager.getApplication().invokeLater(() -> {
+                    if (!event.getValueIsAdjusting()) {
+                        int index = problemListPane.getSelectedIndex();
+                        if (index == -1) {
+                            problemDescriptionPane.showDefault();
+                        } else {
+                            ProblemIdentification id = dataModel.getElementAt(index);
+                            problemDescriptionPane.showDescription(id);
+                        }
+                    }
+                });
             }
         });
 
@@ -86,7 +89,9 @@ class AnalysisToolJComponentWindow extends JPanel {
     private class UIProblemIdentificationCollectionListener implements ProblemIdentificationCollectionListener {
         @Override
         public void accept(Collection<ProblemIdentification> identifications) {
-            dataModel.replaceWithNewContents(identifications);
+            ApplicationManager.getApplication().invokeLater(() -> {
+                dataModel.replaceWithNewContents(identifications);
+            });
         }
     }
 }

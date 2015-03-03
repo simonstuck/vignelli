@@ -5,6 +5,7 @@ import com.intellij.codeInspection.InspectionManager;
 import com.intellij.codeInspection.ProblemDescriptor;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.JavaRecursiveElementVisitor;
+import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiMethod;
 import com.simonstuck.vignelli.inspection.identification.MethodChainIdentification;
@@ -16,13 +17,7 @@ import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class MethodChainingInspectionTool extends BaseJavaLocalInspectionTool {
 
@@ -30,7 +25,7 @@ public class MethodChainingInspectionTool extends BaseJavaLocalInspectionTool {
     private static final String METHOD_CHAIN_IDENTIFICATION_DESCRIPTION_LONG = "A long description";
     private final MethodChainIdentificationEngine engine;
 
-    private final Map<PsiMethod, Collection<ProblemDescriptor>> methodProblemsMap = new HashMap<>();
+    private final Map<PsiMethod, Collection<ProblemIdentification>> methodProblemsMap = new HashMap<>();
 
     public MethodChainingInspectionTool() {
         engine = new MethodChainIdentificationEngine();
@@ -38,12 +33,13 @@ public class MethodChainingInspectionTool extends BaseJavaLocalInspectionTool {
 
     @Nullable
     @Override
-    public ProblemDescriptor[] checkMethod(@NotNull PsiMethod method, @NotNull InspectionManager manager, boolean isOnTheFly) {
+    public synchronized ProblemDescriptor[] checkMethod(@NotNull PsiMethod method, @NotNull InspectionManager manager, boolean isOnTheFly) {
         cleanMethodProblems(method.getContainingFile());
 
         Collection<MethodChainIdentification> methodChainIdentifications = engine.identifyMethodChains(method);
         List<ProblemDescriptor> problemDescriptors = createProblemDescriptors(manager, methodChainIdentifications);
-        methodProblemsMap.put(method, problemDescriptors);
+        Collection<ProblemIdentification> identifications = buildProblemIdentifications(problemDescriptors);
+        methodProblemsMap.put(method, identifications);
         notifyProblemCacheIfNecessary(manager);
 
         return problemDescriptors.toArray(new ProblemDescriptor[problemDescriptors.size()]);
@@ -98,25 +94,30 @@ public class MethodChainingInspectionTool extends BaseJavaLocalInspectionTool {
 
     private void notifyProblemCacheIfNecessary(InspectionManager manager) {
         ProblemIdentificationCacheComponent cache = manager.getProject().getComponent(ProblemIdentificationCacheComponent.class);
+
+        Collection<ProblemIdentification> allIdentifications = new LinkedList<>();
+        methodProblemsMap.values().stream() .forEach(allIdentifications::addAll);
+
+        if (!allIdentifications.isEmpty()) {
+            VirtualFile file = allIdentifications.iterator().next().virtualFile();
+            cache.updateFileProblems(file, allIdentifications);
+        }
+    }
+
+    private Collection<ProblemIdentification> buildProblemIdentifications(Collection<ProblemDescriptor> problemDescriptors) {
         Collection<ProblemIdentification> result = new ArrayList<>();
 
-        for (Collection<ProblemDescriptor> problemDescriptors : methodProblemsMap.values()) {
-            for (ProblemDescriptor problemDescriptor : problemDescriptors) {
-                ProblemIdentification id = new ProblemIdentificationBuilder()
-                        .setProblemDescriptor(problemDescriptor)
-                        .setName(METHOD_CHAIN_IDENTIFICATION_NAME)
-                        .setShortDescription(problemDescriptor.getDescriptionTemplate())
-                        .setLongDescription(METHOD_CHAIN_IDENTIFICATION_DESCRIPTION_LONG)
-                        .build();
+        for (ProblemDescriptor problemDescriptor : problemDescriptors) {
+            ProblemIdentification id = new ProblemIdentificationBuilder()
+                    .setProblemDescriptor(problemDescriptor)
+                    .setName(METHOD_CHAIN_IDENTIFICATION_NAME)
+                    .setShortDescription(problemDescriptor.getDescriptionTemplate())
+                    .setLongDescription(METHOD_CHAIN_IDENTIFICATION_DESCRIPTION_LONG)
+                    .build();
 
-                result.add(id);
-            }
+            result.add(id);
         }
-
-        if (result.size() > 0) {
-            VirtualFile file = result.iterator().next().getProblemDescriptor().getPsiElement().getContainingFile().getVirtualFile();
-            cache.updateFileProblems(file, result);
-        }
+        return result;
     }
 
     @Nls

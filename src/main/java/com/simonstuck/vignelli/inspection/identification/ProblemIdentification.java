@@ -1,6 +1,8 @@
 package com.simonstuck.vignelli.inspection.identification;
 
 import com.intellij.codeInspection.ProblemDescriptor;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiElement;
 import com.simonstuck.vignelli.utils.IOUtils;
 
 import org.apache.commons.lang.builder.HashCodeBuilder;
@@ -8,6 +10,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.Objects;
 
 public class ProblemIdentification implements Identification {
 
@@ -16,6 +19,7 @@ public class ProblemIdentification implements Identification {
     private final String name;
     private final String shortDescription;
     private final String longDescription;
+    private VirtualFile virtualFile;
 
     /**
      * Creates a new {@link com.simonstuck.vignelli.inspection.identification.ProblemIdentification}.
@@ -31,6 +35,7 @@ public class ProblemIdentification implements Identification {
         this.name = name;
         this.shortDescription = shortDescription;
         this.longDescription = longDescription;
+        this.virtualFile = problemDescriptor.getPsiElement().getContainingFile().getVirtualFile();
     }
 
     @NotNull
@@ -64,9 +69,11 @@ public class ProblemIdentification implements Identification {
 
         ProblemIdentification that = (ProblemIdentification) other;
         ProblemDescriptor thatDescriptor = that.getProblemDescriptor();
+
         return that.name.equals(name)
-                && thatDescriptor.getStartElement().equals(problemDescriptor.getStartElement())
-                && thatDescriptor.getEndElement().equals(problemDescriptor.getEndElement())
+                && Objects.equals(thatDescriptor.getStartElement(), problemDescriptor.getStartElement())
+                && Objects.equals(thatDescriptor.getStartElement(), problemDescriptor.getStartElement())
+                && Objects.equals(thatDescriptor.getEndElement(), problemDescriptor.getEndElement())
                 && thatDescriptor.getDescriptionTemplate().equals(problemDescriptor.getDescriptionTemplate())
                 && thatDescriptor.getLineNumber() == problemDescriptor.getLineNumber()
                 && thatDescriptor.isAfterEndOfLine() == problemDescriptor.isAfterEndOfLine()
@@ -99,5 +106,9 @@ public class ProblemIdentification implements Identification {
             e.printStackTrace();
         }
         return "";
+    }
+
+    public VirtualFile virtualFile() {
+        return virtualFile;
     }
 }

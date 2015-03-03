@@ -62,13 +62,13 @@ class ProblemDescriptionPane extends JEditorPane {
         Map<String, String> contentMap = new HashMap<>();
         Template template = new HTMLFileTemplate(id.descriptionTemplate());
         setText(template.render(contentMap));
-        this.updateUI();
+        validate();
+        repaint();
     }
 
     public void showDefault() {
-        Map<String, String> values = new HashMap<>();
-        values.put("AWESOME", "GLIDING");
-        setText(DEFAULT_TEMPLATE.render(values));
-        updateUI();
+        setText(DEFAULT_TEMPLATE.render(new HashMap<>()));
+        validate();
+        repaint();
     }
 }
