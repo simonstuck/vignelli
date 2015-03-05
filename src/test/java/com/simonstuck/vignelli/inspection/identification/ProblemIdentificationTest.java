@@ -17,19 +17,9 @@ import org.junit.Test;
 public class ProblemIdentificationTest {
     @Test
     public void shouldBeEqualToAnotherProblemIdentificationUsingASimilarProblemDescriptor() throws Exception {
-        ProblemIdentificationBuilder builder = new ProblemIdentificationBuilder();
         ProblemDescriptor problemDescriptor = createProblemDescriptor();
-        ProblemIdentification identificationA = builder.setName("Problem")
-                .setShortDescription("short description")
-                .setLongDescription("long description")
-                .setProblemDescriptor(problemDescriptor)
-                .build();
-
-        ProblemIdentification identificationB = builder.setName("Problem")
-                .setShortDescription("short description")
-                .setLongDescription("long description")
-                .setProblemDescriptor(problemDescriptor)
-                .build();
+        ProblemIdentification identificationA = new ProblemIdentification(problemDescriptor,"Problem");
+        ProblemIdentification identificationB = new ProblemIdentification(problemDescriptor,"Problem");
 
         assertTrue(identificationA.equals(identificationB));
         assertEquals(identificationA.hashCode(), identificationB.hashCode());
@@ -37,19 +27,9 @@ public class ProblemIdentificationTest {
 
     @Test
     public void shouldBeUnequalToAnotherProblemIdentificationUsingASimilarProblemDescriptorButDifferentName() throws Exception {
-        ProblemIdentificationBuilder builder = new ProblemIdentificationBuilder();
         ProblemDescriptor problemDescriptor = createProblemDescriptor();
-        ProblemIdentification identificationA = builder.setName("ProblemA")
-                .setShortDescription("short description")
-                .setLongDescription("long description")
-                .setProblemDescriptor(problemDescriptor)
-                .build();
-
-        ProblemIdentification identificationB = builder.setName("ProblemB")
-                .setShortDescription("short description")
-                .setLongDescription("long description")
-                .setProblemDescriptor(problemDescriptor)
-                .build();
+        ProblemIdentification identificationA = new ProblemIdentification(problemDescriptor,"ProblemA");
+        ProblemIdentification identificationB = new ProblemIdentification(problemDescriptor,"ProblemB");
 
         assertFalse(identificationA.equals(identificationB));
     }

@@ -5,24 +5,29 @@ import com.intellij.codeInspection.InspectionManager;
 import com.intellij.codeInspection.ProblemDescriptor;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.JavaRecursiveElementVisitor;
-import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiMethod;
 import com.simonstuck.vignelli.inspection.identification.MethodChainIdentification;
 import com.simonstuck.vignelli.inspection.identification.MethodChainIdentificationEngine;
 import com.simonstuck.vignelli.inspection.identification.ProblemIdentification;
-import com.simonstuck.vignelli.inspection.identification.ProblemIdentificationBuilder;
 
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class MethodChainingInspectionTool extends BaseJavaLocalInspectionTool {
 
     private static final String METHOD_CHAIN_IDENTIFICATION_NAME = "Train Wreck";
-    private static final String METHOD_CHAIN_IDENTIFICATION_DESCRIPTION_LONG = "A long description";
     private final MethodChainIdentificationEngine engine;
 
     private final Map<PsiMethod, Collection<ProblemIdentification>> methodProblemsMap = new HashMap<>();
@@ -105,19 +110,7 @@ public class MethodChainingInspectionTool extends BaseJavaLocalInspectionTool {
     }
 
     private Collection<ProblemIdentification> buildProblemIdentifications(Collection<ProblemDescriptor> problemDescriptors) {
-        Collection<ProblemIdentification> result = new ArrayList<>();
-
-        for (ProblemDescriptor problemDescriptor : problemDescriptors) {
-            ProblemIdentification id = new ProblemIdentificationBuilder()
-                    .setProblemDescriptor(problemDescriptor)
-                    .setName(METHOD_CHAIN_IDENTIFICATION_NAME)
-                    .setShortDescription(problemDescriptor.getDescriptionTemplate())
-                    .setLongDescription(METHOD_CHAIN_IDENTIFICATION_DESCRIPTION_LONG)
-                    .build();
-
-            result.add(id);
-        }
-        return result;
+        return problemDescriptors.stream().map(problemDescriptor -> new ProblemIdentification(problemDescriptor, METHOD_CHAIN_IDENTIFICATION_NAME)).collect(Collectors.toList());
     }
 
     @Nls
