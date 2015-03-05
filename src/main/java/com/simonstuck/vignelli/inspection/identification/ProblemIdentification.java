@@ -2,6 +2,10 @@ package com.simonstuck.vignelli.inspection.identification;
 
 import com.intellij.codeInspection.ProblemDescriptor;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiVariable;
+import com.intellij.psi.util.PsiTreeUtil;
+import com.simonstuck.vignelli.inspection.TrainWreckVariableImprovementOpportunity;
 import com.simonstuck.vignelli.utils.IOUtils;
 
 import org.apache.commons.lang.builder.HashCodeBuilder;
@@ -10,12 +14,14 @@ import org.jetbrains.annotations.NotNull;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Objects;
+import java.util.Optional;
 
 public class ProblemIdentification {
 
     @NotNull
     private final ProblemDescriptor problemDescriptor;
     private final String name;
+    private final PsiElement element;
     private VirtualFile virtualFile;
 
     /**
@@ -27,7 +33,8 @@ public class ProblemIdentification {
     public ProblemIdentification(@NotNull ProblemDescriptor problemDescriptor, String name) {
         this.problemDescriptor = problemDescriptor;
         this.name = name;
-        this.virtualFile = problemDescriptor.getPsiElement().getContainingFile().getVirtualFile();
+        this.element = problemDescriptor.getPsiElement();
+        this.virtualFile = element.getContainingFile().getVirtualFile();
     }
 
     @NotNull
@@ -87,5 +94,14 @@ public class ProblemIdentification {
 
     public VirtualFile virtualFile() {
         return virtualFile;
+    }
+
+    public Optional<TrainWreckVariableImprovementOpportunity> improvementOpportunity() {
+        PsiVariable parent = PsiTreeUtil.getParentOfType(element, PsiVariable.class);
+        if (parent != null) {
+            return Optional.of(new TrainWreckVariableImprovementOpportunity(element,parent));
+        } else {
+            return Optional.empty();
+        }
     }
 }
