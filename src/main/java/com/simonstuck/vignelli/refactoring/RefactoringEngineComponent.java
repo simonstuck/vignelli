@@ -50,7 +50,11 @@ public class RefactoringEngineComponent implements ProjectComponent {
             activeRefactorings.add(refactoring);
             broadcastActiveRefactorings();
         }
-        refactoring.nextStep();
+        try {
+            refactoring.nextStep();
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        }
     }
 
     protected void broadcastActiveRefactorings() {
