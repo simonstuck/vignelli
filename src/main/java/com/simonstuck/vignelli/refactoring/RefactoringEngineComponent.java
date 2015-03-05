@@ -25,40 +25,38 @@ public class RefactoringEngineComponent implements ProjectComponent {
         this.project = project;
     }
 
-    @Override
-    public void projectOpened() {
-
-    }
-
-    @Override
-    public void projectClosed() {
-
-    }
-
-    @Override
-    public void initComponent() {
-
-    }
-
-    @Override
-    public void disposeComponent() {
-
-    }
-
-    public void runStep(Refactoring refactoring) {
+    /**
+     * Adds the given refactoring to the active ones and informs subscribers about the change.
+     * @param refactoring The refactoring to add
+     */
+    public void add(Refactoring refactoring) {
         if (!activeRefactorings.contains(refactoring)) {
             activeRefactorings.add(refactoring);
             broadcastActiveRefactorings();
         }
-        try {
-            refactoring.nextStep();
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        }
     }
 
+    /**
+     * Broadcasts all active refactorings to all subscribers.
+     */
     protected void broadcastActiveRefactorings() {
         project.getMessageBus().syncPublisher(ACTIVE_REFACTORINGS_TOPIC).accept(new HashSet<>(activeRefactorings));
+    }
+
+    @Override
+    public void projectOpened() {
+    }
+
+    @Override
+    public void projectClosed() {
+    }
+
+    @Override
+    public void initComponent() {
+    }
+
+    @Override
+    public void disposeComponent() {
     }
 
     @NotNull
@@ -66,5 +64,4 @@ public class RefactoringEngineComponent implements ProjectComponent {
     public String getComponentName() {
         return "Vignelli Refactoring Engine";
     }
-
 }
