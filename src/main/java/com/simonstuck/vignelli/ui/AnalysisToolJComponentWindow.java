@@ -7,6 +7,9 @@ import com.intellij.util.messages.MessageBusConnection;
 import com.simonstuck.vignelli.inspection.ProblemIdentificationCacheComponent;
 import com.simonstuck.vignelli.inspection.ProblemIdentificationCollectionListener;
 import com.simonstuck.vignelli.inspection.identification.ProblemIdentification;
+import com.simonstuck.vignelli.refactoring.ActiveRefactoringCollectionListener;
+import com.simonstuck.vignelli.refactoring.Refactoring;
+import com.simonstuck.vignelli.refactoring.RefactoringEngineComponent;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -20,7 +23,9 @@ class AnalysisToolJComponentWindow extends JPanel {
     private static final double RESIZE_WEIGHT = .5d;
     private static final int MIN_PROBLEM_LIST_WIDTH = 400;
 
-    private final BatchUpdateListModel<ProblemIdentification> dataModel = new BatchUpdateListModel<>();
+    private final BatchUpdateListModel<ProblemIdentification> problemDataModel = new BatchUpdateListModel<>();
+    private final BatchUpdateListModel<Refactoring> refactoringsDataModel = new BatchUpdateListModel<>();
+
     private ProblemDescriptionPane problemDescriptionPane;
     private ProblemListPane problemListPane;
 
@@ -42,7 +47,14 @@ class AnalysisToolJComponentWindow extends JPanel {
         JScrollPane scrollDescriptionPane = new JBScrollPane(problemDescriptionPane);
         JScrollPane scrollListPane = createProblemListPane();
 
-        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, scrollListPane, scrollDescriptionPane);
+        JSplitPane listSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, new ActiveRefactoringsListPane(), scrollListPane);
+        listSplitPane.setSize(getSize());
+//        listSplitPane.setResizeWeight(RESIZE_WEIGHT);
+
+
+
+
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, listSplitPane, scrollDescriptionPane);
         splitPane.setSize(getSize());
         splitPane.setResizeWeight(RESIZE_WEIGHT);
 
@@ -50,16 +62,16 @@ class AnalysisToolJComponentWindow extends JPanel {
     }
 
     private JScrollPane createProblemListPane() {
-        problemListPane = new ProblemListPane(dataModel);
+        problemListPane = new ProblemListPane(problemDataModel);
         problemListPane.getSelectionModel().addListSelectionListener(event -> {
-            synchronized (dataModel) {
+            synchronized (problemDataModel) {
                 ApplicationManager.getApplication().invokeLater(() -> {
                     if (!event.getValueIsAdjusting()) {
                         int index = problemListPane.getSelectedIndex();
                         if (index == -1) {
                             problemDescriptionPane.showDefault();
                         } else {
-                            ProblemIdentification id = dataModel.getElementAt(index);
+                            ProblemIdentification id = problemDataModel.getElementAt(index);
                             problemDescriptionPane.showDescription(id);
                         }
                     }
@@ -80,8 +92,10 @@ class AnalysisToolJComponentWindow extends JPanel {
         MessageBusConnection connection = project.getMessageBus().connect();
         UIProblemIdentificationCollectionListener listener = new UIProblemIdentificationCollectionListener();
         connection.subscribe(ProblemIdentificationCacheComponent.INSPECTION_IDENTIFICATION_TOPIC, listener);
-
         initDataStoreWithExistingProblems(project, listener);
+
+        ActiveRefactoringCollectionListener refactoringsListener = new MyActiveRefactoringCollectionListener();
+        connection.subscribe(RefactoringEngineComponent.ACTIVE_REFACTORINGS_TOPIC, refactoringsListener);
     }
 
     private void initDataStoreWithExistingProblems(Project project, UIProblemIdentificationCollectionListener listener) {
@@ -89,11 +103,18 @@ class AnalysisToolJComponentWindow extends JPanel {
         listener.accept(problemIdentificationCacheComponent.selectedFileProblems());
     }
 
+    private class MyActiveRefactoringCollectionListener implements ActiveRefactoringCollectionListener {
+        @Override
+        public void accept(Collection<Refactoring> refactorings) {
+            refactoringsDataModel.batchUpdateContents(refactorings);
+        }
+    }
+
     private class UIProblemIdentificationCollectionListener implements ProblemIdentificationCollectionListener {
         @Override
         public void accept(Collection<ProblemIdentification> identifications) {
             ApplicationManager.getApplication().invokeLater(() -> {
-                dataModel.batchUpdateContents(identifications);
+                problemDataModel.batchUpdateContents(identifications);
                 problemListPane.invalidate();
                 problemListPane.repaint();
             });
