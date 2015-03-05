@@ -20,12 +20,13 @@ class AnalysisToolJComponentWindow extends JPanel {
 
     private final ProblemIdentificationCollectionListModel dataModel = new ProblemIdentificationCollectionListModel();
     private ProblemDescriptionPane problemDescriptionPane;
+    private ProblemListPane problemListPane;
 
     public AnalysisToolJComponentWindow(Project project) {
         super();
 
-        subscribeToChanges(project);
         createLayout();
+        subscribeToChanges(project);
     }
 
     private void createLayout() {
@@ -47,7 +48,7 @@ class AnalysisToolJComponentWindow extends JPanel {
     }
 
     private JScrollPane createProblemListPane() {
-        final ProblemListPane problemListPane = new ProblemListPane(dataModel);
+        problemListPane = new ProblemListPane(dataModel);
         problemListPane.getSelectionModel().addListSelectionListener(event -> {
             synchronized (dataModel) {
                 ApplicationManager.getApplication().invokeLater(() -> {
@@ -91,6 +92,8 @@ class AnalysisToolJComponentWindow extends JPanel {
         public void accept(Collection<ProblemIdentification> identifications) {
             ApplicationManager.getApplication().invokeLater(() -> {
                 dataModel.replaceWithNewContents(identifications);
+                problemListPane.invalidate();
+                problemListPane.repaint();
             });
         }
     }
