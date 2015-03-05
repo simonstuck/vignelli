@@ -40,11 +40,6 @@ public class MethodChainIdentificationTest {
     }
 
     @Test
-    public void sholdNotBeEqualToNonMethodChainIdentification() throws Exception {
-        assertFalse(id.equals(mock(Identification.class)));
-    }
-
-    @Test
     public void shouldReturnNoMethodCallQualifierForMethodCallWithNoQualifier() throws Exception {
         PsiExpression qualifierExprMock = mock(PsiExpression.class);
         when(refExprMock.getQualifierExpression()).thenReturn(qualifierExprMock);

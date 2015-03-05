@@ -29,6 +29,6 @@ public class ProblemIdentificationBuilder {
     }
 
     public ProblemIdentification build() {
-        return new ProblemIdentification(problemDescriptor, name, shortDescription, longDescription);
+        return new ProblemIdentification(problemDescriptor, name);
     }
 }

@@ -2,7 +2,6 @@ package com.simonstuck.vignelli.inspection.identification;
 
 import com.intellij.codeInspection.ProblemDescriptor;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.PsiElement;
 import com.simonstuck.vignelli.utils.IOUtils;
 
 import org.apache.commons.lang.builder.HashCodeBuilder;
@@ -12,13 +11,11 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Objects;
 
-public class ProblemIdentification implements Identification {
+public class ProblemIdentification {
 
     @NotNull
     private final ProblemDescriptor problemDescriptor;
     private final String name;
-    private final String shortDescription;
-    private final String longDescription;
     private VirtualFile virtualFile;
 
     /**
@@ -26,36 +23,16 @@ public class ProblemIdentification implements Identification {
      * <p>The new problem identification contains information about the problem.</p>
      * @param problemDescriptor The problem descriptor associated with the problem
      * @param name The name of the problem
-     * @param shortDescription A short description of the problem
-     * @param longDescription A longer description of the problem
      */
-    public ProblemIdentification(@NotNull ProblemDescriptor problemDescriptor, String name,
-                                 String shortDescription, String longDescription) {
+    public ProblemIdentification(@NotNull ProblemDescriptor problemDescriptor, String name) {
         this.problemDescriptor = problemDescriptor;
         this.name = name;
-        this.shortDescription = shortDescription;
-        this.longDescription = longDescription;
         this.virtualFile = problemDescriptor.getPsiElement().getContainingFile().getVirtualFile();
     }
 
     @NotNull
     public ProblemDescriptor getProblemDescriptor() {
         return problemDescriptor;
-    }
-
-    @Override
-    public String name() {
-        return name;
-    }
-
-    @Override
-    public String shortDescription() {
-        return shortDescription;
-    }
-
-    @Override
-    public String longDescription() {
-        return longDescription;
     }
 
     @Override
@@ -96,7 +73,7 @@ public class ProblemIdentification implements Identification {
 
     @Override
     public String toString() {
-        return name() + ": " + problemDescriptor.getLineNumber();
+        return "ProblemIdentification: " + problemDescriptor.getLineNumber();
     }
 
     public String descriptionTemplate() {

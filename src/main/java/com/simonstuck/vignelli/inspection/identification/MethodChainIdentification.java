@@ -12,7 +12,7 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
-public class MethodChainIdentification implements Identification {
+public class MethodChainIdentification {
     private final PsiMethodCallExpression finalCall;
 
     private MethodChainIdentification(PsiMethodCallExpression finalCall) {
@@ -65,7 +65,7 @@ public class MethodChainIdentification implements Identification {
      * @return A new problem descriptor.
      */
     public ProblemDescriptor problemDescriptor(InspectionManager manager) {
-        return manager.createProblemDescriptor(finalCall, finalCall, shortDescription(), ProblemHighlightType.GENERIC_ERROR_OR_WARNING, false);
+        return manager.createProblemDescriptor(finalCall, finalCall, "Short description", ProblemHighlightType.GENERIC_ERROR_OR_WARNING, false);
     }
 
     @Override
@@ -81,21 +81,5 @@ public class MethodChainIdentification implements Identification {
 
         MethodChainIdentification other = (MethodChainIdentification) obj;
         return other.finalCall.equals(finalCall);
-    }
-
-    @Override
-    public String name() {
-        return "Train Wreck";
-    }
-
-    @Override
-    public String shortDescription() {
-        return "This appears to be a train wreck in your code:\n\n" + "<code>#ref</code>\n\n"
-                + "What is a train wreck you might wonder, well, here's the answer:";
-    }
-
-    @Override
-    public String longDescription() {
-        return "There is a train wreck in your code that you need to fix. This is a big problem.";
     }
 }

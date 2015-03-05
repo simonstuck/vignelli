@@ -115,6 +115,7 @@ public class MethodChainingInspectionTool extends BaseJavaLocalInspectionTool {
                     .setLongDescription(METHOD_CHAIN_IDENTIFICATION_DESCRIPTION_LONG)
                     .build();
 
+            ImprovementOpportunity op = new TrainWreckImprovementOpportunity(id);
             result.add(id);
         }
         return result;
