@@ -11,14 +11,16 @@ import com.simonstuck.vignelli.inspection.identification.ProblemIdentification;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.util.Collection;
-import javax.swing.*;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 
 class AnalysisToolJComponentWindow extends JPanel {
 
     private static final double RESIZE_WEIGHT = .5d;
     private static final int MIN_PROBLEM_LIST_WIDTH = 400;
 
-    private final ProblemIdentificationCollectionListModel dataModel = new ProblemIdentificationCollectionListModel();
+    private final BatchUpdateListModel<ProblemIdentification> dataModel = new BatchUpdateListModel<>();
     private ProblemDescriptionPane problemDescriptionPane;
     private ProblemListPane problemListPane;
 
@@ -91,7 +93,7 @@ class AnalysisToolJComponentWindow extends JPanel {
         @Override
         public void accept(Collection<ProblemIdentification> identifications) {
             ApplicationManager.getApplication().invokeLater(() -> {
-                dataModel.replaceWithNewContents(identifications);
+                dataModel.batchUpdateContents(identifications);
                 problemListPane.invalidate();
                 problemListPane.repaint();
             });
