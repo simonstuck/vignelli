@@ -12,7 +12,7 @@ import com.intellij.codeInspection.ProblemHighlightType;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiVariable;
+import com.intellij.psi.PsiLocalVariable;
 import com.simonstuck.vignelli.inspection.TrainWreckVariableImprovementOpportunity;
 
 import org.junit.Test;
@@ -49,7 +49,7 @@ public class ProblemIdentificationTest {
     @Test
     public void shouldHaveImprovementOpportunityIfResultIsAssignedToVariable() throws Exception {
         PsiElement element = createProblemElement();
-        when(element.getParent()).thenReturn(mock(PsiVariable.class));
+        when(element.getParent()).thenReturn(mock(PsiLocalVariable.class));
         ProblemDescriptor problemDescriptor = createProblemDescriptor(element);
         ProblemIdentification identification = new ProblemIdentification(problemDescriptor, "Problem");
         Optional<TrainWreckVariableImprovementOpportunity> opportunity = identification.improvementOpportunity();

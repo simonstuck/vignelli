@@ -3,7 +3,7 @@ package com.simonstuck.vignelli.inspection.identification;
 import com.intellij.codeInspection.ProblemDescriptor;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiVariable;
+import com.intellij.psi.PsiLocalVariable;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.simonstuck.vignelli.inspection.TrainWreckVariableImprovementOpportunity;
 import com.simonstuck.vignelli.utils.IOUtils;
@@ -97,7 +97,7 @@ public class ProblemIdentification {
     }
 
     public Optional<TrainWreckVariableImprovementOpportunity> improvementOpportunity() {
-        PsiVariable parent = PsiTreeUtil.getParentOfType(element, PsiVariable.class);
+        PsiLocalVariable parent = PsiTreeUtil.getParentOfType(element, PsiLocalVariable.class);
         if (parent != null) {
             return Optional.of(new TrainWreckVariableImprovementOpportunity(element,parent));
         } else {
