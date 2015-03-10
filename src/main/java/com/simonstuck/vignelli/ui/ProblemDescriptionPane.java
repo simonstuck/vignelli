@@ -46,6 +46,7 @@ class ProblemDescriptionPane extends JEditorPane {
         HTMLEditorKit kit = new HTMLEditorKit();
         Document doc = kit.createDefaultDocument();
         kit.getStyleSheet().addRule(STYLES);
+        setEditable(false);
         setEditorKit(kit);
         setDocument(doc);
 
