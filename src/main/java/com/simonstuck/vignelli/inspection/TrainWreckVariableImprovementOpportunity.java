@@ -20,7 +20,6 @@ public class TrainWreckVariableImprovementOpportunity {
     }
 
     public void beginRefactoring() {
-        //FIXME: What if the refactoring is already started?
         refactoring = new TrainWreckVariableRefactoringImpl(trainWreckElement, variable);
         RefactoringEngineComponent refactoringEngine = trainWreckElement.getProject().getComponent(RefactoringEngineComponent.class);
         refactoringEngine.add(refactoring);

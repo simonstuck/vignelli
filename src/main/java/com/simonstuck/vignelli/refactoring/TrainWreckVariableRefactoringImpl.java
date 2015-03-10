@@ -25,8 +25,28 @@ public class TrainWreckVariableRefactoringImpl implements Refactoring {
 
     public TrainWreckVariableRefactoringImpl(PsiElement trainWreckElement, PsiLocalVariable variable) {
         this.trainWreckElement = trainWreckElement;
-
         this.variable = variable;
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (this == object) {
+            return true;
+        }
+        if (object == null || getClass() != object.getClass()) {
+            return false;
+        }
+
+        TrainWreckVariableRefactoringImpl that = (TrainWreckVariableRefactoringImpl) object;
+
+        return trainWreckElement.equals(that.trainWreckElement) && variable.equals(that.variable);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = trainWreckElement.hashCode();
+        result = 31 * result + variable.hashCode();
+        return result;
     }
 
     @Override

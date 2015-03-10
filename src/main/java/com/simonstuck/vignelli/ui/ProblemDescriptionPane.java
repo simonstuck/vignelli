@@ -36,6 +36,8 @@ class ProblemDescriptionPane extends JEditorPane {
         }
     }
 
+    private ProblemIdentification shownIdentification;
+
     public ProblemDescriptionPane() {
         setLayout(new BorderLayout());
         setEditable(false);
@@ -69,9 +71,16 @@ class ProblemDescriptionPane extends JEditorPane {
 
     private void handleVignelliLinkEvent(HyperlinkEvent event) {
         LOG.info("vignelli event: " + event);
+        Optional<TrainWreckVariableImprovementOpportunity> opportunity = shownIdentification.improvementOpportunity();
+        if (!opportunity.isPresent()) {
+            LOG.warn("Tried to launch refactoring which does not exist. event=[" + event + "]");
+        } else {
+            opportunity.get().beginRefactoring();
+        }
     }
 
     public void showDescription(@NotNull ProblemIdentification id) {
+        shownIdentification = id;
         Map<String, String> contentMap = new HashMap<>();
         Template template = new HTMLFileTemplate(id.descriptionTemplate());
         Optional<TrainWreckVariableImprovementOpportunity> opp = id.improvementOpportunity();
