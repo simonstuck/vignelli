@@ -1,5 +1,7 @@
 package com.simonstuck.vignelli.ui;
 
+import com.intellij.openapi.diagnostic.Logger;
+import com.simonstuck.vignelli.inspection.TrainWreckVariableImprovementOpportunity;
 import com.simonstuck.vignelli.inspection.identification.ProblemIdentification;
 import com.simonstuck.vignelli.ui.description.HTMLFileTemplate;
 import com.simonstuck.vignelli.ui.description.Template;
@@ -13,6 +15,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import javax.swing.JEditorPane;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.text.Document;
@@ -20,6 +23,8 @@ import javax.swing.text.EditorKit;
 import javax.swing.text.html.HTMLEditorKit;
 
 class ProblemDescriptionPane extends JEditorPane {
+    private static final Logger LOG = Logger.getInstance(ProblemDescriptionPane.class.getName());
+    public static final String VIGNELLI_SCHEME = "vignelli";
     private static Template DEFAULT_TEMPLATE;
 
     static {
@@ -50,7 +55,11 @@ class ProblemDescriptionPane extends JEditorPane {
         addHyperlinkListener(event -> {
             if (event.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
                 try {
-                    Desktop.getDesktop().browse(event.getURL().toURI());
+                    if (event.getDescription().startsWith(VIGNELLI_SCHEME)) {
+                        handleVignelliLinkEvent(event);
+                    } else {
+                        Desktop.getDesktop().browse(event.getURL().toURI());
+                    }
                 } catch (IOException | URISyntaxException e1) {
                     e1.printStackTrace();
                 }
@@ -58,9 +67,17 @@ class ProblemDescriptionPane extends JEditorPane {
         });
     }
 
+    private void handleVignelliLinkEvent(HyperlinkEvent event) {
+        LOG.info("vignelli event: " + event);
+    }
+
     public void showDescription(@NotNull ProblemIdentification id) {
         Map<String, String> contentMap = new HashMap<>();
         Template template = new HTMLFileTemplate(id.descriptionTemplate());
+        Optional<TrainWreckVariableImprovementOpportunity> opp = id.improvementOpportunity();
+        if (opp.isPresent()) {
+            contentMap.put("IMPROVEMENT", opp.get().toString());
+        }
         setText(template.render(contentMap));
         validate();
         repaint();
