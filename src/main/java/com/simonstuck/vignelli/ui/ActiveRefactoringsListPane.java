@@ -1,12 +1,18 @@
 package com.simonstuck.vignelli.ui;
 
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.project.Project;
 import com.intellij.ui.components.JBList;
 import com.intellij.ui.components.JBScrollPane;
+import com.simonstuck.vignelli.refactoring.ActiveRefactoringCollectionListener;
+import com.simonstuck.vignelli.refactoring.Refactoring;
+import com.simonstuck.vignelli.refactoring.RefactoringEngineComponent;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.font.TextAttribute;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.JLabel;
@@ -14,7 +20,10 @@ import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
 public class ActiveRefactoringsListPane extends JPanel {
-    public ActiveRefactoringsListPane() {
+
+    private final BatchUpdateListModel<Refactoring> model;
+
+    public ActiveRefactoringsListPane(Project project) {
         setLayout(new BorderLayout(5,5));
 
         JLabel label = new JLabel("Active Refactorings");
@@ -26,11 +35,28 @@ public class ActiveRefactoringsListPane extends JPanel {
 
         JBList listPane = new JBList();
 
-        BatchUpdateListModel<Object> model = new BatchUpdateListModel<>();
-        model.addElement("Hello world");
-        model.addElement("Yeah");
+        model = new BatchUpdateListModel<>();
         listPane.setModel(model);
+
+        UIActiveRefactoringCollectionListener listener = new UIActiveRefactoringCollectionListener();
+        project.getMessageBus().connect().subscribe(RefactoringEngineComponent.ACTIVE_REFACTORINGS_TOPIC, listener);
+        RefactoringEngineComponent refactoringEngineComponent = project.getComponent(RefactoringEngineComponent.class);
+        listener.accept(refactoringEngineComponent.activeRefactorings());
+
+
         Component scrollListPane = new JBScrollPane(listPane);
         add(scrollListPane, BorderLayout.CENTER);
+    }
+
+    private class UIActiveRefactoringCollectionListener implements ActiveRefactoringCollectionListener {
+        @Override
+        public void accept(Collection<Refactoring> refactorings) {
+            ApplicationManager.getApplication().invokeLater(() -> {
+                model.batchUpdateContents(refactorings);
+                invalidate();
+                repaint();
+            });
+
+        }
     }
 }

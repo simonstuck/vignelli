@@ -25,15 +25,17 @@ class AnalysisToolJComponentWindow extends JPanel {
 
     private final BatchUpdateListModel<ProblemIdentification> problemDataModel = new BatchUpdateListModel<>();
     private final BatchUpdateListModel<Refactoring> refactoringsDataModel = new BatchUpdateListModel<>();
+    private final Project project;
 
     private ProblemDescriptionPane problemDescriptionPane;
     private ProblemListPane problemListPane;
 
     public AnalysisToolJComponentWindow(Project project) {
         super();
+        this.project = project;
 
         createLayout();
-        subscribeToChanges(project);
+        subscribeToChanges();
     }
 
     private void createLayout() {
@@ -47,7 +49,7 @@ class AnalysisToolJComponentWindow extends JPanel {
         JScrollPane scrollDescriptionPane = new JBScrollPane(problemDescriptionPane);
         JScrollPane scrollListPane = createProblemListPane();
 
-        JSplitPane listSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, new ActiveRefactoringsListPane(), scrollListPane);
+        JSplitPane listSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, new ActiveRefactoringsListPane(project), scrollListPane);
         listSplitPane.setSize(getSize());
 //        listSplitPane.setResizeWeight(RESIZE_WEIGHT);
 
@@ -88,17 +90,17 @@ class AnalysisToolJComponentWindow extends JPanel {
         return new ProblemDescriptionPane();
     }
 
-    private void subscribeToChanges(Project project) {
+    private void subscribeToChanges() {
         MessageBusConnection connection = project.getMessageBus().connect();
         UIProblemIdentificationCollectionListener listener = new UIProblemIdentificationCollectionListener();
         connection.subscribe(ProblemIdentificationCacheComponent.INSPECTION_IDENTIFICATION_TOPIC, listener);
-        initDataStoreWithExistingProblems(project, listener);
+        initDataStoreWithExistingProblems(listener);
 
         ActiveRefactoringCollectionListener refactoringsListener = new MyActiveRefactoringCollectionListener();
         connection.subscribe(RefactoringEngineComponent.ACTIVE_REFACTORINGS_TOPIC, refactoringsListener);
     }
 
-    private void initDataStoreWithExistingProblems(Project project, UIProblemIdentificationCollectionListener listener) {
+    private void initDataStoreWithExistingProblems(UIProblemIdentificationCollectionListener listener) {
         ProblemIdentificationCacheComponent problemIdentificationCacheComponent = project.getComponent(ProblemIdentificationCacheComponent.class);
         listener.accept(problemIdentificationCacheComponent.selectedFileProblems());
     }

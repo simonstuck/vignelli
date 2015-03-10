@@ -6,6 +6,7 @@ import com.intellij.util.messages.Topic;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -63,5 +64,9 @@ public class RefactoringEngineComponent implements ProjectComponent {
     @Override
     public String getComponentName() {
         return "Vignelli Refactoring Engine";
+    }
+
+    public Collection<Refactoring> activeRefactorings() {
+        return new HashSet<>(activeRefactorings);
     }
 }
