@@ -1,5 +1,7 @@
 package com.simonstuck.vignelli.ui.description;
 
+import com.floreysoft.jmte.Engine;
+
 import java.util.Map;
 
 public class HTMLFileTemplate implements Template {
@@ -11,11 +13,8 @@ public class HTMLFileTemplate implements Template {
     }
 
     @Override
-    public String render(Map<String, String> content) {
-        String result = template;
-        for (Map.Entry<String,String> entry : content.entrySet()) {
-            result = result.replaceAll("\\{\\{" + entry.getKey() + "\\}\\}", entry.getValue());
-        }
-        return result;
+    public String render(Map<String, Object> content) {
+        Engine engine = new Engine();
+        return engine.transform(template, content);
     }
 }

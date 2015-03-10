@@ -59,6 +59,7 @@ dependencies {
 
   compile 'org.jdom:jdom:1.1'
   compile 'com.google.guava:guava:18.0'
+  compile 'com.floreysoft:jmte:3.1.1'
   compile fileTree(dir: "${idea_home}/lib", include: '*.jar')
 
   antTask group: 'com.intellij', name: 'javac2', version: '12.1.0'

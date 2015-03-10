@@ -19,18 +19,19 @@ import java.util.Optional;
 import javax.swing.JEditorPane;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.text.Document;
-import javax.swing.text.EditorKit;
 import javax.swing.text.html.HTMLEditorKit;
 
 class ProblemDescriptionPane extends JEditorPane {
     private static final Logger LOG = Logger.getInstance(ProblemDescriptionPane.class.getName());
     public static final String VIGNELLI_SCHEME = "vignelli";
     private static Template DEFAULT_TEMPLATE;
+    private static String STYLES;
 
     static {
         try {
             String strTemplate = IOUtils.readFile(ProblemDescriptionPane.class.getResource("/problemDescriptionTemplates/emptyDescription.html").toURI());
             DEFAULT_TEMPLATE = new HTMLFileTemplate(strTemplate);
+            STYLES = IOUtils.readFile(ProblemDescriptionPane.class.getResource("/problemDescriptionTemplates/styles.css").toURI());
         } catch (IOException | URISyntaxException e) {
             e.printStackTrace();
         }
@@ -40,11 +41,11 @@ class ProblemDescriptionPane extends JEditorPane {
 
     public ProblemDescriptionPane() {
         setLayout(new BorderLayout());
-        setEditable(false);
         setOpaque(false);
 
-        EditorKit kit = new HTMLEditorKit();
+        HTMLEditorKit kit = new HTMLEditorKit();
         Document doc = kit.createDefaultDocument();
+        kit.getStyleSheet().addRule(STYLES);
         setEditorKit(kit);
         setDocument(doc);
 
@@ -81,11 +82,11 @@ class ProblemDescriptionPane extends JEditorPane {
 
     public void showDescription(@NotNull ProblemIdentification id) {
         shownIdentification = id;
-        Map<String, String> contentMap = new HashMap<>();
+        Map<String, Object> contentMap = new HashMap<>();
         Template template = new HTMLFileTemplate(id.descriptionTemplate());
         Optional<TrainWreckVariableImprovementOpportunity> opp = id.improvementOpportunity();
         if (opp.isPresent()) {
-            contentMap.put("IMPROVEMENT", opp.get().toString());
+            contentMap.put("improvement", opp.get().toString());
         }
         setText(template.render(contentMap));
         validate();

@@ -1,0 +1,11 @@
+body.vignelli-description {
+    padding: 5;
+    font-family: "Trebuchet MS", "Helvetica Neue";
+}
+
+body.vignelli-description blockquote {
+    border: 1px solid #dddddd;
+    background: #eeeeee;
+    padding: 5px;
+    margin: 10 10 10 30;
+}

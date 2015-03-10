@@ -18,6 +18,7 @@ public class TrainWreckVariableRefactoringImpl implements Refactoring {
     @SuppressWarnings("unchecked")
     private static final Class<? extends RefactoringStep>[] STEPS
             = (Class<? extends RefactoringStep>[]) Arrays.asList(InlineVariableRefactoringStep.class).toArray();
+    public static final String TRAIN_WRECK_REFACTORING_DESCRIPTION = "Train Wreck Refactoring";
     private final PsiElement trainWreckElement;
     private final PsiLocalVariable variable;
 
@@ -26,6 +27,10 @@ public class TrainWreckVariableRefactoringImpl implements Refactoring {
     public TrainWreckVariableRefactoringImpl(PsiElement trainWreckElement, PsiLocalVariable variable) {
         this.trainWreckElement = trainWreckElement;
         this.variable = variable;
+    }
+
+    public String description() {
+        return TRAIN_WRECK_REFACTORING_DESCRIPTION;
     }
 
     @Override
