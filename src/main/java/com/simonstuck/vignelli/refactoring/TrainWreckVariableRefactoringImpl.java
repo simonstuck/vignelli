@@ -23,10 +23,15 @@ public class TrainWreckVariableRefactoringImpl implements Refactoring {
     private final PsiLocalVariable variable;
 
     private int currentStepIndex = 0;
+    private Map<String, Object> refactoringStepArguments;
 
     public TrainWreckVariableRefactoringImpl(PsiElement trainWreckElement, PsiLocalVariable variable) {
         this.trainWreckElement = trainWreckElement;
         this.variable = variable;
+
+        refactoringStepArguments = new HashMap<>();
+        refactoringStepArguments.put(InlineVariableRefactoringStep.PROJECT_ARGUMENT_KEY, variable.getProject());
+        refactoringStepArguments.put(InlineVariableRefactoringStep.VARIABLE_TO_INLINE_ARGUMENT_KEY, variable);
     }
 
     public String description() {
@@ -62,8 +67,8 @@ public class TrainWreckVariableRefactoringImpl implements Refactoring {
 
         Class<? extends RefactoringStep> stepClass = STEPS[currentStepIndex];
         try {
-            RefactoringStep step = stepClass.getConstructor(Map.class).newInstance(new HashMap<>());
-            step.process();
+            RefactoringStep step = stepClass.getConstructor(Map.class).newInstance(refactoringStepArguments);
+            refactoringStepArguments = step.process();
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
             LOG.error(e.getMessage(), e);
         }

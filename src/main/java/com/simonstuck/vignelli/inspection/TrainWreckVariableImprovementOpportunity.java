@@ -23,5 +23,10 @@ public class TrainWreckVariableImprovementOpportunity {
         refactoring = new TrainWreckVariableRefactoringImpl(trainWreckElement, variable);
         RefactoringEngineComponent refactoringEngine = trainWreckElement.getProject().getComponent(RefactoringEngineComponent.class);
         refactoringEngine.add(refactoring);
+        try {
+            refactoring.nextStep();
+        } catch (NoSuchMethodException e) {
+            LOG.error(e.getMessage(),e);
+        }
     }
 }
