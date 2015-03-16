@@ -1,11 +1,15 @@
 package com.simonstuck.vignelli.ui.description;
 
+import com.intellij.openapi.diagnostic.Logger;
 import com.simonstuck.vignelli.refactoring.Refactoring;
 
+import java.util.HashMap;
+import java.util.Map;
 import javax.swing.event.HyperlinkEvent;
 
 public class RefactoringDescription implements Description {
 
+    private static final Logger LOG = Logger.getInstance(RefactoringDescription.class.getName());
     private final Refactoring refactoring;
 
     public RefactoringDescription(Refactoring refactoring) {
@@ -14,11 +18,20 @@ public class RefactoringDescription implements Description {
 
     @Override
     public String render() {
-        return "Refactoring Description";
+        Template template = new HTMLFileTemplate(refactoring.template());
+        Map<String, Object> contentMap = new HashMap<>();
+
+        refactoring.fillTemplateValues(contentMap);
+        return template.render(contentMap);
     }
 
     @Override
     public void handleVignelliLinkEvent(HyperlinkEvent event) {
-
+        LOG.info("Refactoring next step event sent: " + event);
+        try {
+            refactoring.nextStep();
+        } catch (NoSuchMethodException e) {
+            LOG.error(e.getMessage(), e);
+        }
     }
 }

@@ -5,8 +5,11 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiLocalVariable;
 import com.simonstuck.vignelli.refactoring.steps.InlineVariableRefactoringStep;
 import com.simonstuck.vignelli.refactoring.steps.RefactoringStep;
+import com.simonstuck.vignelli.utils.IOUtils;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -60,6 +63,11 @@ public class TrainWreckVariableRefactoringImpl implements Refactoring {
     }
 
     @Override
+    public boolean hasNextStep() {
+        return currentStepNumber() <= totalSteps();
+    }
+
+    @Override
     public void nextStep() throws NoSuchMethodException {
         if (currentStepIndex == STEPS.length) {
             throw new NoSuchMethodException("No more refactoring steps required.");
@@ -73,5 +81,37 @@ public class TrainWreckVariableRefactoringImpl implements Refactoring {
             LOG.error(e.getMessage(), e);
         }
         currentStepIndex++;
+    }
+
+    @Override
+    public int totalSteps() {
+        return STEPS.length;
+    }
+
+    @Override
+    public int currentStepNumber() {
+        return currentStepIndex + 1;
+    }
+
+    @Override
+    public void fillTemplateValues(Map<String, Object> templateValues) {
+        templateValues.put("totalSteps", totalSteps());
+        templateValues.put("currentStep", currentStepNumber());
+        templateValues.put("hasNextStep", hasNextStep());
+
+        if (hasNextStep()) {
+            templateValues.put("nextStepName", "Inline!");
+            templateValues.put("nextStepDescription", "Some inlining Description");
+        }
+    }
+
+    @Override
+    public String template() {
+        try {
+            return IOUtils.readFile(getClass().getResource("/descriptionTemplates/trainWreckRefactoring.html").toURI());
+        } catch (IOException | URISyntaxException e) {
+            e.printStackTrace();
+        }
+        return "";
     }
 }

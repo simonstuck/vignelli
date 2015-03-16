@@ -1,6 +1,5 @@
 package com.simonstuck.vignelli.inspection;
 
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiLocalVariable;
 import com.simonstuck.vignelli.refactoring.RefactoringEngineComponent;
@@ -8,11 +7,8 @@ import com.simonstuck.vignelli.refactoring.TrainWreckVariableRefactoringImpl;
 
 public class TrainWreckVariableImprovementOpportunity {
 
-    private static final Logger LOG = Logger.getInstance(TrainWreckVariableImprovementOpportunity.class.getName());
-
     private final PsiElement trainWreckElement;
     private final PsiLocalVariable variable;
-    private TrainWreckVariableRefactoringImpl refactoring;
 
     public TrainWreckVariableImprovementOpportunity(PsiElement trainWreckElement, PsiLocalVariable variable) {
         this.trainWreckElement = trainWreckElement;
@@ -20,13 +16,8 @@ public class TrainWreckVariableImprovementOpportunity {
     }
 
     public void beginRefactoring() {
-        refactoring = new TrainWreckVariableRefactoringImpl(trainWreckElement, variable);
+        TrainWreckVariableRefactoringImpl refactoring = new TrainWreckVariableRefactoringImpl(trainWreckElement, variable);
         RefactoringEngineComponent refactoringEngine = trainWreckElement.getProject().getComponent(RefactoringEngineComponent.class);
         refactoringEngine.add(refactoring);
-        try {
-            refactoring.nextStep();
-        } catch (NoSuchMethodException e) {
-            LOG.error(e.getMessage(),e);
-        }
     }
 }

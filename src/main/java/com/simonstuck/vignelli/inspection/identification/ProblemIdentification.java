@@ -16,7 +16,7 @@ import java.net.URISyntaxException;
 import java.util.Objects;
 import java.util.Optional;
 
-public class ProblemIdentification {
+public class ProblemIdentification implements com.simonstuck.vignelli.Templatable {
 
     @NotNull
     private final ProblemDescriptor problemDescriptor;
@@ -83,9 +83,10 @@ public class ProblemIdentification {
         return "ProblemIdentification: " + problemDescriptor.getLineNumber();
     }
 
-    public String descriptionTemplate() {
+    @Override
+    public String template() {
         try {
-            return IOUtils.readFile(getClass().getResource("/problemDescriptionTemplates/trainWreckDescription.html").toURI());
+            return IOUtils.readFile(getClass().getResource("/descriptionTemplates/trainWreckDescription.html").toURI());
         } catch (IOException | URISyntaxException e) {
             e.printStackTrace();
         }

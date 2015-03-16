@@ -13,6 +13,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiLocalVariable;
+import com.simonstuck.vignelli.Templatable;
 import com.simonstuck.vignelli.inspection.TrainWreckVariableImprovementOpportunity;
 
 import org.junit.Test;
@@ -23,8 +24,8 @@ public class ProblemIdentificationTest {
     @Test
     public void shouldBeEqualToAnotherProblemIdentificationUsingASimilarProblemDescriptor() throws Exception {
         ProblemDescriptor problemDescriptor = createProblemDescriptor(createProblemElement());
-        ProblemIdentification identificationA = new ProblemIdentification(problemDescriptor,"Problem");
-        ProblemIdentification identificationB = new ProblemIdentification(problemDescriptor,"Problem");
+        Templatable identificationA = new ProblemIdentification(problemDescriptor,"Problem");
+        Templatable identificationB = new ProblemIdentification(problemDescriptor,"Problem");
 
         assertTrue(identificationA.equals(identificationB));
         assertEquals(identificationA.hashCode(), identificationB.hashCode());
@@ -33,8 +34,8 @@ public class ProblemIdentificationTest {
     @Test
     public void shouldBeUnequalToAnotherProblemIdentificationUsingASimilarProblemDescriptorButDifferentName() throws Exception {
         ProblemDescriptor problemDescriptor = createProblemDescriptor(createProblemElement());
-        ProblemIdentification identificationA = new ProblemIdentification(problemDescriptor,"ProblemA");
-        ProblemIdentification identificationB = new ProblemIdentification(problemDescriptor,"ProblemB");
+        Templatable identificationA = new ProblemIdentification(problemDescriptor,"ProblemA");
+        Templatable identificationB = new ProblemIdentification(problemDescriptor,"ProblemB");
 
         assertFalse(identificationA.equals(identificationB));
     }

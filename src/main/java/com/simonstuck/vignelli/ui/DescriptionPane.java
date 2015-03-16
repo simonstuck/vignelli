@@ -33,7 +33,7 @@ class DescriptionPane extends JEditorPane {
         Document doc = kit.createDefaultDocument();
 
         try {
-            String styles = IOUtils.readFile(DescriptionPane.class.getResource("/problemDescriptionTemplates/styles.css").toURI());
+            String styles = IOUtils.readFile(DescriptionPane.class.getResource("/descriptionTemplates/styles.css").toURI());
             kit.getStyleSheet().addRule(styles);
         } catch (IOException | URISyntaxException e) {
             LOG.error(e.getMessage(), e);
@@ -85,7 +85,7 @@ class DescriptionPane extends JEditorPane {
         public String render() {
             String strTemplate = null;
             try {
-                strTemplate = IOUtils.readFile(DescriptionPane.class.getResource("/problemDescriptionTemplates/emptyDescription.html").toURI());
+                strTemplate = IOUtils.readFile(DescriptionPane.class.getResource("/descriptionTemplates/emptyDescription.html").toURI());
             } catch (IOException | URISyntaxException e) {
                 LOG.error(e.getMessage(), e);
             }

@@ -25,7 +25,7 @@ public class ProblemIdentificationDescription implements Description {
     @Override
     public String render() {
         Map<String, Object> contentMap = new HashMap<>();
-        Template template = new HTMLFileTemplate(id.descriptionTemplate());
+        Template template = new HTMLFileTemplate(id.template());
         Optional<TrainWreckVariableImprovementOpportunity> opp = id.improvementOpportunity();
         if (opp.isPresent()) {
             contentMap.put("improvement", opp.get().toString());
