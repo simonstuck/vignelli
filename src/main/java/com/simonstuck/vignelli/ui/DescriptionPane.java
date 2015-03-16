@@ -1,6 +1,7 @@
 package com.simonstuck.vignelli.ui;
 
 import com.intellij.openapi.diagnostic.Logger;
+import com.simonstuck.vignelli.ui.description.Description;
 import com.simonstuck.vignelli.ui.description.HTMLFileTemplate;
 import com.simonstuck.vignelli.ui.description.Template;
 import com.simonstuck.vignelli.utils.IOUtils;

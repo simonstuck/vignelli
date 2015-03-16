@@ -7,6 +7,7 @@ import com.intellij.ui.components.JBScrollPane;
 import com.simonstuck.vignelli.refactoring.ActiveRefactoringCollectionListener;
 import com.simonstuck.vignelli.refactoring.Refactoring;
 import com.simonstuck.vignelli.refactoring.RefactoringEngineComponent;
+import com.simonstuck.vignelli.ui.description.RefactoringDescription;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -22,8 +23,9 @@ import javax.swing.border.EmptyBorder;
 public class ActiveRefactoringsListPane extends JPanel {
 
     private final BatchUpdateListModel<Refactoring> model;
+    private final JBList listPane;
 
-    public ActiveRefactoringsListPane(Project project) {
+    public ActiveRefactoringsListPane(Project project, AnalysisToolJComponentWindow delegate) {
         setLayout(new BorderLayout(5,5));
 
         JLabel label = new JLabel("Active Refactorings");
@@ -33,10 +35,20 @@ public class ActiveRefactoringsListPane extends JPanel {
         label.setFont(Font.getFont(fontAttributes));
         add(label, BorderLayout.NORTH);
 
-        JBList listPane = new JBList();
+        listPane = new JBList();
 
         model = new BatchUpdateListModel<>();
         listPane.setModel(model);
+
+        listPane.getSelectionModel().addListSelectionListener(event -> ApplicationManager.getApplication().invokeLater(() -> {
+            if (!event.getValueIsAdjusting()) {
+                int index = listPane.getSelectedIndex();
+                if (index > -1) {
+                    delegate.deselectOthers(this);
+                    delegate.showDescription(new RefactoringDescription(model.getElementAt(index)));
+                }
+            }
+        }));
 
         UIActiveRefactoringCollectionListener listener = new UIActiveRefactoringCollectionListener();
         project.getMessageBus().connect().subscribe(RefactoringEngineComponent.ACTIVE_REFACTORINGS_TOPIC, listener);
@@ -46,6 +58,10 @@ public class ActiveRefactoringsListPane extends JPanel {
 
         Component scrollListPane = new JBScrollPane(listPane);
         add(scrollListPane, BorderLayout.CENTER);
+    }
+
+    public void clearSelection() {
+        listPane.clearSelection();
     }
 
     private class UIActiveRefactoringCollectionListener implements ActiveRefactoringCollectionListener {

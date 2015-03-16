@@ -1,10 +1,8 @@
-package com.simonstuck.vignelli.ui;
+package com.simonstuck.vignelli.ui.description;
 
 import com.intellij.openapi.diagnostic.Logger;
 import com.simonstuck.vignelli.inspection.TrainWreckVariableImprovementOpportunity;
 import com.simonstuck.vignelli.inspection.identification.ProblemIdentification;
-import com.simonstuck.vignelli.ui.description.HTMLFileTemplate;
-import com.simonstuck.vignelli.ui.description.Template;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -13,7 +11,7 @@ import java.util.Map;
 import java.util.Optional;
 import javax.swing.event.HyperlinkEvent;
 
-class ProblemIdentificationDescription implements Description {
+public class ProblemIdentificationDescription implements Description {
 
     private static final Logger LOG = Logger.getInstance(ProblemIdentificationDescription.class.getName());
 

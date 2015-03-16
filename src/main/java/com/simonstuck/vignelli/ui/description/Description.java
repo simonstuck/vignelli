@@ -1,8 +1,8 @@
-package com.simonstuck.vignelli.ui;
+package com.simonstuck.vignelli.ui.description;
 
 import javax.swing.event.HyperlinkEvent;
 
-interface Description {
+public interface Description {
     String render();
 
     void handleVignelliLinkEvent(HyperlinkEvent event);
