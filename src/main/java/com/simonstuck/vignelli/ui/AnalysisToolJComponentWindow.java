@@ -27,7 +27,7 @@ class AnalysisToolJComponentWindow extends JPanel {
     private final BatchUpdateListModel<Refactoring> refactoringsDataModel = new BatchUpdateListModel<>();
     private final Project project;
 
-    private ProblemDescriptionPane problemDescriptionPane;
+    private DescriptionPane descriptionPane;
     private ProblemListPane problemListPane;
 
     public AnalysisToolJComponentWindow(Project project) {
@@ -45,8 +45,8 @@ class AnalysisToolJComponentWindow extends JPanel {
     }
 
     private JSplitPane createSplitPane() {
-        problemDescriptionPane = createProblemDescriptionPane();
-        JScrollPane scrollDescriptionPane = new JBScrollPane(problemDescriptionPane);
+        descriptionPane = createProblemDescriptionPane();
+        JScrollPane scrollDescriptionPane = new JBScrollPane(descriptionPane);
         JScrollPane scrollListPane = createProblemListPane();
 
         JSplitPane listSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, new ActiveRefactoringsListPane(project), scrollListPane);
@@ -71,10 +71,10 @@ class AnalysisToolJComponentWindow extends JPanel {
                     if (!event.getValueIsAdjusting()) {
                         int index = problemListPane.getSelectedIndex();
                         if (index == -1) {
-                            problemDescriptionPane.showDefault();
+                            descriptionPane.showDefault();
                         } else {
                             ProblemIdentification id = problemDataModel.getElementAt(index);
-                            problemDescriptionPane.showDescription(id);
+                            descriptionPane.showDescription(new ProblemIdentificationDescription(id));
                         }
                     }
                 });
@@ -86,8 +86,8 @@ class AnalysisToolJComponentWindow extends JPanel {
         return scrollPane;
     }
 
-    private ProblemDescriptionPane createProblemDescriptionPane() {
-        return new ProblemDescriptionPane();
+    private DescriptionPane createProblemDescriptionPane() {
+        return new DescriptionPane();
     }
 
     private void subscribeToChanges() {
