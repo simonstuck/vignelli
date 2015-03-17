@@ -38,6 +38,19 @@ public class MethodChainingInspectionTool extends BaseJavaLocalInspectionTool {
 
     @Nullable
     @Override
+    public synchronized ProblemDescriptor[] checkFile(@NotNull PsiFile file, @NotNull InspectionManager manager, boolean isOnTheFly) {
+        ProblemDescriptor[] result = super.checkFile(file, manager, isOnTheFly);
+        // If there are no more methods defined, we have to remove any remaining problems that
+        // may still be cached.
+        if (getDefinedMethods(file).isEmpty()) {
+            cleanMethodProblems(file);
+            notifyProblemCacheIfNecessary(file.getVirtualFile(), manager);
+        }
+        return result;
+    }
+
+    @Nullable
+    @Override
     public synchronized ProblemDescriptor[] checkMethod(@NotNull PsiMethod method, @NotNull InspectionManager manager, boolean isOnTheFly) {
         cleanMethodProblems(method.getContainingFile());
 
@@ -45,7 +58,7 @@ public class MethodChainingInspectionTool extends BaseJavaLocalInspectionTool {
         List<ProblemDescriptor> problemDescriptors = createProblemDescriptors(manager, methodChainIdentifications);
         Collection<ProblemIdentification> identifications = buildProblemIdentifications(problemDescriptors);
         methodProblemsMap.put(method, identifications);
-        notifyProblemCacheIfNecessary(manager);
+        notifyProblemCacheIfNecessary(method.getContainingFile().getVirtualFile(), manager);
 
         return problemDescriptors.toArray(new ProblemDescriptor[problemDescriptors.size()]);
     }
@@ -96,16 +109,13 @@ public class MethodChainingInspectionTool extends BaseJavaLocalInspectionTool {
         return methods;
     }
 
-    private void notifyProblemCacheIfNecessary(InspectionManager manager) {
+    private void notifyProblemCacheIfNecessary(VirtualFile virtualFile, InspectionManager manager) {
         ProblemIdentificationCacheComponent cache = manager.getProject().getComponent(ProblemIdentificationCacheComponent.class);
 
         Collection<ProblemIdentification> allIdentifications = new LinkedList<>();
-        methodProblemsMap.values().stream() .forEach(allIdentifications::addAll);
+        methodProblemsMap.values().stream().forEach(allIdentifications::addAll);
 
-        if (!allIdentifications.isEmpty()) {
-            VirtualFile file = allIdentifications.iterator().next().virtualFile();
-            cache.updateFileProblems(file, allIdentifications);
-        }
+        cache.updateFileProblems(virtualFile, allIdentifications);
     }
 
     private Collection<ProblemIdentification> buildProblemIdentifications(Collection<ProblemDescriptor> problemDescriptors) {
