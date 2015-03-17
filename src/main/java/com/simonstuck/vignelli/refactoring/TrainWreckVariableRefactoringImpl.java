@@ -1,30 +1,28 @@
 package com.simonstuck.vignelli.refactoring;
 
-import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiLocalVariable;
+import com.intellij.psi.PsiStatement;
+import com.simonstuck.vignelli.refactoring.steps.ExtractMethodRefactoringStep;
 import com.simonstuck.vignelli.refactoring.steps.InlineVariableRefactoringStep;
-import com.simonstuck.vignelli.refactoring.steps.RefactoringStep;
 import com.simonstuck.vignelli.utils.IOUtils;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
-import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
 public class TrainWreckVariableRefactoringImpl implements Refactoring {
 
-    private static final Logger LOG = Logger.getInstance(TrainWreckVariableRefactoringImpl.class.getName());
-
-    @SuppressWarnings("unchecked")
-    private static final Class<? extends RefactoringStep>[] STEPS
-            = (Class<? extends RefactoringStep>[]) Arrays.asList(InlineVariableRefactoringStep.class).toArray();
     public static final String TRAIN_WRECK_REFACTORING_DESCRIPTION = "Train Wreck Refactoring";
     private final PsiElement trainWreckElement;
     private final PsiLocalVariable variable;
     private final RefactoringTracker refactoringTracker;
+    private final Project project;
+    private final PsiFile file;
 
     private int currentStepIndex = 0;
     private Map<String, Object> refactoringStepArguments;
@@ -33,6 +31,8 @@ public class TrainWreckVariableRefactoringImpl implements Refactoring {
         this.trainWreckElement = trainWreckElement;
         this.variable = variable;
         this.refactoringTracker = refactoringTracker;
+        this.project = trainWreckElement.getProject();
+        this.file = trainWreckElement.getContainingFile();
 
         refactoringStepArguments = new HashMap<>();
         refactoringStepArguments.put(InlineVariableRefactoringStep.PROJECT_ARGUMENT_KEY, variable.getProject());
@@ -71,23 +71,39 @@ public class TrainWreckVariableRefactoringImpl implements Refactoring {
 
     @Override
     public void nextStep() throws NoSuchMethodException {
-        if (currentStepIndex == STEPS.length) {
-            throw new NoSuchMethodException("No more refactoring steps required.");
-        }
 
-        Class<? extends RefactoringStep> stepClass = STEPS[currentStepIndex];
-        try {
-            RefactoringStep step = stepClass.getConstructor(Map.class).newInstance(refactoringStepArguments);
-            refactoringStepArguments = step.process();
-        } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
-            LOG.error(e.getMessage(), e);
+        switch (currentStepIndex) {
+            case 0:
+                performInlineStep();
+                break;
+            case 1:
+                performExtractMethodStep();
+                break;
+            default:
+                throw new NoSuchMethodException("No more refactoring steps required.");
         }
         currentStepIndex++;
     }
 
+    private void performInlineStep() {
+        InlineVariableRefactoringStep step = new InlineVariableRefactoringStep(refactoringStepArguments);
+        refactoringStepArguments = step.process();
+    }
+
+    private void performExtractMethodStep() {
+        @SuppressWarnings("unchecked")
+        Collection<PsiStatement> inlineParents = (Collection<PsiStatement>) refactoringStepArguments.get("inlineParents");
+        PsiElement[] elementsToExtract = inlineParents.toArray(new PsiElement[inlineParents.size()]);
+        refactoringStepArguments.put("project", project);
+        refactoringStepArguments.put("elementsToExtract", elementsToExtract);
+        refactoringStepArguments.put("file", file);
+        ExtractMethodRefactoringStep step = new ExtractMethodRefactoringStep(refactoringStepArguments);
+        refactoringStepArguments = step.process();
+    }
+
     @Override
     public int totalSteps() {
-        return STEPS.length;
+        return 2;
     }
 
     @Override
