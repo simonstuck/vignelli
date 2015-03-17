@@ -71,11 +71,10 @@ public class MethodChainingInspectionTool extends BaseJavaLocalInspectionTool {
      * the corresponding problem descriptors for any potential problems are removed.</p>
      * @param file The file for which to inspect all methods.
      */
-    private void cleanMethodProblems(PsiFile file) {
+    private synchronized void cleanMethodProblems(PsiFile file) {
         Set<PsiMethod> definedMethods = getDefinedMethods(file);
-        methodProblemsMap.keySet().stream()
-                .filter(problemMethod -> !definedMethods.contains(problemMethod))
-                .forEach(methodProblemsMap::remove);
+        Collection<PsiMethod> toRemove = methodProblemsMap.keySet().stream().filter(method -> !definedMethods.contains(method)).collect(Collectors.toSet());
+        toRemove.forEach(methodProblemsMap::remove);
     }
 
     /**
