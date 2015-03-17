@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.Optional;
 import javax.swing.event.HyperlinkEvent;
 
-public class ProblemIdentificationDescription implements Description {
+public class ProblemIdentificationDescription extends Description {
 
     private static final Logger LOG = Logger.getInstance(ProblemIdentificationDescription.class.getName());
 

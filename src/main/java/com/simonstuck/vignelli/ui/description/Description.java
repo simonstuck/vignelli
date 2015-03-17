@@ -1,9 +1,10 @@
 package com.simonstuck.vignelli.ui.description;
 
+import java.util.Observable;
 import javax.swing.event.HyperlinkEvent;
 
-public interface Description {
-    String render();
+public abstract class Description extends Observable {
+    public abstract String render();
 
-    void handleVignelliLinkEvent(HyperlinkEvent event);
+    public abstract void handleVignelliLinkEvent(HyperlinkEvent event);
 }

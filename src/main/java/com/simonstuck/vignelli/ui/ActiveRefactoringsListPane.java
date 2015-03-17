@@ -7,6 +7,7 @@ import com.intellij.ui.components.JBScrollPane;
 import com.simonstuck.vignelli.refactoring.ActiveRefactoringCollectionListener;
 import com.simonstuck.vignelli.refactoring.Refactoring;
 import com.simonstuck.vignelli.refactoring.RefactoringEngineComponent;
+import com.simonstuck.vignelli.ui.description.Description;
 import com.simonstuck.vignelli.ui.description.RefactoringDescription;
 
 import java.awt.BorderLayout;
@@ -24,8 +25,11 @@ public class ActiveRefactoringsListPane extends JPanel {
 
     private final BatchUpdateListModel<Refactoring> model;
     private final JBList listPane;
+    private final AnalysisToolJComponentWindow delegate;
+    private Refactoring currentlyShownElement;
 
     public ActiveRefactoringsListPane(Project project, AnalysisToolJComponentWindow delegate) {
+        this.delegate = delegate;
         setLayout(new BorderLayout(5,5));
 
         JLabel label = new JLabel("Active Refactorings");
@@ -45,7 +49,8 @@ public class ActiveRefactoringsListPane extends JPanel {
                 int index = listPane.getSelectedIndex();
                 if (index > -1) {
                     delegate.deselectOthers(this);
-                    delegate.showDescription(new RefactoringDescription(model.getElementAt(index)));
+                    currentlyShownElement = model.getElementAt(index);
+                    delegate.showDescription(new RefactoringDescription(currentlyShownElement));
                 }
             }
         }));
@@ -62,6 +67,7 @@ public class ActiveRefactoringsListPane extends JPanel {
 
     public void clearSelection() {
         listPane.clearSelection();
+        currentlyShownElement = null;
     }
 
     private class UIActiveRefactoringCollectionListener implements ActiveRefactoringCollectionListener {
@@ -71,6 +77,10 @@ public class ActiveRefactoringsListPane extends JPanel {
                 model.batchUpdateContents(refactorings);
                 invalidate();
                 repaint();
+
+                if (currentlyShownElement != null && !refactorings.contains(currentlyShownElement)) {
+                    delegate.showDescription(null);
+                }
             });
 
         }

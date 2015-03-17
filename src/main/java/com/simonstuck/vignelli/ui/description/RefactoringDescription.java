@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.swing.event.HyperlinkEvent;
 
-public class RefactoringDescription implements Description {
+public class RefactoringDescription extends Description {
 
     private static final Logger LOG = Logger.getInstance(RefactoringDescription.class.getName());
     private final Refactoring refactoring;
@@ -28,8 +28,24 @@ public class RefactoringDescription implements Description {
     @Override
     public void handleVignelliLinkEvent(HyperlinkEvent event) {
         LOG.info("Refactoring next step event sent: " + event);
+        if (event.getDescription().endsWith("nextStep")) {
+            performNextStep();
+        } else if (event.getDescription().endsWith("complete")) {
+            completeRefactoring();
+        }
+    }
+
+    private void completeRefactoring() {
+        setChanged();
+        notifyObservers();
+        refactoring.complete();
+    }
+
+    private void performNextStep() {
         try {
             refactoring.nextStep();
+            setChanged();
+            notifyObservers(this);
         } catch (NoSuchMethodException e) {
             LOG.error(e.getMessage(), e);
         }

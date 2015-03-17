@@ -24,13 +24,15 @@ public class TrainWreckVariableRefactoringImpl implements Refactoring {
     public static final String TRAIN_WRECK_REFACTORING_DESCRIPTION = "Train Wreck Refactoring";
     private final PsiElement trainWreckElement;
     private final PsiLocalVariable variable;
+    private final RefactoringTracker refactoringTracker;
 
     private int currentStepIndex = 0;
     private Map<String, Object> refactoringStepArguments;
 
-    public TrainWreckVariableRefactoringImpl(PsiElement trainWreckElement, PsiLocalVariable variable) {
+    public TrainWreckVariableRefactoringImpl(PsiElement trainWreckElement, PsiLocalVariable variable, RefactoringTracker refactoringTracker) {
         this.trainWreckElement = trainWreckElement;
         this.variable = variable;
+        this.refactoringTracker = refactoringTracker;
 
         refactoringStepArguments = new HashMap<>();
         refactoringStepArguments.put(InlineVariableRefactoringStep.PROJECT_ARGUMENT_KEY, variable.getProject());
@@ -103,6 +105,16 @@ public class TrainWreckVariableRefactoringImpl implements Refactoring {
             templateValues.put("nextStepName", "Inline!");
             templateValues.put("nextStepDescription", "Some inlining Description");
         }
+    }
+
+    @Override
+    public void begin() {
+        refactoringTracker.add(this);
+    }
+
+    @Override
+    public void complete() {
+        refactoringTracker.remove(this);
     }
 
     @Override

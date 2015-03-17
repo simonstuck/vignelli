@@ -10,7 +10,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-public class RefactoringEngineComponent implements ProjectComponent {
+public class RefactoringEngineComponent implements ProjectComponent, RefactoringTracker {
 
     /**
      * When subscribed to this topic, clients, will receive updates about the active refactorings.
@@ -27,14 +27,30 @@ public class RefactoringEngineComponent implements ProjectComponent {
     }
 
     /**
-     * Adds the given refactoring to the active ones and informs subscribers about the change.
+     * Adds the refactoring to the active ones and notifies subscribers about the change.
      * @param refactoring The refactoring to add
      */
+    @Override
     public void add(Refactoring refactoring) {
         if (!activeRefactorings.contains(refactoring)) {
             activeRefactorings.add(refactoring);
             broadcastActiveRefactorings();
         }
+    }
+
+    /**
+     * Removes the refactoring from the active ones and notifies subscribers about the change.
+     * @param refactoring The refactoring to remove
+     */
+    @Override
+    public void remove(Refactoring refactoring) {
+        activeRefactorings.remove(refactoring);
+        broadcastActiveRefactorings();
+    }
+
+    @Override
+    public Collection<Refactoring> activeRefactorings() {
+        return new HashSet<>(activeRefactorings);
     }
 
     /**
@@ -64,9 +80,5 @@ public class RefactoringEngineComponent implements ProjectComponent {
     @Override
     public String getComponentName() {
         return "Vignelli Refactoring Engine";
-    }
-
-    public Collection<Refactoring> activeRefactorings() {
-        return new HashSet<>(activeRefactorings);
     }
 }

@@ -13,12 +13,14 @@ import java.awt.Desktop;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.HashMap;
+import java.util.Observable;
+import java.util.Observer;
 import javax.swing.JEditorPane;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.text.Document;
 import javax.swing.text.html.HTMLEditorKit;
 
-class DescriptionPane extends JEditorPane {
+class DescriptionPane extends JEditorPane implements Observer {
     private static final Logger LOG = Logger.getInstance(DescriptionPane.class.getName());
     public static final String VIGNELLI_SCHEME = "vignelli";
     private static Description DEFAULT_DESCRIPTION = new DefaultDescription();
@@ -70,7 +72,21 @@ class DescriptionPane extends JEditorPane {
     }
 
     public void showDescription(@NotNull Description description) {
+
+        // Unsubscribe from old observer
+        if (this.description != null) {
+            this.description.deleteObserver(this);
+        }
+
         this.description = description;
+        this.description.addObserver(this);
+        render();
+    }
+
+    /**
+     * Renders the current description.
+     */
+    private void render() {
         setText(description.render());
         validate();
         repaint();
@@ -80,7 +96,13 @@ class DescriptionPane extends JEditorPane {
         showDescription(DEFAULT_DESCRIPTION);
     }
 
-    private static class DefaultDescription implements Description {
+    @Override
+    public void update(Observable o, Object arg) {
+        // Updated
+        render();
+    }
+
+    private static class DefaultDescription extends Description {
         @Override
         public String render() {
             String strTemplate = null;

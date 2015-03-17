@@ -6,11 +6,14 @@
 </head>
 <body class="vignelli-description">
 <h1>Train Wreck Refactoring</h1>
-<p>Current Refactoring Step: ${currentStep} / ${totalSteps}</p>
 ${if hasNextStep}
+<p>Current Refactoring Step: ${currentStep} / ${totalSteps}</p>
 <h2>Next Step: ${nextStepName}</h2>
 <p>${nextStepDescription}</p>
 <p><a href="vignelli://nextStep">Perform Next Step</a></p>
+${else}
+<p>You have completed the refactoring steps.</p>
+<p><a href="vignelli://complete">Complete Refactoring</a></p>
 ${end}
 </body>
 </html>
