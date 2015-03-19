@@ -6,6 +6,7 @@ import com.intellij.psi.PsiFile;
 import com.intellij.refactoring.extractMethod.ExtractMethodHandler;
 import com.intellij.refactoring.extractMethod.ExtractMethodProcessor;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class ExtractMethodRefactoringStep implements RefactoringStep {
@@ -24,9 +25,11 @@ public class ExtractMethodRefactoringStep implements RefactoringStep {
     public Map<String, Object> process() {
 
         ExtractMethodProcessor processor = ExtractMethodHandler.getProcessor(project, elementsToExtract, file, false);
+        Map<String, Object> results = new HashMap<>();
         if (processor != null) {
             ExtractMethodHandler.invokeOnElements(project, processor, file, false);
+            results.put("extractedMethod", processor.getExtractedMethod());
         }
-        return null;
+        return results;
     }
 }
