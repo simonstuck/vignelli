@@ -4,9 +4,11 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiLocalVariable;
+import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiStatement;
 import com.simonstuck.vignelli.refactoring.steps.ExtractMethodRefactoringStep;
 import com.simonstuck.vignelli.refactoring.steps.InlineVariableRefactoringStep;
+import com.simonstuck.vignelli.refactoring.steps.MoveMethodRefactoringStep;
 import com.simonstuck.vignelli.utils.IOUtils;
 
 import java.io.IOException;
@@ -79,10 +81,18 @@ public class TrainWreckVariableRefactoringImpl implements Refactoring {
             case 1:
                 performExtractMethodStep();
                 break;
+            case 2:
+                performMoveMethodStep();
             default:
                 throw new NoSuchMethodException("No more refactoring steps required.");
         }
         currentStepIndex++;
+    }
+
+    private void performMoveMethodStep() {
+        PsiMethod method = (PsiMethod) refactoringStepArguments.get("extractedMethod");
+        MoveMethodRefactoringStep step = new MoveMethodRefactoringStep(project, method);
+        refactoringStepArguments = step.process();
     }
 
     private void performInlineStep() {
@@ -103,7 +113,7 @@ public class TrainWreckVariableRefactoringImpl implements Refactoring {
 
     @Override
     public int totalSteps() {
-        return 2;
+        return 3;
     }
 
     @Override
