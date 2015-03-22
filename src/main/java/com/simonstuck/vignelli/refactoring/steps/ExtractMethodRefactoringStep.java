@@ -3,33 +3,42 @@ package com.simonstuck.vignelli.refactoring.steps;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiMethod;
 import com.intellij.refactoring.extractMethod.ExtractMethodHandler;
 import com.intellij.refactoring.extractMethod.ExtractMethodProcessor;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class ExtractMethodRefactoringStep implements RefactoringStep {
+public class ExtractMethodRefactoringStep {
 
     private final Project project;
     private final PsiElement[] elementsToExtract;
     private PsiFile file;
 
-    public ExtractMethodRefactoringStep(Map<String, Object> arguments) {
-        project = (Project) arguments.get("project");
-        elementsToExtract = (PsiElement[]) arguments.get("elementsToExtract");
-        file = (PsiFile) arguments.get("file");
+    public ExtractMethodRefactoringStep(PsiElement[] elementsToExtract, PsiFile file, Project project) {
+        this.elementsToExtract = elementsToExtract;
+        this.file = file;
+        this.project = project;
     }
 
-    @Override
-    public Map<String, Object> process() {
-
+    public Result process() {
         ExtractMethodProcessor processor = ExtractMethodHandler.getProcessor(project, elementsToExtract, file, false);
-        Map<String, Object> results = new HashMap<>();
-        if (processor != null) {
-            ExtractMethodHandler.invokeOnElements(project, processor, file, false);
-            results.put("extractedMethod", processor.getExtractedMethod());
+        assert processor != null;
+
+        ExtractMethodHandler.invokeOnElements(project, processor, file, false);
+        return new Result(processor.getExtractedMethod());
+    }
+
+    public final class Result {
+        private final PsiMethod extractedMethod;
+
+        public Result(PsiMethod extractedMethod) {
+            this.extractedMethod = extractedMethod;
         }
-        return results;
+
+        public PsiMethod getExtractedMethod() {
+            return extractedMethod;
+        }
     }
 }

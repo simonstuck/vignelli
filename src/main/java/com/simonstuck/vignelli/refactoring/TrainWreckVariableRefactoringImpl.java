@@ -30,8 +30,9 @@ public class TrainWreckVariableRefactoringImpl implements Refactoring {
 
     private int currentStepIndex = 0;
     private Map<String, Object> refactoringStepArguments = new HashMap<>();
-    private Optional<RenameMethodRefactoringStep.Result> renameMethodResult = Optional.empty();
-    private Optional<InlineVariableRefactoringStep.Result> inlineVariableResult = Optional.empty();
+    private RenameMethodRefactoringStep.Result renameMethodResult;
+    private InlineVariableRefactoringStep.Result inlineVariableResult;
+    private ExtractMethodRefactoringStep.Result extractMethodResult;
 
     public TrainWreckVariableRefactoringImpl(PsiElement trainWreckElement, PsiLocalVariable variable, RefactoringTracker refactoringTracker) {
         this.trainWreckElement = trainWreckElement;
@@ -96,32 +97,24 @@ public class TrainWreckVariableRefactoringImpl implements Refactoring {
     private void performRenameMethodStep() {
         PsiMethod method = (PsiMethod) refactoringStepArguments.get("targetMethod");
         RenameMethodRefactoringStep step = new RenameMethodRefactoringStep(method,project);
-        renameMethodResult = Optional.of(step.process());
+        renameMethodResult = step.process();
     }
 
     private void performMoveMethodStep() {
-        PsiMethod method = (PsiMethod) refactoringStepArguments.get("extractedMethod");
-        MoveMethodRefactoringStep step = new MoveMethodRefactoringStep(project, method);
+        MoveMethodRefactoringStep step = new MoveMethodRefactoringStep(project, extractMethodResult.getExtractedMethod());
         refactoringStepArguments = step.process();
     }
 
     private void performInlineStep() {
         InlineVariableRefactoringStep step = new InlineVariableRefactoringStep(variable, project);
-        inlineVariableResult = Optional.of(step.process());
+        inlineVariableResult = step.process();
     }
 
     private void performExtractMethodStep() {
-        if (!inlineVariableResult.isPresent()) {
-            throw new UnsupportedOperationException();
-        }
-
-        Collection<PsiStatement> inlineParents = inlineVariableResult.get().getAffectedStatements();
+        Collection<PsiStatement> inlineParents = inlineVariableResult.getAffectedStatements();
         PsiElement[] elementsToExtract = inlineParents.toArray(new PsiElement[inlineParents.size()]);
-        refactoringStepArguments.put("project", project);
-        refactoringStepArguments.put("elementsToExtract", elementsToExtract);
-        refactoringStepArguments.put("file", file);
-        ExtractMethodRefactoringStep step = new ExtractMethodRefactoringStep(refactoringStepArguments);
-        refactoringStepArguments = step.process();
+        ExtractMethodRefactoringStep step = new ExtractMethodRefactoringStep(elementsToExtract,file,project);
+        extractMethodResult = step.process();
     }
 
     @Override
