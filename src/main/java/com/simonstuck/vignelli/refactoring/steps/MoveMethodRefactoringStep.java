@@ -14,10 +14,7 @@ import com.intellij.refactoring.move.moveInstanceMethod.MoveInstanceMethodHandle
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
-import java.util.Map;
-
-public class MoveMethodRefactoringStep implements RefactoringStep {
+public class MoveMethodRefactoringStep {
 
     private static final Logger LOG = Logger.getInstance(MoveMethodRefactoringStep.class.getName());
 
@@ -29,35 +26,64 @@ public class MoveMethodRefactoringStep implements RefactoringStep {
         this.methodToMove = methodToMove;
     }
 
-    @Override
-    public Map<String, Object> process() {
+    public Result process() {
         MoveInstanceMethodHandlerDelegate delegate = new MoveInstanceMethodHandlerDelegate();
-        PsiElement[] elements = new PsiElement[] { methodToMove };
+        final PsiMethod targetMethod = performMoveRefactoring(delegate, methodToMove);
+        PsiClass targetClass = getClassForMethod(targetMethod);
 
+        return new Result(targetClass, targetMethod);
+    }
+
+    private PsiMethod performMoveRefactoring(MoveInstanceMethodHandlerDelegate delegate, PsiMethod method) {
+        final PsiElement[] elements = new PsiElement[] { method };
         final PsiMethod[] targetMethod = { null };
 
-        PsiTreeChangeListener listener = new PsiTreeChangeAdapter() {
-            @Override
-            public void childAdded(@NotNull PsiTreeChangeEvent event) {
-                super.childAdded(event);
-
-                if (event.getChild() instanceof PsiMethod) {
-                    targetMethod[0] = (PsiMethod) event.getChild();
-                }
-            }
-        };
-
+        PsiTreeChangeListener listener = new MoveTargetListener(targetMethod);
         PsiManager manager = PsiManager.getInstance(project);
+
         manager.addPsiTreeChangeListener(listener);
-        delegate.doMove(project, elements, null, () -> LOG.info("refactoring complete"));
+        delegate.doMove(project, elements, null, () -> LOG.debug("refactoring complete"));
         manager.removePsiTreeChangeListener(listener);
 
-        PsiClass targetClass = PsiTreeUtil.getParentOfType(targetMethod[0], PsiClass.class);
+        return targetMethod[0];
+    }
 
-        Map<String, Object> results = new HashMap<>();
-        results.put("targetMethod", targetMethod[0]);
-        results.put("targetClass", targetClass);
+    private PsiClass getClassForMethod(PsiMethod targetMethod) {
+        return PsiTreeUtil.getParentOfType(targetMethod, PsiClass.class);
+    }
 
-        return results;
+    private static class MoveTargetListener extends PsiTreeChangeAdapter {
+        private final PsiMethod[] targetMethod;
+
+        public MoveTargetListener(PsiMethod[] targetMethod) {
+            this.targetMethod = targetMethod;
+        }
+
+        @Override
+        public void childAdded(@NotNull PsiTreeChangeEvent event) {
+            super.childAdded(event);
+
+            if (event.getChild() instanceof PsiMethod) {
+                targetMethod[0] = (PsiMethod) event.getChild();
+            }
+        }
+    }
+
+    public class Result {
+        private final PsiClass newClass;
+        private final PsiMethod newMethod;
+
+        public Result(PsiClass newClass, PsiMethod newMethod) {
+            this.newClass = newClass;
+            this.newMethod = newMethod;
+        }
+
+        public PsiClass getNewClass() {
+            return newClass;
+        }
+
+        public PsiMethod getNewMethod() {
+            return newMethod;
+        }
     }
 }

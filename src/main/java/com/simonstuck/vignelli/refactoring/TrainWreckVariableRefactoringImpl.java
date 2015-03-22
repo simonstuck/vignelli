@@ -4,7 +4,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiLocalVariable;
-import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiStatement;
 import com.simonstuck.vignelli.refactoring.steps.ExtractMethodRefactoringStep;
 import com.simonstuck.vignelli.refactoring.steps.InlineVariableRefactoringStep;
@@ -15,9 +14,7 @@ import com.simonstuck.vignelli.utils.IOUtils;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 public class TrainWreckVariableRefactoringImpl implements Refactoring {
 
@@ -29,10 +26,11 @@ public class TrainWreckVariableRefactoringImpl implements Refactoring {
     private final PsiFile file;
 
     private int currentStepIndex = 0;
-    private Map<String, Object> refactoringStepArguments = new HashMap<>();
+
     private RenameMethodRefactoringStep.Result renameMethodResult;
     private InlineVariableRefactoringStep.Result inlineVariableResult;
     private ExtractMethodRefactoringStep.Result extractMethodResult;
+    private MoveMethodRefactoringStep.Result moveMethodResult;
 
     public TrainWreckVariableRefactoringImpl(PsiElement trainWreckElement, PsiLocalVariable variable, RefactoringTracker refactoringTracker) {
         this.trainWreckElement = trainWreckElement;
@@ -44,27 +42,6 @@ public class TrainWreckVariableRefactoringImpl implements Refactoring {
 
     public String description() {
         return TRAIN_WRECK_REFACTORING_DESCRIPTION;
-    }
-
-    @Override
-    public boolean equals(Object object) {
-        if (this == object) {
-            return true;
-        }
-        if (object == null || getClass() != object.getClass()) {
-            return false;
-        }
-
-        TrainWreckVariableRefactoringImpl that = (TrainWreckVariableRefactoringImpl) object;
-
-        return trainWreckElement.equals(that.trainWreckElement) && variable.equals(that.variable);
-    }
-
-    @Override
-    public int hashCode() {
-        int result = trainWreckElement.hashCode();
-        result = 31 * result + variable.hashCode();
-        return result;
     }
 
     @Override
@@ -95,14 +72,13 @@ public class TrainWreckVariableRefactoringImpl implements Refactoring {
     }
 
     private void performRenameMethodStep() {
-        PsiMethod method = (PsiMethod) refactoringStepArguments.get("targetMethod");
-        RenameMethodRefactoringStep step = new RenameMethodRefactoringStep(method,project);
+        RenameMethodRefactoringStep step = new RenameMethodRefactoringStep(moveMethodResult.getNewMethod(),project);
         renameMethodResult = step.process();
     }
 
     private void performMoveMethodStep() {
         MoveMethodRefactoringStep step = new MoveMethodRefactoringStep(project, extractMethodResult.getExtractedMethod());
-        refactoringStepArguments = step.process();
+        moveMethodResult = step.process();
     }
 
     private void performInlineStep() {
@@ -157,5 +133,26 @@ public class TrainWreckVariableRefactoringImpl implements Refactoring {
             e.printStackTrace();
         }
         return "";
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (this == object) {
+            return true;
+        }
+        if (object == null || getClass() != object.getClass()) {
+            return false;
+        }
+
+        TrainWreckVariableRefactoringImpl that = (TrainWreckVariableRefactoringImpl) object;
+
+        return trainWreckElement.equals(that.trainWreckElement) && variable.equals(that.variable);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = trainWreckElement.hashCode();
+        result = 31 * result + variable.hashCode();
+        return result;
     }
 }
