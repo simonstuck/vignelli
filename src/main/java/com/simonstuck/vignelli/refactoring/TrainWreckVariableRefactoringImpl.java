@@ -110,8 +110,28 @@ public class TrainWreckVariableRefactoringImpl implements Refactoring {
         templateValues.put("hasNextStep", hasNextStep());
 
         if (hasNextStep()) {
-            templateValues.put("nextStepName", "Inline!");
-            templateValues.put("nextStepDescription", "Some inlining Description");
+            fillStepTemplateValues(templateValues);
+        }
+    }
+
+    private void fillStepTemplateValues(Map<String, Object> templateValues) {
+        switch (currentStepIndex) {
+            case 0:
+                templateValues.put("nextStepName", "Inline!");
+                templateValues.put("nextStepDescription", "Some inlining Description");
+                break;
+            case 1:
+                templateValues.put("nextStepName", "Extract Method!");
+                templateValues.put("nextStepDescription", "Extract a method now!");
+                break;
+            case 2:
+                templateValues.put("nextStepName", "Move Method!");
+                templateValues.put("nextStepDescription", "Now move the method");
+                break;
+            case 3:
+                templateValues.put("nextStepName", "Rename!");
+                templateValues.put("nextStepDescription", "Finally, give it a good name!");
+                break;
         }
     }
 
