@@ -29,8 +29,9 @@ public class TrainWreckVariableRefactoringImpl implements Refactoring {
     private final PsiFile file;
 
     private int currentStepIndex = 0;
-    private Map<String, Object> refactoringStepArguments;
+    private Map<String, Object> refactoringStepArguments = new HashMap<>();
     private Optional<RenameMethodRefactoringStep.Result> renameMethodResult = Optional.empty();
+    private Optional<InlineVariableRefactoringStep.Result> inlineVariableResult = Optional.empty();
 
     public TrainWreckVariableRefactoringImpl(PsiElement trainWreckElement, PsiLocalVariable variable, RefactoringTracker refactoringTracker) {
         this.trainWreckElement = trainWreckElement;
@@ -38,10 +39,6 @@ public class TrainWreckVariableRefactoringImpl implements Refactoring {
         this.refactoringTracker = refactoringTracker;
         this.project = trainWreckElement.getProject();
         this.file = trainWreckElement.getContainingFile();
-
-        refactoringStepArguments = new HashMap<>();
-        refactoringStepArguments.put(InlineVariableRefactoringStep.PROJECT_ARGUMENT_KEY, variable.getProject());
-        refactoringStepArguments.put(InlineVariableRefactoringStep.VARIABLE_TO_INLINE_ARGUMENT_KEY, variable);
     }
 
     public String description() {
@@ -109,13 +106,16 @@ public class TrainWreckVariableRefactoringImpl implements Refactoring {
     }
 
     private void performInlineStep() {
-        InlineVariableRefactoringStep step = new InlineVariableRefactoringStep(refactoringStepArguments);
-        refactoringStepArguments = step.process();
+        InlineVariableRefactoringStep step = new InlineVariableRefactoringStep(variable, project);
+        inlineVariableResult = Optional.of(step.process());
     }
 
     private void performExtractMethodStep() {
-        @SuppressWarnings("unchecked")
-        Collection<PsiStatement> inlineParents = (Collection<PsiStatement>) refactoringStepArguments.get("inlineParents");
+        if (!inlineVariableResult.isPresent()) {
+            throw new UnsupportedOperationException();
+        }
+
+        Collection<PsiStatement> inlineParents = inlineVariableResult.get().getAffectedStatements();
         PsiElement[] elementsToExtract = inlineParents.toArray(new PsiElement[inlineParents.size()]);
         refactoringStepArguments.put("project", project);
         refactoringStepArguments.put("elementsToExtract", elementsToExtract);

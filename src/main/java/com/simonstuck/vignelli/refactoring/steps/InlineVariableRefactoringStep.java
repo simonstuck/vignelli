@@ -16,34 +16,27 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-public class InlineVariableRefactoringStep implements RefactoringStep {
-
+public class InlineVariableRefactoringStep {
 
     private static final Logger LOG = Logger.getInstance(InlineVariableRefactoringStep.class.getName());
-    public static final String PROJECT_ARGUMENT_KEY = "project";
-    public static final String VARIABLE_TO_INLINE_ARGUMENT_KEY = "variableToInline";
 
     private final PsiLocalVariable variableToInline;
     private final Project project;
 
-    public InlineVariableRefactoringStep(Map<String, Object> arguments) {
-        variableToInline = (PsiLocalVariable) arguments.get(VARIABLE_TO_INLINE_ARGUMENT_KEY);
-        project = (Project) arguments.get(PROJECT_ARGUMENT_KEY);
+    public InlineVariableRefactoringStep(PsiLocalVariable variableToInline, Project project) {
+        this.variableToInline = variableToInline;
+        this.project = project;
     }
 
-    @Override
-    public Map<String, Object> process() {
+    public Result process() {
         Editor editor = FileEditorManager.getInstance(project).getSelectedTextEditor();
         Collection<PsiStatement> affectedStatements = getAffectedStatements(variableToInline);
 
-        LOG.info("Statements affected by inline process: " + affectedStatements);
-        LOG.info("About to inline variable: " + variableToInline);
+        LOG.debug("Statements affected by inline process: " + affectedStatements);
+        LOG.debug("About to inline variable: " + variableToInline);
 
         InlineLocalHandler.invoke(project, editor, variableToInline, null);
-        Map<String, Object> results = new HashMap<>();
-        results.put("project", project);
-        results.put("inlineParents", affectedStatements);
-        return results;
+        return new Result(affectedStatements);
     }
 
     private Collection<PsiStatement> getAffectedStatements(PsiLocalVariable variableToInline) {
@@ -54,5 +47,17 @@ public class InlineVariableRefactoringStep implements RefactoringStep {
             affectedStatements.add(statement);
         }
         return affectedStatements;
+    }
+
+    public final class Result {
+        private final Collection<PsiStatement> affectedStatements;
+
+        public Result(Collection<PsiStatement> affectedStatements) {
+            this.affectedStatements = affectedStatements;
+        }
+
+        public Collection<PsiStatement> getAffectedStatements() {
+            return affectedStatements;
+        }
     }
 }
