@@ -9,6 +9,7 @@ import com.intellij.psi.PsiStatement;
 import com.simonstuck.vignelli.refactoring.steps.ExtractMethodRefactoringStep;
 import com.simonstuck.vignelli.refactoring.steps.InlineVariableRefactoringStep;
 import com.simonstuck.vignelli.refactoring.steps.MoveMethodRefactoringStep;
+import com.simonstuck.vignelli.refactoring.steps.RenameMethodRefactoringStep;
 import com.simonstuck.vignelli.utils.IOUtils;
 
 import java.io.IOException;
@@ -16,6 +17,7 @@ import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 public class TrainWreckVariableRefactoringImpl implements Refactoring {
 
@@ -28,6 +30,7 @@ public class TrainWreckVariableRefactoringImpl implements Refactoring {
 
     private int currentStepIndex = 0;
     private Map<String, Object> refactoringStepArguments;
+    private Optional<RenameMethodRefactoringStep.Result> renameMethodResult = Optional.empty();
 
     public TrainWreckVariableRefactoringImpl(PsiElement trainWreckElement, PsiLocalVariable variable, RefactoringTracker refactoringTracker) {
         this.trainWreckElement = trainWreckElement;
@@ -83,10 +86,20 @@ public class TrainWreckVariableRefactoringImpl implements Refactoring {
                 break;
             case 2:
                 performMoveMethodStep();
+                break;
+            case 3:
+                performRenameMethodStep();
+                break;
             default:
                 throw new NoSuchMethodException("No more refactoring steps required.");
         }
         currentStepIndex++;
+    }
+
+    private void performRenameMethodStep() {
+        PsiMethod method = (PsiMethod) refactoringStepArguments.get("targetMethod");
+        RenameMethodRefactoringStep step = new RenameMethodRefactoringStep(method,project);
+        renameMethodResult = Optional.of(step.process());
     }
 
     private void performMoveMethodStep() {
@@ -113,7 +126,7 @@ public class TrainWreckVariableRefactoringImpl implements Refactoring {
 
     @Override
     public int totalSteps() {
-        return 3;
+        return 4;
     }
 
     @Override
