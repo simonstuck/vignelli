@@ -2,19 +2,35 @@ package com.simonstuck.vignelli.refactoring;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiLocalVariable;
+import com.intellij.psi.PsiMember;
+import com.intellij.psi.PsiMethod;
+import com.intellij.psi.PsiReferenceExpression;
 import com.intellij.psi.PsiStatement;
+import com.intellij.psi.search.PsiSearchScopeUtil;
+import com.intellij.psi.util.PsiElementFilter;
+import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.refactoring.introduceParameter.IntroduceParameterHandler;
+import com.intellij.refactoring.introduceParameter.IntroduceParameterMethodUsagesProcessor;
+import com.intellij.refactoring.introduceParameter.IntroduceParameterProcessor;
+import com.intellij.refactoring.introduceParameter.IntroduceParameterUtil;
 import com.simonstuck.vignelli.refactoring.steps.ExtractMethodRefactoringStep;
+import com.simonstuck.vignelli.refactoring.steps.ExtractParameterRefactoringStep;
 import com.simonstuck.vignelli.refactoring.steps.InlineVariableRefactoringStep;
 import com.simonstuck.vignelli.refactoring.steps.MoveMethodRefactoringStep;
 import com.simonstuck.vignelli.refactoring.steps.RenameMethodRefactoringStep;
 import com.simonstuck.vignelli.utils.IOUtils;
+import com.siyeh.ig.fixes.ExtractParameterAsLocalVariableFix;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 public class TrainWreckVariableRefactoringImpl implements Refactoring {
 
@@ -31,6 +47,8 @@ public class TrainWreckVariableRefactoringImpl implements Refactoring {
     private InlineVariableRefactoringStep.Result inlineVariableResult;
     private ExtractMethodRefactoringStep.Result extractMethodResult;
     private MoveMethodRefactoringStep.Result moveMethodResult;
+    private Collection<PsiElement> fieldParameters;
+    private Iterator<PsiElement> fieldIterator;
 
     public TrainWreckVariableRefactoringImpl(PsiElement trainWreckElement, PsiLocalVariable variable, RefactoringTracker refactoringTracker) {
         this.trainWreckElement = trainWreckElement;
@@ -55,24 +73,35 @@ public class TrainWreckVariableRefactoringImpl implements Refactoring {
         switch (currentStepIndex) {
             case 0:
                 performInlineStep();
+                currentStepIndex++;
                 break;
             case 1:
                 performExtractMethodStep();
+                prepareExtractFieldParameters();
+                currentStepIndex++;
                 break;
             case 2:
-                performMoveMethodStep();
+                ExtractParameterRefactoringStep step = new ExtractParameterRefactoringStep(project, file, fieldIterator.next());
+                step.process();
+                if (!fieldIterator.hasNext()) {
+                    currentStepIndex++;
+                }
                 break;
             case 3:
+                performMoveMethodStep();
+                currentStepIndex++;
+                break;
+            case 4:
                 performRenameMethodStep();
+                currentStepIndex++;
                 break;
             default:
                 throw new NoSuchMethodException("No more refactoring steps required.");
         }
-        currentStepIndex++;
     }
 
     private void performRenameMethodStep() {
-        RenameMethodRefactoringStep step = new RenameMethodRefactoringStep(moveMethodResult.getNewMethod(),project);
+        RenameMethodRefactoringStep step = new RenameMethodRefactoringStep(moveMethodResult.getNewMethod(), project);
         renameMethodResult = step.process();
     }
 
@@ -93,9 +122,21 @@ public class TrainWreckVariableRefactoringImpl implements Refactoring {
         extractMethodResult = step.process();
     }
 
+    private void prepareExtractFieldParameters() {
+        PsiMethod method = extractMethodResult.getExtractedMethod();
+        @SuppressWarnings("unchecked") Collection<PsiReferenceExpression> referenceExpressions= PsiTreeUtil.collectElementsOfType(method, PsiReferenceExpression.class);
+        fieldParameters = referenceExpressions.stream().filter(new Predicate<PsiReferenceExpression>() {
+            @Override
+            public boolean test(PsiReferenceExpression psiReferenceExpression) {
+                return psiReferenceExpression.resolve() instanceof PsiField;
+            }
+        }).collect(Collectors.toSet());
+        fieldIterator = fieldParameters.iterator();
+    }
+
     @Override
     public int totalSteps() {
-        return 4;
+        return 5;
     }
 
     @Override
