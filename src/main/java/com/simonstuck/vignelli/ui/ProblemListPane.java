@@ -25,7 +25,7 @@ class ProblemListPane extends JPanel {
     private final BatchUpdateListModel<ProblemIdentification> model;
     private final JBList listPane;
 
-    public ProblemListPane(Project project, AnalysisToolJComponentWindow delegate) {
+    public ProblemListPane(Project project, ProblemUIPane delegate) {
         setLayout(new BorderLayout(5,5));
         JLabel label = new JLabel("Active Problems");
         label.setBorder(new EmptyBorder(2,2,0,0));
@@ -43,7 +43,6 @@ class ProblemListPane extends JPanel {
             if (!event.getValueIsAdjusting()) {
                 int index = listPane.getSelectedIndex();
                 if (index > -1) {
-                    delegate.deselectOthers(this);
                     ProblemIdentification id = model.getElementAt(index);
                     delegate.showDescription(new ProblemIdentificationDescription(id));
                 }
