@@ -1,6 +1,7 @@
 package com.simonstuck.vignelli.ui.description;
 
 import com.intellij.openapi.diagnostic.Logger;
+import com.simonstuck.vignelli.inspection.ImprovementOpportunity;
 import com.simonstuck.vignelli.inspection.TrainWreckVariableImprovementOpportunity;
 import com.simonstuck.vignelli.inspection.identification.ProblemIdentification;
 
@@ -26,7 +27,7 @@ public class ProblemIdentificationDescription extends Description {
     public String render() {
         Map<String, Object> contentMap = new HashMap<>();
         Template template = new HTMLFileTemplate(id.template());
-        Optional<TrainWreckVariableImprovementOpportunity> opp = id.improvementOpportunity();
+        Optional<ImprovementOpportunity> opp = id.improvementOpportunity();
         if (opp.isPresent()) {
             contentMap.put("improvement", opp.get().toString());
         }
@@ -36,7 +37,7 @@ public class ProblemIdentificationDescription extends Description {
     @Override
     public void handleVignelliLinkEvent(HyperlinkEvent event) {
         LOG.info("vignelli event: " + event);
-        Optional<TrainWreckVariableImprovementOpportunity> opportunity = id.improvementOpportunity();
+        Optional<ImprovementOpportunity> opportunity = id.improvementOpportunity();
         if (!opportunity.isPresent()) {
             LOG.warn("Tried to launch refactoring which does not exist. event=[" + event + "]");
         } else {

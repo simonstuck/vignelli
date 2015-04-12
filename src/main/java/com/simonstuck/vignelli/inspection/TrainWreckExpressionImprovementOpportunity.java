@@ -1,26 +1,22 @@
 package com.simonstuck.vignelli.inspection;
 
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiLocalVariable;
 import com.simonstuck.vignelli.refactoring.Refactoring;
 import com.simonstuck.vignelli.refactoring.RefactoringEngineComponent;
 import com.simonstuck.vignelli.refactoring.RefactoringTracker;
-import com.simonstuck.vignelli.refactoring.TrainWreckVariableRefactoringImpl;
+import com.simonstuck.vignelli.refactoring.TrainWreckExpressionRefactoringImpl;
 
-public class TrainWreckVariableImprovementOpportunity implements ImprovementOpportunity {
-
+public class TrainWreckExpressionImprovementOpportunity implements ImprovementOpportunity {
     private final PsiElement trainWreckElement;
-    private final PsiLocalVariable variable;
 
-    public TrainWreckVariableImprovementOpportunity(PsiElement trainWreckElement, PsiLocalVariable variable) {
+    public TrainWreckExpressionImprovementOpportunity(PsiElement trainWreckElement) {
         this.trainWreckElement = trainWreckElement;
-        this.variable = variable;
     }
 
     @Override
     public void beginRefactoring() {
         RefactoringTracker tracker = trainWreckElement.getProject().getComponent(RefactoringEngineComponent.class);
-        TrainWreckVariableRefactoringImpl refactoring = new TrainWreckVariableRefactoringImpl(trainWreckElement, variable, tracker);
+        Refactoring refactoring = new TrainWreckExpressionRefactoringImpl(trainWreckElement, tracker);
         refactoring.begin();
     }
 }

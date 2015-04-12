@@ -3,8 +3,11 @@ package com.simonstuck.vignelli.inspection.identification;
 import com.intellij.codeInspection.ProblemDescriptor;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiExpressionList;
 import com.intellij.psi.PsiLocalVariable;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.simonstuck.vignelli.inspection.ImprovementOpportunity;
+import com.simonstuck.vignelli.inspection.TrainWreckExpressionImprovementOpportunity;
 import com.simonstuck.vignelli.inspection.TrainWreckVariableImprovementOpportunity;
 import com.simonstuck.vignelli.utils.IOUtils;
 
@@ -97,10 +100,14 @@ public class ProblemIdentification implements com.simonstuck.vignelli.Templatabl
         return virtualFile;
     }
 
-    public Optional<TrainWreckVariableImprovementOpportunity> improvementOpportunity() {
-        PsiLocalVariable parent = PsiTreeUtil.getParentOfType(element, PsiLocalVariable.class);
-        if (parent != null) {
-            return Optional.of(new TrainWreckVariableImprovementOpportunity(element,parent));
+    public Optional<ImprovementOpportunity> improvementOpportunity() {
+        PsiExpressionList expressionListParent = PsiTreeUtil.getParentOfType(element, PsiExpressionList.class);
+        PsiLocalVariable varParent = PsiTreeUtil.getParentOfType(element, PsiLocalVariable.class);
+
+        if (expressionListParent != null) {
+            return Optional.of(new TrainWreckExpressionImprovementOpportunity(element));
+        } else if (varParent != null) {
+            return Optional.of(new TrainWreckVariableImprovementOpportunity(element,varParent));
         } else {
             return Optional.empty();
         }
