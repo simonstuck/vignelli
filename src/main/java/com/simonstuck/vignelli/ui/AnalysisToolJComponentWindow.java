@@ -51,7 +51,6 @@ class AnalysisToolJComponentWindow extends JPanel {
         @Override
         public void accept(Collection<Refactoring> refactorings) {
             ApplicationManager.getApplication().invokeLater(() -> {
-                // doStuff here!
                 LOG.info("new refactoring: " + refactorings);
                 if (refactorings.isEmpty()) {
                     showProblemUI();
