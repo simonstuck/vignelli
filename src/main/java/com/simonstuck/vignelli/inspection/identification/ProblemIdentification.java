@@ -20,6 +20,8 @@ import java.util.Optional;
 
 public class ProblemIdentification implements com.simonstuck.vignelli.Templatable {
 
+    public static final String TRAIN_WRECK_NAME = "Train Wreck";
+
     @NotNull
     private final ProblemDescriptor problemDescriptor;
     private final String name;
@@ -80,7 +82,7 @@ public class ProblemIdentification implements com.simonstuck.vignelli.Templatabl
 
     @Override
     public String toString() {
-        return "ProblemIdentification: " + problemDescriptor.getLineNumber();
+        return TRAIN_WRECK_NAME;
     }
 
     @Override

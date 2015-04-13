@@ -3,8 +3,8 @@ package com.simonstuck.vignelli.ui;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Comparing;
-import com.intellij.ui.components.JBList;
 import com.intellij.ui.components.JBScrollPane;
+import com.intellij.ui.table.JBTable;
 import com.simonstuck.vignelli.inspection.ProblemIdentificationCacheComponent;
 import com.simonstuck.vignelli.inspection.ProblemIdentificationCollectionListener;
 import com.simonstuck.vignelli.inspection.identification.ProblemIdentification;
@@ -12,6 +12,7 @@ import com.simonstuck.vignelli.ui.description.ProblemIdentificationDescription;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.font.TextAttribute;
 import java.util.ArrayList;
@@ -22,12 +23,13 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.EmptyBorder;
 
 class ProblemListPane extends JPanel {
-    private final BatchUpdateListModel<ProblemIdentification> model;
-    private final JBList listPane;
+    private final ProblemTableModel model;
+    private final JBTable tablePane;
     private final ProblemUIPane delegate;
     private ProblemIdentification currentIdentification;
 
@@ -41,13 +43,20 @@ class ProblemListPane extends JPanel {
         label.setFont(Font.getFont(fontAttributes));
         add(label, BorderLayout.NORTH);
 
-        listPane = new JBList();
-        listPane.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        model = new ProblemTableModel();
+        tablePane = new JBTable(model);
+        tablePane.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        tablePane.setShowGrid(false);
+        tablePane.setShowHorizontalLines(false);
+        tablePane.setShowVerticalLines(false);
+        tablePane.setRowMargin(0);
+        tablePane.setIntercellSpacing(new Dimension(0, 0));
+        tablePane.setFillsViewportHeight(true);
+        tablePane.getColumnModel().getColumn(0).setMaxWidth(30);
+        tablePane.setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
+        tablePane.doLayout();
 
-        model = new BatchUpdateListModel<>();
-        listPane.setModel(model);
-
-        listPane.getSelectionModel().addListSelectionListener(event -> ApplicationManager.getApplication().invokeLater(() -> {
+        tablePane.getSelectionModel().addListSelectionListener(event -> ApplicationManager.getApplication().invokeLater(() -> {
             if (!event.getValueIsAdjusting()) {
                 showSelectedProblemDescription(delegate);
             }
@@ -58,7 +67,7 @@ class ProblemListPane extends JPanel {
         ProblemIdentificationCacheComponent component = project.getComponent(ProblemIdentificationCacheComponent.class);
         listener.accept(component.selectedFileProblems());
 
-        Component scrollListPane = new JBScrollPane(listPane);
+        Component scrollListPane = new JBScrollPane(tablePane);
         add(scrollListPane, BorderLayout.CENTER);
     }
 
@@ -69,19 +78,19 @@ class ProblemListPane extends JPanel {
     }
 
     private void showSelectedProblemDescription(ProblemUIPane delegate) {
-        int index = listPane.getSelectedIndex();
+        int index = tablePane.getSelectedRow();
         if (index > -1) {
-            currentIdentification = model.getElementAt(index);
+            currentIdentification = model.getProblemDataAt(index);
             delegate.showDescription(new ProblemIdentificationDescription(currentIdentification));
         }
     }
 
     private void tryShowingFirstAvailableProblemDescription() {
         if (!model.isEmpty()) {
-            listPane.setSelectedValue(model.get(0), true);
+            tablePane.setRowSelectionInterval(0,0);
         } else {
             delegate.showDescription(null);
-            listPane.clearSelection();
+            tablePane.clearSelection();
         }
     }
 
