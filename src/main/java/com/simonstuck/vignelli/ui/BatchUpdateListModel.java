@@ -15,7 +15,7 @@ public class BatchUpdateListModel<T> extends DefaultListModel<T> {
      * <p>If some of the given elements already exist, they remain intact and are not removed and re-added.</p>
      * @param newContents The new contents
      */
-    public void batchUpdateContents(Collection<T> newContents) {
+    public void batchUpdateContents(List<T> newContents) {
         List<Integer> indexesToRemove = getIndexesToRemove(newContents);
         Collection<Pair<Integer,Integer>> rangesToRemove = getRangesToRemove(indexesToRemove);
 
@@ -23,7 +23,12 @@ public class BatchUpdateListModel<T> extends DefaultListModel<T> {
             removeRange(range.getFirst(),range.getFirst() + range.getSecond() - 1);
         }
 
-        newContents.stream().filter(newProblem -> !contains(newProblem)).forEach(this::addElement);
+        for (int i = 0; i < newContents.size(); i++) {
+            T item = newContents.get(i);
+            if (!contains(item)) {
+                add(i, item);
+            }
+        }
     }
 
     /**

@@ -2,6 +2,7 @@ package com.simonstuck.vignelli.ui;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Comparing;
 import com.intellij.ui.components.JBList;
 import com.intellij.ui.components.JBScrollPane;
 import com.simonstuck.vignelli.inspection.ProblemIdentificationCacheComponent;
@@ -13,11 +14,15 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.font.TextAttribute;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.ListSelectionModel;
 import javax.swing.border.EmptyBorder;
 
 class ProblemListPane extends JPanel {
@@ -37,6 +42,7 @@ class ProblemListPane extends JPanel {
         add(label, BorderLayout.NORTH);
 
         listPane = new JBList();
+        listPane.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
         model = new BatchUpdateListModel<>();
         listPane.setModel(model);
@@ -56,6 +62,12 @@ class ProblemListPane extends JPanel {
         add(scrollListPane, BorderLayout.CENTER);
     }
 
+    private List<ProblemIdentification> sortProblems(Collection<ProblemIdentification> problemIdentifications) {
+        List<ProblemIdentification> result = new ArrayList<>(problemIdentifications);
+        Collections.sort(result, (id1, id2) -> Comparing.compare(id1.getProblemDescriptor().getLineNumber(), id2.getProblemDescriptor().getLineNumber()));
+        return result;
+    }
+
     private void showSelectedProblemDescription(ProblemUIPane delegate) {
         int index = listPane.getSelectedIndex();
         if (index > -1) {
@@ -65,12 +77,11 @@ class ProblemListPane extends JPanel {
     }
 
     private void tryShowingFirstAvailableProblemDescription() {
-        if (!model.contains(currentIdentification)) {
-            if (!model.isEmpty()) {
-                listPane.setSelectedIndex(0);
-            } else {
-                delegate.showDescription(null);
-            }
+        if (!model.isEmpty()) {
+            listPane.setSelectedValue(model.get(0), true);
+        } else {
+            delegate.showDescription(null);
+            listPane.clearSelection();
         }
     }
 
@@ -78,8 +89,11 @@ class ProblemListPane extends JPanel {
         @Override
         public void accept(Collection<ProblemIdentification> identifications) {
             ApplicationManager.getApplication().invokeLater(() -> {
-                model.batchUpdateContents(identifications);
-                tryShowingFirstAvailableProblemDescription();
+                model.batchUpdateContents(sortProblems(identifications));
+
+                if (!model.contains(currentIdentification)) {
+                    tryShowingFirstAvailableProblemDescription();
+                }
                 invalidate();
                 repaint();
             });

@@ -8,7 +8,6 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
@@ -32,7 +31,7 @@ public class BatchUpdateListModelTest {
 
     @Test
     public void shouldRemoveNoElementsIfAllElementsAreInNewContent() throws Exception {
-        Collection<String> newContents = Arrays.asList("Hello", "Imperial", "Project");
+        List<String> newContents = Arrays.asList("Hello", "Imperial", "Project");
         model.batchUpdateContents(newContents);
 
 
