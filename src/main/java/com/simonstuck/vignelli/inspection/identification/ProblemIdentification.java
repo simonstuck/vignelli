@@ -1,7 +1,6 @@
 package com.simonstuck.vignelli.inspection.identification;
 
 import com.intellij.codeInspection.ProblemDescriptor;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiExpressionList;
 import com.intellij.psi.PsiLocalVariable;
@@ -25,7 +24,6 @@ public class ProblemIdentification implements com.simonstuck.vignelli.Templatabl
     private final ProblemDescriptor problemDescriptor;
     private final String name;
     private final PsiElement element;
-    private VirtualFile virtualFile;
 
     /**
      * Creates a new {@link com.simonstuck.vignelli.inspection.identification.ProblemIdentification}.
@@ -37,7 +35,6 @@ public class ProblemIdentification implements com.simonstuck.vignelli.Templatabl
         this.problemDescriptor = problemDescriptor;
         this.name = name;
         this.element = problemDescriptor.getPsiElement();
-        this.virtualFile = element.getContainingFile().getVirtualFile();
     }
 
     @NotNull
@@ -96,20 +93,17 @@ public class ProblemIdentification implements com.simonstuck.vignelli.Templatabl
         return "";
     }
 
-    public VirtualFile virtualFile() {
-        return virtualFile;
-    }
-
     public Optional<ImprovementOpportunity> improvementOpportunity() {
         PsiExpressionList expressionListParent = PsiTreeUtil.getParentOfType(element, PsiExpressionList.class);
         PsiLocalVariable varParent = PsiTreeUtil.getParentOfType(element, PsiLocalVariable.class);
 
         if (expressionListParent != null) {
+            // check for the expression list first as a variable assignment can exist higher up the tree.
             return Optional.of(new TrainWreckExpressionImprovementOpportunity(element));
         } else if (varParent != null) {
             return Optional.of(new TrainWreckVariableImprovementOpportunity(element,varParent));
         } else {
-            return Optional.empty();
+            return Optional.of(new TrainWreckExpressionImprovementOpportunity(element));
         }
     }
 }
