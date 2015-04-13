@@ -17,20 +17,20 @@ public class TrainWreckVariableRefactoringImpl implements Refactoring {
 
     public static final String TRAIN_WRECK_REFACTORING_DESCRIPTION = "Train Wreck Refactoring";
     private final PsiElement trainWreckElement;
-    private final PsiLocalVariable variable;
     private final RefactoringTracker refactoringTracker;
     private final Project project;
     private final PsiFile file;
 
     private InlineVariableRefactoringStep.Result inlineVariableResult;
     private TrainWreckExpressionRefactoringImpl trainWreckExprRefactoring;
+    private InlineVariableRefactoringStep inlineVariableRefactoringStep;
 
     public TrainWreckVariableRefactoringImpl(PsiElement trainWreckElement, PsiLocalVariable variable, RefactoringTracker refactoringTracker) {
         this.trainWreckElement = trainWreckElement;
-        this.variable = variable;
         this.refactoringTracker = refactoringTracker;
         this.project = trainWreckElement.getProject();
         this.file = trainWreckElement.getContainingFile();
+        inlineVariableRefactoringStep = new InlineVariableRefactoringStep(variable, project);
     }
 
     public String description() {
@@ -58,13 +58,15 @@ public class TrainWreckVariableRefactoringImpl implements Refactoring {
     }
 
     private void performInlineStep() {
-        InlineVariableRefactoringStep step = new InlineVariableRefactoringStep(variable, project);
-        inlineVariableResult = step.process();
+        inlineVariableResult = inlineVariableRefactoringStep.process();
     }
 
     @Override
     public void fillTemplateValues(Map<String, Object> templateValues) {
         templateValues.put("hasNextStep", hasNextStep());
+        if (!hasCompletedVariableInlining()) {
+            inlineVariableRefactoringStep.describeStep(templateValues);
+        }
     }
 
     @Override
@@ -98,14 +100,12 @@ public class TrainWreckVariableRefactoringImpl implements Refactoring {
 
         TrainWreckVariableRefactoringImpl that = (TrainWreckVariableRefactoringImpl) object;
 
-        return trainWreckElement.equals(that.trainWreckElement) && variable.equals(that.variable);
+        return trainWreckElement.equals(that.trainWreckElement);
     }
 
     @Override
     public int hashCode() {
-        int result = trainWreckElement.hashCode();
-        result = 31 * result + variable.hashCode();
-        return result;
+        return trainWreckElement.hashCode();
     }
 
     private boolean hasCompletedVariableInlining() {

@@ -10,7 +10,12 @@ import com.intellij.psi.PsiStatement;
 import com.intellij.psi.search.searches.ReferencesSearch;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.refactoring.inline.InlineLocalHandler;
+import com.simonstuck.vignelli.ui.description.HTMLFileTemplate;
+import com.simonstuck.vignelli.ui.description.Template;
+import com.simonstuck.vignelli.utils.IOUtils;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -19,6 +24,7 @@ import java.util.Map;
 public class InlineVariableRefactoringStep {
 
     private static final Logger LOG = Logger.getInstance(InlineVariableRefactoringStep.class.getName());
+    public static final String INLINE_VARIABLE_STEP_NAME = "Inline Variable";
 
     private final PsiLocalVariable variableToInline;
     private final Project project;
@@ -47,6 +53,32 @@ public class InlineVariableRefactoringStep {
             affectedStatements.add(statement);
         }
         return affectedStatements;
+    }
+
+    public void describeStep(Map<String, Object> templateValues) {
+        templateValues.put("nextStepDescription", getDescription());
+        templateValues.put("nextStepName", INLINE_VARIABLE_STEP_NAME);
+    }
+
+    private String getDescription() {
+        Template template = new HTMLFileTemplate(template());
+        Map<String, Object> contentMap = new HashMap<>();
+        contentMap.put("variableToInline", variableToInline.getText());
+        Collection<PsiStatement> affectedStatements = getAffectedStatements(variableToInline);
+        if (!affectedStatements.isEmpty()) {
+            PsiStatement firstAffectedStatement = affectedStatements.iterator().next();
+            contentMap.put("firstAffectedStatement", firstAffectedStatement.getText());
+        }
+        return template.render(contentMap);
+    }
+
+    private String template() {
+        try {
+            return IOUtils.readFile(getClass().getResource("/descriptionTemplates/inlineStepDescription.html").toURI());
+        } catch (IOException | URISyntaxException e) {
+            e.printStackTrace();
+        }
+        return "";
     }
 
     public final class Result {

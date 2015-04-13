@@ -9,3 +9,8 @@ body.vignelli-description blockquote {
     padding: 5px;
     margin: 10 10 10 30;
 }
+
+body.vignelli-description .code {
+    font-family: "Courier New";
+    margin: 10 10 10 20;
+}

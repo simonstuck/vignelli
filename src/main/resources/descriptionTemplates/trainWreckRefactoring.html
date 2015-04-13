@@ -2,14 +2,12 @@
 <html>
 <head lang="en">
     <meta charset="UTF-8">
-    <title>Train Wreck</title>
+    <title>Train Wreck Refactoring</title>
 </head>
 <body class="vignelli-description">
-<h1>Train Wreck Refactoring</h1>
 ${if hasNextStep}
-<p>Current Refactoring Step: ${currentStep} / ${totalSteps}</p>
 <h2>Next Step: ${nextStepName}</h2>
-<p>${nextStepDescription}</p>
+${nextStepDescription}
 <p><a href="vignelli://nextStep">Perform Next Step</a></p>
 <p><a href="vignelli://complete">Stop Refactoring</a></p>
 ${else}

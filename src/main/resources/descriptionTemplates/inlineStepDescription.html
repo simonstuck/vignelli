@@ -1,0 +1,7 @@
+<p>In this step we inline the variable that is affected by the train wreck:</p>
+<p class="code">${variableToInline}</p>
+${if firstAffectedStatement}
+<p>For example, the first statement that will be affected by this is:</p>
+<p class="code">${firstAffectedStatement}</p>
+${end}
+<p>We inline the variable under the assumption that it will enable us to migrate the affected code to a form that follows the "Tell, don't ask" mantra. Instead of asking for a value, the code will instead tell the neighbour object to perform a certain operation.</p>
