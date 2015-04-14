@@ -65,6 +65,8 @@ public class TrainWreckVariableRefactoringImpl implements Refactoring {
         templateValues.put("hasNextStep", hasNextStep());
         if (!hasCompletedVariableInlining()) {
             inlineVariableRefactoringStep.describeStep(templateValues);
+        } else {
+            trainWreckExprRefactoring.fillTemplateValues(templateValues);
         }
     }
 

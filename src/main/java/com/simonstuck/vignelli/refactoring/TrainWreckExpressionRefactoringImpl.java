@@ -17,7 +17,6 @@ import com.simonstuck.vignelli.utils.IOUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -34,12 +33,15 @@ public class TrainWreckExpressionRefactoringImpl implements Refactoring {
     private ExtractMethodRefactoringStep.Result extractMethodResult;
     private MoveMethodRefactoringStep.Result moveMethodResult;
     private Iterator<PsiElement> fieldIterator;
+    private ExtractMethodRefactoringStep extractMethodStep;
 
     public TrainWreckExpressionRefactoringImpl(@NotNull Collection<PsiStatement> extractRegion, RefactoringTracker tracker, Project project, PsiFile file) {
         this.extractRegion = extractRegion;
         this.tracker = tracker;
         this.project = project;
         this.file = file;
+
+        extractMethodStep = new ExtractMethodRefactoringStep(extractRegion,file,project);
     }
 
     @Override
@@ -51,7 +53,7 @@ public class TrainWreckExpressionRefactoringImpl implements Refactoring {
     public void nextStep() throws NoSuchMethodException {
         switch (currentStepIndex) {
             case 0:
-                performExtractMethodStep();
+                extractMethodResult = extractMethodStep.process();
                 prepareExtractFieldParameters();
                 currentStepIndex++;
                 if (!fieldIterator.hasNext()) {
@@ -89,13 +91,6 @@ public class TrainWreckExpressionRefactoringImpl implements Refactoring {
         moveMethodResult = step.process();
     }
 
-    private void performExtractMethodStep() {
-        PsiElement[] elementsToExtract;
-        elementsToExtract = extractRegion.toArray(new PsiElement[extractRegion.size()]);
-        ExtractMethodRefactoringStep step = new ExtractMethodRefactoringStep(elementsToExtract,file,project);
-        extractMethodResult = step.process();
-    }
-
     private void prepareExtractFieldParameters() {
         PsiMethod method = extractMethodResult.getExtractedMethod();
         @SuppressWarnings("unchecked") Collection<PsiReferenceExpression> referenceExpressions= PsiTreeUtil.collectElementsOfType(method, PsiReferenceExpression.class);
@@ -113,6 +108,12 @@ public class TrainWreckExpressionRefactoringImpl implements Refactoring {
     @Override
     public void fillTemplateValues(Map<String, Object> templateValues) {
         templateValues.put("hasNextStep", hasNextStep());
+        switch (currentStepIndex) {
+            case 0:
+                extractMethodStep.describeStep(templateValues);
+                break;
+            default:
+        }
     }
 
     @Override
