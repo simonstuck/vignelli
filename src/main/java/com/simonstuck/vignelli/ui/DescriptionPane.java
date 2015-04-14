@@ -36,14 +36,11 @@ class DescriptionPane extends JEditorPane implements Observer {
         Document doc = kit.createDefaultDocument();
 
         try {
-            String styles = IOUtils.readFile(DescriptionPane.class.getResource("/descriptionTemplates/styles.css").toURI());
+            String styles = IOUtils.readFile("descriptionTemplates/styles.css");
             kit.getStyleSheet().addRule(styles);
         } catch (IOException e) {
             LOG.error(e.getMessage(), e);
-        } catch (URISyntaxException e) {
-            LOG.error(e.getMessage(), e);
         }
-
 
         setEditable(false);
         setEditorKit(kit);
@@ -115,10 +112,8 @@ class DescriptionPane extends JEditorPane implements Observer {
         public String render() {
             String strTemplate = null;
             try {
-                strTemplate = IOUtils.readFile(DescriptionPane.class.getResource("/descriptionTemplates/emptyDescription.html").toURI());
+                strTemplate = IOUtils.readFile("descriptionTemplates/emptyDescription.html");
             } catch (IOException e) {
-                LOG.error(e.getMessage(), e);
-            } catch (URISyntaxException e) {
                 LOG.error(e.getMessage(), e);
             }
             Template defaultTemplate = new HTMLFileTemplate(strTemplate);

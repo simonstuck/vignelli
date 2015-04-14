@@ -9,7 +9,6 @@ import com.simonstuck.vignelli.refactoring.steps.InlineVariableRefactoringStep;
 import com.simonstuck.vignelli.utils.IOUtils;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.Map;
 
@@ -82,10 +81,8 @@ public class TrainWreckVariableRefactoringImpl implements Refactoring {
     @Override
     public String template() {
         try {
-            return IOUtils.readFile(getClass().getResource("/descriptionTemplates/trainWreckRefactoring.html").toURI());
+            return IOUtils.readFile("descriptionTemplates/trainWreckRefactoring.html");
         } catch (IOException e) {
-            e.printStackTrace();
-        } catch (URISyntaxException e) {
             e.printStackTrace();
         }
         return "";

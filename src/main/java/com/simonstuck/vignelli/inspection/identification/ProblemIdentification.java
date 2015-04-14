@@ -16,7 +16,6 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 
 public class ProblemIdentification implements com.simonstuck.vignelli.Templatable {
 
@@ -88,10 +87,8 @@ public class ProblemIdentification implements com.simonstuck.vignelli.Templatabl
     @Override
     public String template() {
         try {
-            return IOUtils.readFile(getClass().getResource("/descriptionTemplates/trainWreckDescription.html").toURI());
+            return IOUtils.readFile("descriptionTemplates/trainWreckDescription.html");
         } catch (IOException e) {
-            e.printStackTrace();
-        } catch (URISyntaxException e) {
             e.printStackTrace();
         }
         return "";

@@ -53,8 +53,12 @@ public class ProblemTableModel extends AbstractTableModel {
         problemData.clear();
         problemData.addAll(newProblems);
 
-        fireTableRowsUpdated(0, newProblems.size() - 1);
-        fireTableRowsDeleted(newProblems.size(), oldLength - 1);
+        if (newProblems.size() >= 1) {
+            fireTableRowsUpdated(0, newProblems.size() - 1);
+        }
+        if (oldLength > newProblems.size()) {
+            fireTableRowsDeleted(newProblems.size(), oldLength - 1);
+        }
     }
     public boolean isEmpty() {
         return problemData.isEmpty();

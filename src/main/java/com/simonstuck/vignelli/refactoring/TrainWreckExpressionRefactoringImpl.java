@@ -128,10 +128,8 @@ public class TrainWreckExpressionRefactoringImpl implements Refactoring {
     @Override
     public String template() {
         try {
-            return IOUtils.readFile(getClass().getResource("/descriptionTemplates/trainWreckRefactoring.html").toURI());
+            return IOUtils.readFile("descriptionTemplates/trainWreckRefactoring.html");
         } catch (IOException e) {
-            e.printStackTrace();
-        } catch (URISyntaxException e) {
             e.printStackTrace();
         }
         return "";

@@ -15,7 +15,6 @@ import com.simonstuck.vignelli.ui.description.Template;
 import com.simonstuck.vignelli.utils.IOUtils;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -74,10 +73,8 @@ public class InlineVariableRefactoringStep {
 
     private String template() {
         try {
-            return IOUtils.readFile(getClass().getResource("/descriptionTemplates/inlineStepDescription.html").toURI());
+            return IOUtils.readFile("descriptionTemplates/inlineStepDescription.html");
         } catch (IOException e) {
-            e.printStackTrace();
-        } catch (URISyntaxException e) {
             e.printStackTrace();
         }
         return "";
