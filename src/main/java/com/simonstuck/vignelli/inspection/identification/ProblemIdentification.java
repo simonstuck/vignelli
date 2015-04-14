@@ -6,6 +6,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiExpressionList;
 import com.intellij.psi.PsiLocalVariable;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.jgoodies.common.base.Objects;
 import com.simonstuck.vignelli.inspection.ImprovementOpportunity;
 import com.simonstuck.vignelli.inspection.TrainWreckExpressionImprovementOpportunity;
 import com.simonstuck.vignelli.inspection.TrainWreckVariableImprovementOpportunity;
@@ -16,7 +17,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.Objects;
 
 public class ProblemIdentification implements com.simonstuck.vignelli.Templatable {
 
@@ -89,7 +89,9 @@ public class ProblemIdentification implements com.simonstuck.vignelli.Templatabl
     public String template() {
         try {
             return IOUtils.readFile(getClass().getResource("/descriptionTemplates/trainWreckDescription.html").toURI());
-        } catch (IOException | URISyntaxException e) {
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (URISyntaxException e) {
             e.printStackTrace();
         }
         return "";

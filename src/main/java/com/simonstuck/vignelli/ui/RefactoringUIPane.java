@@ -20,7 +20,7 @@ public class RefactoringUIPane extends JPanel {
 
         JLabel label = new JLabel("Refactoring");
         label.setBorder(new EmptyBorder(2,2,0,0));
-        Map<TextAttribute, Object> fontAttributes = new HashMap<>();
+        Map<TextAttribute, Object> fontAttributes = new HashMap<TextAttribute, Object>();
         fontAttributes.put(TextAttribute.WEIGHT, TextAttribute.WEIGHT_BOLD);
         label.setFont(Font.getFont(fontAttributes));
         add(label, BorderLayout.NORTH);

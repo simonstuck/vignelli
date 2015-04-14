@@ -40,7 +40,7 @@ public class ProblemIdentificationCacheComponent implements ProjectComponent {
      */
     public ProblemIdentificationCacheComponent(Project project) {
         this.project = project;
-        problemIdentifications = new HashMap<>();
+        problemIdentifications = new HashMap<VirtualFile, LinkedList<ProblemIdentification>>();
         problemFileSelectionListener = new ProblemFileSelectionListener();
         subscribeToFileSelectionChanges(project);
     }
@@ -57,7 +57,7 @@ public class ProblemIdentificationCacheComponent implements ProjectComponent {
      * @param problems The new problems that were found
      */
     public void updateFileProblems(VirtualFile file, Collection<ProblemIdentification> problems) {
-        problemIdentifications.put(file, new LinkedList<>(problems));
+        problemIdentifications.put(file, new LinkedList<ProblemIdentification>(problems));
         if (file.equals(selectedFile)) {
             broadcastCurrentProblems(problems);
         }
@@ -79,7 +79,7 @@ public class ProblemIdentificationCacheComponent implements ProjectComponent {
         if (result != null) {
             return result;
         } else {
-            return new ArrayList<>();
+            return new ArrayList<ProblemIdentification>();
         }
     }
 

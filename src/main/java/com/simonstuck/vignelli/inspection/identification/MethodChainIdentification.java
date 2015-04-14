@@ -47,7 +47,7 @@ public class MethodChainIdentification {
     public Set<MethodChainIdentification> getAllMethodCallQualifiers() {
         Optional<MethodChainIdentification> directQualifier = getMethodCallQualifier();
         if (!directQualifier.isPresent()) {
-            return new HashSet<>();
+            return new HashSet<MethodChainIdentification>();
         } else {
             Set<MethodChainIdentification> result = directQualifier.get().getAllMethodCallQualifiers();
             result.add(directQualifier.get());

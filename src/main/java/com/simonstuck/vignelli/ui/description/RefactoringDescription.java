@@ -18,7 +18,7 @@ public class RefactoringDescription extends Description {
     @Override
     public String render() {
         Template template = new HTMLFileTemplate(refactoring.template());
-        HashMap<String, Object> contentMap = new HashMap<>();
+        HashMap<String, Object> contentMap = new HashMap<String, Object>();
 
         refactoring.fillTemplateValues(contentMap);
         return template.render(contentMap);

@@ -31,6 +31,9 @@ apply plugin: 'jacoco'
 version = '0.0.1-SNAPSHOT'
 group = 'com.simonstuck'
 
+targetCompatibility = 1.6
+sourceCompatibility = 1.6
+
 
 configurations {
   antTask

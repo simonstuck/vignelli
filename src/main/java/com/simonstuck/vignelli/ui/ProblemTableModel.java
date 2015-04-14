@@ -11,7 +11,7 @@ public class ProblemTableModel extends AbstractTableModel {
 
     private static final String[] COLUMN_NAMES = { "#", "Problem", "Code" };
 
-    private final List<ProblemIdentification> problemData = new ArrayList<>();
+    private final List<ProblemIdentification> problemData = new ArrayList<ProblemIdentification>();
 
     @Override
     public int getRowCount() {

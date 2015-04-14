@@ -25,7 +25,7 @@ public class MethodChainIdentificationEngine {
         final Collection<MethodChainIdentification> candidates = computeIdentificationCandidates(element);
         final Collection<MethodChainIdentification> toIgnore = allMethodChainQualifiers(candidates);
 
-        Set<MethodChainIdentification> result = new HashSet<>();
+        Set<MethodChainIdentification> result = new HashSet<MethodChainIdentification>();
         for (MethodChainIdentification candidate : candidates) {
             Predicate<MethodChainIdentification> differentAdjacentTypesPredicate = new MethodChainDifferentAdjacentTypesPredicate();
             Predicate<MethodChainIdentification> multipleCallsPredicate = new MethodChainMultipleCallsPredicate();
@@ -42,7 +42,7 @@ public class MethodChainIdentificationEngine {
      * @return A collection of qualifiers
      */
     private Collection<MethodChainIdentification> allMethodChainQualifiers(Collection<MethodChainIdentification> ids) {
-        Collection<MethodChainIdentification> result = new LinkedList<>();
+        Collection<MethodChainIdentification> result = new LinkedList<MethodChainIdentification>();
         for (MethodChainIdentification id : ids) {
             result.addAll(id.getAllMethodCallQualifiers());
         }
@@ -56,7 +56,7 @@ public class MethodChainIdentificationEngine {
      */
     private Collection<MethodChainIdentification> computeIdentificationCandidates(PsiElement element) {
         final Set<PsiMethodCallExpression> methodCalls = getMethodCalls(element);
-        final List<MethodChainIdentification> result = new ArrayList<>(methodCalls.size());
+        final List<MethodChainIdentification> result = new ArrayList<MethodChainIdentification>(methodCalls.size());
         for (PsiMethodCallExpression expression : methodCalls) {
             result.add(MethodChainIdentification.createWithFinalCall(expression));
         }
@@ -69,7 +69,7 @@ public class MethodChainIdentificationEngine {
      * @return A set of all method calls
      */
     private Set<PsiMethodCallExpression> getMethodCalls(PsiElement element) {
-        final Set<PsiMethodCallExpression> methodCalls = new HashSet<>();
+        final Set<PsiMethodCallExpression> methodCalls = new HashSet<PsiMethodCallExpression>();
 
         JavaRecursiveElementVisitor visitor = new JavaRecursiveElementVisitor() {
             @Override

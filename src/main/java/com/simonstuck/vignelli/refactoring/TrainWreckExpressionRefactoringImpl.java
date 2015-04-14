@@ -100,7 +100,7 @@ public class TrainWreckExpressionRefactoringImpl implements Refactoring {
         PsiMethod method = extractMethodResult.getExtractedMethod();
         @SuppressWarnings("unchecked") Collection<PsiReferenceExpression> referenceExpressions= PsiTreeUtil.collectElementsOfType(method, PsiReferenceExpression.class);
 
-        Collection<PsiElement> fieldParameters = new HashSet<>();
+        Collection<PsiElement> fieldParameters = new HashSet<PsiElement>();
         for (PsiReferenceExpression expression : referenceExpressions) {
             PsiElement resolved = expression.resolve();
             if (resolved instanceof PsiField || (resolved instanceof PsiMethod && ((PsiMethod) resolved).getContainingClass().equals(extractMethodResult.getExtractedMethod().getContainingClass()))) {
@@ -129,7 +129,9 @@ public class TrainWreckExpressionRefactoringImpl implements Refactoring {
     public String template() {
         try {
             return IOUtils.readFile(getClass().getResource("/descriptionTemplates/trainWreckRefactoring.html").toURI());
-        } catch (IOException | URISyntaxException e) {
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (URISyntaxException e) {
             e.printStackTrace();
         }
         return "";

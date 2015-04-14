@@ -41,7 +41,7 @@ class ProblemListPane extends JPanel {
         setLayout(new BorderLayout(5,5));
         JLabel label = new JLabel("Active Problems");
         label.setBorder(new EmptyBorder(2,2,0,0));
-        Map<TextAttribute, Object> fontAttributes = new HashMap<>();
+        Map<TextAttribute, Object> fontAttributes = new HashMap<TextAttribute, Object>();
         fontAttributes.put(TextAttribute.WEIGHT,TextAttribute.WEIGHT_BOLD);
         label.setFont(Font.getFont(fontAttributes));
         add(label, BorderLayout.NORTH);
@@ -83,7 +83,7 @@ class ProblemListPane extends JPanel {
     }
 
     private List<ProblemIdentification> sortProblems(Collection<ProblemIdentification> problemIdentifications) {
-        List<ProblemIdentification> result = new ArrayList<>(problemIdentifications);
+        List<ProblemIdentification> result = new ArrayList<ProblemIdentification>(problemIdentifications);
         Collections.sort(result, new Comparator<ProblemIdentification>() {
             @Override
             public int compare(ProblemIdentification id1, ProblemIdentification id2) {

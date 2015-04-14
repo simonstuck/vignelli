@@ -29,7 +29,7 @@ public class MethodChainingInspectionTool extends BaseJavaLocalInspectionTool {
     private static final String METHOD_CHAIN_IDENTIFICATION_NAME = "Train Wreck";
     private final MethodChainIdentificationEngine engine;
 
-    private final Map<PsiMethod, Collection<ProblemIdentification>> methodProblemsMap = new HashMap<>();
+    private final Map<PsiMethod, Collection<ProblemIdentification>> methodProblemsMap = new HashMap<PsiMethod, Collection<ProblemIdentification>>();
 
     public MethodChainingInspectionTool() {
         engine = new MethodChainIdentificationEngine();
@@ -69,7 +69,7 @@ public class MethodChainingInspectionTool extends BaseJavaLocalInspectionTool {
      * @return A new list of problem descriptors
      */
     private List<ProblemDescriptor> createProblemDescriptors(InspectionManager manager, Collection<MethodChainIdentification> methodChainIdentifications) {
-        List<ProblemDescriptor> problemDescriptors = new ArrayList<>(methodChainIdentifications.size());
+        List<ProblemDescriptor> problemDescriptors = new ArrayList<ProblemDescriptor>(methodChainIdentifications.size());
         for (MethodChainIdentification identification : methodChainIdentifications) {
             ProblemDescriptor descriptor = identification.problemDescriptor(manager);
             problemDescriptors.add(descriptor);
@@ -85,7 +85,7 @@ public class MethodChainingInspectionTool extends BaseJavaLocalInspectionTool {
      */
     private synchronized void cleanMethodProblems(PsiFile file) {
         final Set<PsiMethod> definedMethods = getDefinedMethods(file);
-        Collection<PsiMethod> toRemove = new HashSet<>();
+        Collection<PsiMethod> toRemove = new HashSet<PsiMethod>();
         for (PsiMethod method : methodProblemsMap.keySet()) {
             if (!definedMethods.contains(method)) {
                 toRemove.add(method);
@@ -103,7 +103,7 @@ public class MethodChainingInspectionTool extends BaseJavaLocalInspectionTool {
      * @return A set with all defined methods in the file
      */
     private Set<PsiMethod> getDefinedMethods(PsiFile file) {
-        final Set<PsiMethod> methods = new HashSet<>();
+        final Set<PsiMethod> methods = new HashSet<PsiMethod>();
         JavaRecursiveElementVisitor methodFinder = new JavaRecursiveElementVisitor() {
             @Override
             public void visitMethod(PsiMethod method) {
@@ -118,7 +118,7 @@ public class MethodChainingInspectionTool extends BaseJavaLocalInspectionTool {
     private void notifyProblemCacheIfNecessary(VirtualFile virtualFile, InspectionManager manager) {
         ProblemIdentificationCacheComponent cache = manager.getProject().getComponent(ProblemIdentificationCacheComponent.class);
 
-        Collection<ProblemIdentification> allIdentifications = new LinkedList<>();
+        Collection<ProblemIdentification> allIdentifications = new LinkedList<ProblemIdentification>();
         for (Collection<ProblemIdentification> identifications : methodProblemsMap.values()) {
             allIdentifications.addAll(identifications);
         }
@@ -127,7 +127,7 @@ public class MethodChainingInspectionTool extends BaseJavaLocalInspectionTool {
     }
 
     private Collection<ProblemIdentification> buildProblemIdentifications(Collection<ProblemDescriptor> problemDescriptors) {
-        List<ProblemIdentification> result = new ArrayList<>();
+        List<ProblemIdentification> result = new ArrayList<ProblemIdentification>();
         for (ProblemDescriptor descriptor : problemDescriptors) {
             result.add(new ProblemIdentification(descriptor, METHOD_CHAIN_IDENTIFICATION_NAME));
         }

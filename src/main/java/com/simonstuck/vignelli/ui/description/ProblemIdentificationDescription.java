@@ -23,7 +23,7 @@ public class ProblemIdentificationDescription extends Description {
 
     @Override
     public String render() {
-        HashMap<String, Object> contentMap = new HashMap<>();
+        HashMap<String, Object> contentMap = new HashMap<String, Object>();
         Template template = new HTMLFileTemplate(id.template());
         Optional<? extends ImprovementOpportunity> opp = id.improvementOpportunity();
         if (opp.isPresent()) {

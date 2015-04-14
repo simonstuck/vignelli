@@ -83,7 +83,9 @@ public class TrainWreckVariableRefactoringImpl implements Refactoring {
     public String template() {
         try {
             return IOUtils.readFile(getClass().getResource("/descriptionTemplates/trainWreckRefactoring.html").toURI());
-        } catch (IOException | URISyntaxException e) {
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (URISyntaxException e) {
             e.printStackTrace();
         }
         return "";

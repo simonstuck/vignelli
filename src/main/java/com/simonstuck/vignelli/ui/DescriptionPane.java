@@ -38,7 +38,9 @@ class DescriptionPane extends JEditorPane implements Observer {
         try {
             String styles = IOUtils.readFile(DescriptionPane.class.getResource("/descriptionTemplates/styles.css").toURI());
             kit.getStyleSheet().addRule(styles);
-        } catch (IOException | URISyntaxException e) {
+        } catch (IOException e) {
+            LOG.error(e.getMessage(), e);
+        } catch (URISyntaxException e) {
             LOG.error(e.getMessage(), e);
         }
 
@@ -67,7 +69,9 @@ class DescriptionPane extends JEditorPane implements Observer {
                         } else {
                             Desktop.getDesktop().browse(event.getURL().toURI());
                         }
-                    } catch (IOException | URISyntaxException e1) {
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    } catch (URISyntaxException e1) {
                         e1.printStackTrace();
                     }
                 }
@@ -112,7 +116,9 @@ class DescriptionPane extends JEditorPane implements Observer {
             String strTemplate = null;
             try {
                 strTemplate = IOUtils.readFile(DescriptionPane.class.getResource("/descriptionTemplates/emptyDescription.html").toURI());
-            } catch (IOException | URISyntaxException e) {
+            } catch (IOException e) {
+                LOG.error(e.getMessage(), e);
+            } catch (URISyntaxException e) {
                 LOG.error(e.getMessage(), e);
             }
             Template defaultTemplate = new HTMLFileTemplate(strTemplate);

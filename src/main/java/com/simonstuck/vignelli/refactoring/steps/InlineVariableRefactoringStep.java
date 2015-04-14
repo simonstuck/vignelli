@@ -47,7 +47,7 @@ public class InlineVariableRefactoringStep {
 
     private Collection<PsiStatement> getAffectedStatements(PsiLocalVariable variableToInline) {
         Collection<PsiReference> references = ReferencesSearch.search(variableToInline).findAll();
-        Collection<PsiStatement> affectedStatements = new ArrayList<>(references.size());
+        Collection<PsiStatement> affectedStatements = new ArrayList<PsiStatement>(references.size());
         for (PsiReference reference : references) {
             PsiStatement statement = PsiTreeUtil.getParentOfType(reference.getElement(), PsiStatement.class);
             affectedStatements.add(statement);
@@ -62,7 +62,7 @@ public class InlineVariableRefactoringStep {
 
     private String getDescription() {
         Template template = new HTMLFileTemplate(template());
-        HashMap<String, Object> contentMap = new HashMap<>();
+        HashMap<String, Object> contentMap = new HashMap<String, Object>();
         contentMap.put("variableToInline", variableToInline.getText());
         Collection<PsiStatement> affectedStatements = getAffectedStatements(variableToInline);
         if (!affectedStatements.isEmpty()) {
@@ -75,7 +75,9 @@ public class InlineVariableRefactoringStep {
     private String template() {
         try {
             return IOUtils.readFile(getClass().getResource("/descriptionTemplates/inlineStepDescription.html").toURI());
-        } catch (IOException | URISyntaxException e) {
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (URISyntaxException e) {
             e.printStackTrace();
         }
         return "";

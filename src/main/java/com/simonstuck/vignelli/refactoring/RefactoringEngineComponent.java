@@ -20,7 +20,7 @@ public class RefactoringEngineComponent implements ProjectComponent, Refactoring
 
     private final Project project;
 
-    private Set<Refactoring> activeRefactorings = new HashSet<>();
+    private Set<Refactoring> activeRefactorings = new HashSet<Refactoring>();
 
     public RefactoringEngineComponent(Project project) {
         this.project = project;
@@ -50,14 +50,14 @@ public class RefactoringEngineComponent implements ProjectComponent, Refactoring
 
     @Override
     public Collection<Refactoring> activeRefactorings() {
-        return new HashSet<>(activeRefactorings);
+        return new HashSet<Refactoring>(activeRefactorings);
     }
 
     /**
      * Broadcasts all active refactorings to all subscribers.
      */
     protected void broadcastActiveRefactorings() {
-        project.getMessageBus().syncPublisher(ACTIVE_REFACTORINGS_TOPIC).consume(new HashSet<>(activeRefactorings));
+        project.getMessageBus().syncPublisher(ACTIVE_REFACTORINGS_TOPIC).consume(new HashSet<Refactoring>(activeRefactorings));
     }
 
     @Override
