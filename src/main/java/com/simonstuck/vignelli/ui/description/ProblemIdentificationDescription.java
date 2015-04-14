@@ -1,15 +1,13 @@
 package com.simonstuck.vignelli.ui.description;
 
+import com.google.common.base.Optional;
 import com.intellij.openapi.diagnostic.Logger;
 import com.simonstuck.vignelli.inspection.ImprovementOpportunity;
-import com.simonstuck.vignelli.inspection.TrainWreckVariableImprovementOpportunity;
 import com.simonstuck.vignelli.inspection.identification.ProblemIdentification;
 
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
 import javax.swing.event.HyperlinkEvent;
 
 public class ProblemIdentificationDescription extends Description {
@@ -25,9 +23,9 @@ public class ProblemIdentificationDescription extends Description {
 
     @Override
     public String render() {
-        Map<String, Object> contentMap = new HashMap<>();
+        HashMap<String, Object> contentMap = new HashMap<>();
         Template template = new HTMLFileTemplate(id.template());
-        Optional<ImprovementOpportunity> opp = id.improvementOpportunity();
+        Optional<? extends ImprovementOpportunity> opp = id.improvementOpportunity();
         if (opp.isPresent()) {
             contentMap.put("improvement", opp.get().toString());
         }
@@ -37,7 +35,7 @@ public class ProblemIdentificationDescription extends Description {
     @Override
     public void handleVignelliLinkEvent(HyperlinkEvent event) {
         LOG.info("vignelli event: " + event);
-        Optional<ImprovementOpportunity> opportunity = id.improvementOpportunity();
+        Optional<? extends ImprovementOpportunity> opportunity = id.improvementOpportunity();
         if (!opportunity.isPresent()) {
             LOG.warn("Tried to launch refactoring which does not exist. event=[" + event + "]");
         } else {

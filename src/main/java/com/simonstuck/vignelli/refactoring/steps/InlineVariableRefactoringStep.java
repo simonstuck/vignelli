@@ -62,7 +62,7 @@ public class InlineVariableRefactoringStep {
 
     private String getDescription() {
         Template template = new HTMLFileTemplate(template());
-        Map<String, Object> contentMap = new HashMap<>();
+        HashMap<String, Object> contentMap = new HashMap<>();
         contentMap.put("variableToInline", variableToInline.getText());
         Collection<PsiStatement> affectedStatements = getAffectedStatements(variableToInline);
         if (!affectedStatements.isEmpty()) {

@@ -4,7 +4,6 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.simonstuck.vignelli.refactoring.Refactoring;
 
 import java.util.HashMap;
-import java.util.Map;
 import javax.swing.event.HyperlinkEvent;
 
 public class RefactoringDescription extends Description {
@@ -19,7 +18,7 @@ public class RefactoringDescription extends Description {
     @Override
     public String render() {
         Template template = new HTMLFileTemplate(refactoring.template());
-        Map<String, Object> contentMap = new HashMap<>();
+        HashMap<String, Object> contentMap = new HashMap<>();
 
         refactoring.fillTemplateValues(contentMap);
         return template.render(contentMap);

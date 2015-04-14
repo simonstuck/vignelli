@@ -1,5 +1,6 @@
 package com.simonstuck.vignelli.inspection.identification;
 
+import com.google.common.base.Optional;
 import com.intellij.codeInspection.ProblemDescriptor;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiExpressionList;
@@ -16,7 +17,6 @@ import org.jetbrains.annotations.NotNull;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Objects;
-import java.util.Optional;
 
 public class ProblemIdentification implements com.simonstuck.vignelli.Templatable {
 
@@ -95,7 +95,7 @@ public class ProblemIdentification implements com.simonstuck.vignelli.Templatabl
         return "";
     }
 
-    public Optional<ImprovementOpportunity> improvementOpportunity() {
+    public Optional<? extends ImprovementOpportunity> improvementOpportunity() {
         PsiExpressionList expressionListParent = PsiTreeUtil.getParentOfType(element, PsiExpressionList.class);
         PsiLocalVariable varParent = PsiTreeUtil.getParentOfType(element, PsiLocalVariable.class);
 

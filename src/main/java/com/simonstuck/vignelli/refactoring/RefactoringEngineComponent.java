@@ -57,7 +57,7 @@ public class RefactoringEngineComponent implements ProjectComponent, Refactoring
      * Broadcasts all active refactorings to all subscribers.
      */
     protected void broadcastActiveRefactorings() {
-        project.getMessageBus().syncPublisher(ACTIVE_REFACTORINGS_TOPIC).accept(new HashSet<>(activeRefactorings));
+        project.getMessageBus().syncPublisher(ACTIVE_REFACTORINGS_TOPIC).consume(new HashSet<>(activeRefactorings));
     }
 
     @Override

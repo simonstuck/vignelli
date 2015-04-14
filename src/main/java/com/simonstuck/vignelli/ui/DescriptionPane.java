@@ -17,6 +17,7 @@ import java.util.Observable;
 import java.util.Observer;
 import javax.swing.JEditorPane;
 import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
 import javax.swing.text.Document;
 import javax.swing.text.html.HTMLEditorKit;
 
@@ -56,16 +57,19 @@ class DescriptionPane extends JEditorPane implements Observer {
      * For hyperlinks, the current description's handler is called.
      */
     private void addListeners() {
-        addHyperlinkListener(event -> {
-            if (event.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-                try {
-                    if (event.getDescription().startsWith(VIGNELLI_SCHEME)) {
-                        description.handleVignelliLinkEvent(event);
-                    } else {
-                        Desktop.getDesktop().browse(event.getURL().toURI());
+        addHyperlinkListener(new HyperlinkListener() {
+            @Override
+            public void hyperlinkUpdate(HyperlinkEvent event) {
+                if (event.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+                    try {
+                        if (event.getDescription().startsWith(VIGNELLI_SCHEME)) {
+                            description.handleVignelliLinkEvent(event);
+                        } else {
+                            Desktop.getDesktop().browse(event.getURL().toURI());
+                        }
+                    } catch (IOException | URISyntaxException e1) {
+                        e1.printStackTrace();
                     }
-                } catch (IOException | URISyntaxException e1) {
-                    e1.printStackTrace();
                 }
             }
         });
@@ -112,7 +116,7 @@ class DescriptionPane extends JEditorPane implements Observer {
                 LOG.error(e.getMessage(), e);
             }
             Template defaultTemplate = new HTMLFileTemplate(strTemplate);
-            return defaultTemplate.render(new HashMap<>());
+            return defaultTemplate.render(new HashMap<String, Object>());
         }
 
         @Override

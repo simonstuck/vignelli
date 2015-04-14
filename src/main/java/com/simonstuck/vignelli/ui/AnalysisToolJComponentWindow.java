@@ -27,7 +27,7 @@ class AnalysisToolJComponentWindow extends JPanel {
         UIActiveRefactoringCollectionListener listener = new UIActiveRefactoringCollectionListener();
         project.getMessageBus().connect().subscribe(RefactoringEngineComponent.ACTIVE_REFACTORINGS_TOPIC, listener);
         RefactoringEngineComponent refactoringEngineComponent = project.getComponent(RefactoringEngineComponent.class);
-        listener.accept(refactoringEngineComponent.activeRefactorings());
+        listener.consume(refactoringEngineComponent.activeRefactorings());
 
         showProblemUI();
     }
@@ -49,15 +49,18 @@ class AnalysisToolJComponentWindow extends JPanel {
     private class UIActiveRefactoringCollectionListener implements ActiveRefactoringCollectionListener {
 
         @Override
-        public void accept(Collection<Refactoring> refactorings) {
-            ApplicationManager.getApplication().invokeLater(() -> {
-                LOG.info("new refactoring: " + refactorings);
-                if (refactorings.isEmpty()) {
-                    showProblemUI();
-                } else {
-                    // We only allow one refactoring in this UI to be active
-                    Refactoring refactoring = refactorings.iterator().next();
-                    showRefactoringUI(refactoring);
+        public void consume(final Collection<Refactoring> refactorings) {
+            ApplicationManager.getApplication().invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    LOG.info("new refactoring: " + refactorings);
+                    if (refactorings.isEmpty()) {
+                        showProblemUI();
+                    } else {
+                        // We only allow one refactoring in this UI to be active
+                        Refactoring refactoring = refactorings.iterator().next();
+                        showRefactoringUI(refactoring);
+                    }
                 }
             });
         }

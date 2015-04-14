@@ -18,6 +18,7 @@ import java.awt.font.TextAttribute;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +27,8 @@ import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 class ProblemListPane extends JPanel {
     private final ProblemTableModel model;
@@ -33,7 +36,7 @@ class ProblemListPane extends JPanel {
     private final ProblemUIPane delegate;
     private ProblemIdentification currentIdentification;
 
-    public ProblemListPane(Project project, ProblemUIPane delegate) {
+    public ProblemListPane(Project project, final ProblemUIPane delegate) {
         this.delegate = delegate;
         setLayout(new BorderLayout(5,5));
         JLabel label = new JLabel("Active Problems");
@@ -56,16 +59,24 @@ class ProblemListPane extends JPanel {
         tablePane.setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
         tablePane.doLayout();
 
-        tablePane.getSelectionModel().addListSelectionListener(event -> ApplicationManager.getApplication().invokeLater(() -> {
-            if (!event.getValueIsAdjusting()) {
-                showSelectedProblemDescription(delegate);
+        tablePane.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(final ListSelectionEvent event) {
+                ApplicationManager.getApplication().invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (!event.getValueIsAdjusting()) {
+                            ProblemListPane.this.showSelectedProblemDescription(delegate);
+                        }
+                    }
+                });
             }
-        }));
+        });
 
         UIProblemIdentificationCollectionListener listener = new UIProblemIdentificationCollectionListener();
         project.getMessageBus().connect().subscribe(ProblemIdentificationCacheComponent.INSPECTION_IDENTIFICATION_TOPIC, listener);
         ProblemIdentificationCacheComponent component = project.getComponent(ProblemIdentificationCacheComponent.class);
-        listener.accept(component.selectedFileProblems());
+        listener.consume(component.selectedFileProblems());
 
         Component scrollListPane = new JBScrollPane(tablePane);
         add(scrollListPane, BorderLayout.CENTER);
@@ -73,7 +84,12 @@ class ProblemListPane extends JPanel {
 
     private List<ProblemIdentification> sortProblems(Collection<ProblemIdentification> problemIdentifications) {
         List<ProblemIdentification> result = new ArrayList<>(problemIdentifications);
-        Collections.sort(result, (id1, id2) -> Comparing.compare(id1.getProblemDescriptor().getLineNumber(), id2.getProblemDescriptor().getLineNumber()));
+        Collections.sort(result, new Comparator<ProblemIdentification>() {
+            @Override
+            public int compare(ProblemIdentification id1, ProblemIdentification id2) {
+                return Comparing.compare(id1.getProblemDescriptor().getLineNumber(), id2.getProblemDescriptor().getLineNumber());
+            }
+        });
         return result;
     }
 
@@ -96,15 +112,18 @@ class ProblemListPane extends JPanel {
 
     private class UIProblemIdentificationCollectionListener implements ProblemIdentificationCollectionListener {
         @Override
-        public void accept(Collection<ProblemIdentification> identifications) {
-            ApplicationManager.getApplication().invokeLater(() -> {
-                model.batchUpdateContents(sortProblems(identifications));
+        public void consume(final Collection<ProblemIdentification> identifications) {
+            ApplicationManager.getApplication().invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    model.batchUpdateContents(sortProblems(identifications));
 
-                if (!model.contains(currentIdentification)) {
-                    tryShowingFirstAvailableProblemDescription();
+                    if (!model.contains(currentIdentification)) {
+                        tryShowingFirstAvailableProblemDescription();
+                    }
+                    invalidate();
+                    repaint();
                 }
-                invalidate();
-                repaint();
             });
         }
     }

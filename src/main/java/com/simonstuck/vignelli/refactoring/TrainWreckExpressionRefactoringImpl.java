@@ -19,10 +19,9 @@ import org.jetbrains.annotations.NotNull;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 public class TrainWreckExpressionRefactoringImpl implements Refactoring {
 
@@ -100,13 +99,14 @@ public class TrainWreckExpressionRefactoringImpl implements Refactoring {
     private void prepareExtractFieldParameters() {
         PsiMethod method = extractMethodResult.getExtractedMethod();
         @SuppressWarnings("unchecked") Collection<PsiReferenceExpression> referenceExpressions= PsiTreeUtil.collectElementsOfType(method, PsiReferenceExpression.class);
-        Collection<PsiElement> fieldParameters = referenceExpressions.stream().filter(new Predicate<PsiReferenceExpression>() {
-            @Override
-            public boolean test(PsiReferenceExpression psiReferenceExpression) {
-                PsiElement resolved = psiReferenceExpression.resolve();
-                return resolved instanceof PsiField || (resolved instanceof PsiMethod && ((PsiMethod) resolved).getContainingClass().equals(extractMethodResult.getExtractedMethod().getContainingClass()));
+
+        Collection<PsiElement> fieldParameters = new HashSet<>();
+        for (PsiReferenceExpression expression : referenceExpressions) {
+            PsiElement resolved = expression.resolve();
+            if (resolved instanceof PsiField || (resolved instanceof PsiMethod && ((PsiMethod) resolved).getContainingClass().equals(extractMethodResult.getExtractedMethod().getContainingClass()))) {
+                fieldParameters.add(expression);
             }
-        }).collect(Collectors.toSet());
+        }
         fieldIterator = fieldParameters.iterator();
     }
 

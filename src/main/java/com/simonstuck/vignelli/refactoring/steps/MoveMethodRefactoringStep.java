@@ -10,6 +10,7 @@ import com.intellij.psi.PsiTreeChangeAdapter;
 import com.intellij.psi.PsiTreeChangeEvent;
 import com.intellij.psi.PsiTreeChangeListener;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.refactoring.move.MoveCallback;
 import com.intellij.refactoring.move.moveInstanceMethod.MoveInstanceMethodHandlerDelegate;
 
 import org.jetbrains.annotations.NotNull;
@@ -42,7 +43,12 @@ public class MoveMethodRefactoringStep {
         PsiManager manager = PsiManager.getInstance(project);
 
         manager.addPsiTreeChangeListener(listener);
-        delegate.doMove(project, elements, null, () -> LOG.debug("refactoring complete"));
+        delegate.doMove(project, elements, null, new MoveCallback() {
+            @Override
+            public void refactoringCompleted() {
+                LOG.debug("refactoring complete");
+            }
+        });
         manager.removePsiTreeChangeListener(listener);
 
         return targetMethod[0];

@@ -27,7 +27,7 @@ public class ProblemIdentificationCacheComponent implements ProjectComponent {
 
     private static final String COMPONENT_NAME = "Vignelli Problem Identification Cache";
 
-    private final Map<VirtualFile, Collection<ProblemIdentification>> problemIdentifications;
+    private final Map<VirtualFile, LinkedList<ProblemIdentification>> problemIdentifications;
     private final ProblemFileSelectionListener problemFileSelectionListener;
     private final Project project;
 
@@ -57,7 +57,7 @@ public class ProblemIdentificationCacheComponent implements ProjectComponent {
      * @param problems The new problems that were found
      */
     public void updateFileProblems(VirtualFile file, Collection<ProblemIdentification> problems) {
-        problemIdentifications.put(file, problems);
+        problemIdentifications.put(file, new LinkedList<>(problems));
         if (file.equals(selectedFile)) {
             broadcastCurrentProblems(problems);
         }
@@ -67,7 +67,7 @@ public class ProblemIdentificationCacheComponent implements ProjectComponent {
      * Broadcast the problems for the current file to all subscribers to the INSPECTION_IDENTIFICATION_TOPIC.
      */
     protected void broadcastCurrentProblems(Collection<ProblemIdentification> problems) {
-        project.getMessageBus().syncPublisher(INSPECTION_IDENTIFICATION_TOPIC).accept(problems);
+        project.getMessageBus().syncPublisher(INSPECTION_IDENTIFICATION_TOPIC).consume(problems);
     }
 
     /**
@@ -104,7 +104,7 @@ public class ProblemIdentificationCacheComponent implements ProjectComponent {
     private class ProblemFileSelectionListener implements FileEditorManagerListener {
         @Override
         public void fileOpened(@NotNull FileEditorManager source, @NotNull VirtualFile file) {
-            problemIdentifications.put(file, new LinkedList<>());
+            problemIdentifications.put(file, new LinkedList<ProblemIdentification>());
         }
 
         @Override

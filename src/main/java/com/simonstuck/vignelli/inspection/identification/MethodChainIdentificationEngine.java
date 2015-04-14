@@ -1,17 +1,18 @@
 package com.simonstuck.vignelli.inspection.identification;
 
+import com.google.common.base.Predicate;
 import com.intellij.psi.JavaRecursiveElementVisitor;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiMethodCallExpression;
 import com.simonstuck.vignelli.inspection.identification.predicates.MethodChainDifferentAdjacentTypesPredicate;
 import com.simonstuck.vignelli.inspection.identification.predicates.MethodChainMultipleCallsPredicate;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 public class MethodChainIdentificationEngine {
 
@@ -24,11 +25,15 @@ public class MethodChainIdentificationEngine {
         final Collection<MethodChainIdentification> candidates = computeIdentificationCandidates(element);
         final Collection<MethodChainIdentification> toIgnore = allMethodChainQualifiers(candidates);
 
-        return candidates.stream()
-                .filter(m -> !toIgnore.contains(m))
-                .filter(new MethodChainDifferentAdjacentTypesPredicate())
-                .filter(new MethodChainMultipleCallsPredicate())
-                .collect(Collectors.toCollection(new MethodChainIdentificationCollectionSupplier()));
+        Set<MethodChainIdentification> result = new HashSet<>();
+        for (MethodChainIdentification candidate : candidates) {
+            Predicate<MethodChainIdentification> differentAdjacentTypesPredicate = new MethodChainDifferentAdjacentTypesPredicate();
+            Predicate<MethodChainIdentification> multipleCallsPredicate = new MethodChainMultipleCallsPredicate();
+            if (!toIgnore.contains(candidate) && differentAdjacentTypesPredicate.apply(candidate) && multipleCallsPredicate.apply(candidate)) {
+                result.add(candidate);
+            }
+        }
+        return result;
     }
 
     /**
@@ -37,9 +42,11 @@ public class MethodChainIdentificationEngine {
      * @return A collection of qualifiers
      */
     private Collection<MethodChainIdentification> allMethodChainQualifiers(Collection<MethodChainIdentification> ids) {
-        return ids.stream()
-                    .flatMap(m -> m.getAllMethodCallQualifiers().stream())
-                    .collect(Collectors.toCollection(new MethodChainIdentificationCollectionSupplier()));
+        Collection<MethodChainIdentification> result = new LinkedList<>();
+        for (MethodChainIdentification id : ids) {
+            result.addAll(id.getAllMethodCallQualifiers());
+        }
+        return result;
     }
 
     /**
@@ -49,7 +56,11 @@ public class MethodChainIdentificationEngine {
      */
     private Collection<MethodChainIdentification> computeIdentificationCandidates(PsiElement element) {
         final Set<PsiMethodCallExpression> methodCalls = getMethodCalls(element);
-        return methodCalls.stream().map(MethodChainIdentification::createWithFinalCall).collect(Collectors.toList());
+        final List<MethodChainIdentification> result = new ArrayList<>(methodCalls.size());
+        for (PsiMethodCallExpression expression : methodCalls) {
+            result.add(MethodChainIdentification.createWithFinalCall(expression));
+        }
+        return result;
     }
 
     /**
@@ -70,12 +81,5 @@ public class MethodChainIdentificationEngine {
 
         element.accept(visitor);
         return methodCalls;
-    }
-
-    private static class MethodChainIdentificationCollectionSupplier implements Supplier<Collection<MethodChainIdentification>> {
-        @Override
-        public Collection<MethodChainIdentification> get() {
-            return new LinkedList<>();
-        }
     }
 }

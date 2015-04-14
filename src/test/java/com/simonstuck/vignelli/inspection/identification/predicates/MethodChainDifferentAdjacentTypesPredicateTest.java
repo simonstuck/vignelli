@@ -6,12 +6,13 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.google.common.base.Optional;
 import com.intellij.psi.PsiType;
 import com.simonstuck.vignelli.inspection.identification.MethodChainIdentification;
+
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Optional;
 
 public class MethodChainDifferentAdjacentTypesPredicateTest {
 
@@ -27,9 +28,9 @@ public class MethodChainDifferentAdjacentTypesPredicateTest {
     @Test
     public void shouldReturnTrueWhenNoQualifierIsPresent() throws Exception {
         when(identification.getMethodCallType()).thenReturn(PsiType.BOOLEAN);
-        when(identification.getMethodCallQualifier()).thenReturn(Optional.<MethodChainIdentification>empty());
+        when(identification.getMethodCallQualifier()).thenReturn(Optional.<MethodChainIdentification>absent());
 
-        assertTrue(predicate.test(identification));
+        assertTrue(predicate.apply(identification));
         verify(identification).getMethodCallType();
         verify(identification).getMethodCallQualifier();
     }
@@ -42,7 +43,7 @@ public class MethodChainDifferentAdjacentTypesPredicateTest {
         when(identification.getMethodCallType()).thenReturn(PsiType.BOOLEAN);
         when(identification.getMethodCallQualifier()).thenReturn(Optional.of(qualifierMock));
 
-        assertFalse(predicate.test(identification));
+        assertFalse(predicate.apply(identification));
         verify(identification).getMethodCallType();
         verify(identification).getMethodCallQualifier();
         verify(qualifierMock).getMethodCallType();
@@ -56,7 +57,7 @@ public class MethodChainDifferentAdjacentTypesPredicateTest {
         when(identification.getMethodCallType()).thenReturn(PsiType.INT);
         when(identification.getMethodCallQualifier()).thenReturn(Optional.of(qualifierMock));
 
-        assertTrue(predicate.test(identification));
+        assertTrue(predicate.apply(identification));
         verify(identification).getMethodCallType();
         verify(identification).getMethodCallQualifier();
         verify(qualifierMock).getMethodCallType();

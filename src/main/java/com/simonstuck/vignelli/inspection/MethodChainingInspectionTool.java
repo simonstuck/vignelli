@@ -23,7 +23,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class MethodChainingInspectionTool extends BaseJavaLocalInspectionTool {
 
@@ -85,9 +84,16 @@ public class MethodChainingInspectionTool extends BaseJavaLocalInspectionTool {
      * @param file The file for which to inspect all methods.
      */
     private synchronized void cleanMethodProblems(PsiFile file) {
-        Set<PsiMethod> definedMethods = getDefinedMethods(file);
-        Collection<PsiMethod> toRemove = methodProblemsMap.keySet().stream().filter(method -> !definedMethods.contains(method)).collect(Collectors.toSet());
-        toRemove.forEach(methodProblemsMap::remove);
+        final Set<PsiMethod> definedMethods = getDefinedMethods(file);
+        Collection<PsiMethod> toRemove = new HashSet<>();
+        for (PsiMethod method : methodProblemsMap.keySet()) {
+            if (!definedMethods.contains(method)) {
+                toRemove.add(method);
+            }
+        }
+        for (PsiMethod method : toRemove) {
+            methodProblemsMap.remove(method);
+        }
     }
 
     /**
@@ -113,13 +119,19 @@ public class MethodChainingInspectionTool extends BaseJavaLocalInspectionTool {
         ProblemIdentificationCacheComponent cache = manager.getProject().getComponent(ProblemIdentificationCacheComponent.class);
 
         Collection<ProblemIdentification> allIdentifications = new LinkedList<>();
-        methodProblemsMap.values().stream().forEach(allIdentifications::addAll);
+        for (Collection<ProblemIdentification> identifications : methodProblemsMap.values()) {
+            allIdentifications.addAll(identifications);
+        }
 
         cache.updateFileProblems(virtualFile, allIdentifications);
     }
 
     private Collection<ProblemIdentification> buildProblemIdentifications(Collection<ProblemDescriptor> problemDescriptors) {
-        return problemDescriptors.stream().map(problemDescriptor -> new ProblemIdentification(problemDescriptor, METHOD_CHAIN_IDENTIFICATION_NAME)).collect(Collectors.toList());
+        List<ProblemIdentification> result = new ArrayList<>();
+        for (ProblemDescriptor descriptor : problemDescriptors) {
+            result.add(new ProblemIdentification(descriptor, METHOD_CHAIN_IDENTIFICATION_NAME));
+        }
+        return result;
     }
 
     @Nls

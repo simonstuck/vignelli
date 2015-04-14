@@ -1,18 +1,19 @@
 package com.simonstuck.vignelli.inspection.identification;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.google.common.base.Optional;
 import com.intellij.psi.PsiExpression;
 import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.PsiReferenceExpression;
 import com.intellij.psi.PsiType;
+
 import org.junit.Before;
 import org.junit.Test;
-
-import java.util.Optional;
 
 public class MethodChainIdentificationTest {
 
@@ -45,7 +46,7 @@ public class MethodChainIdentificationTest {
         when(refExprMock.getQualifierExpression()).thenReturn(qualifierExprMock);
 
         Optional<MethodChainIdentification> qualifier = id.getMethodCallQualifier();
-        assertEquals(Optional.<MethodChainIdentification>empty(), qualifier);
+        assertEquals(Optional.<MethodChainIdentification>absent(), qualifier);
         verify(finalCallMock).getMethodExpression();
     }
 

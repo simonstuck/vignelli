@@ -1,7 +1,8 @@
 package com.simonstuck.vignelli.ui.description;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public interface Template {
-    String render(Map<String, Object> content);
+    String render(HashMap<String, Object> content);
 }

@@ -2,7 +2,7 @@ package com.simonstuck.vignelli.ui.description;
 
 import com.floreysoft.jmte.Engine;
 
-import java.util.Map;
+import java.util.HashMap;
 
 public class HTMLFileTemplate implements Template {
 
@@ -13,7 +13,7 @@ public class HTMLFileTemplate implements Template {
     }
 
     @Override
-    public String render(Map<String, Object> content) {
+    public String render(HashMap<String, Object> content) {
         Engine engine = new Engine();
         return engine.transform(template, content);
     }

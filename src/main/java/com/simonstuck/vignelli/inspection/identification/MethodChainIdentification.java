@@ -1,5 +1,6 @@
 package com.simonstuck.vignelli.inspection.identification;
 
+import com.google.common.base.Optional;
 import com.intellij.codeInspection.InspectionManager;
 import com.intellij.codeInspection.ProblemDescriptor;
 import com.intellij.codeInspection.ProblemHighlightType;
@@ -9,7 +10,6 @@ import com.intellij.psi.PsiReferenceExpression;
 import com.intellij.psi.PsiType;
 
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 
 public class MethodChainIdentification {
@@ -35,7 +35,7 @@ public class MethodChainIdentification {
             PsiMethodCallExpression qualifier = (PsiMethodCallExpression) qualifierExpression;
             return Optional.of(MethodChainIdentification.createWithFinalCall(qualifier));
         } else {
-            return Optional.empty();
+            return Optional.absent();
         }
     }
 
