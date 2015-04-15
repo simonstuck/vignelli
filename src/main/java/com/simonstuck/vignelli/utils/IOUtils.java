@@ -23,14 +23,9 @@ public final class IOUtils {
             File file = new File(base.getParentFile(), PATH_PREFIX + path);
             return Files.toString(file, Charsets.UTF_8);
         } else {
-            LOG.info("BASE: " + base);
-
             ZipFile zip = new ZipFile(base);
-            LOG.info("ZIP: " + zip);
             ZipEntry entry = zip.getEntry(path);
-            LOG.info("ENTRY: " + entry);
             InputStream in = zip.getInputStream(entry);
-            LOG.info("ENTRY_STREAM: " + in);
             String result = convertStreamToString(in);
             in.close();
             return result;
