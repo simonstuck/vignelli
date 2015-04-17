@@ -1,15 +1,9 @@
 package com.simonstuck.vignelli.refactoring;
 
 import com.intellij.openapi.project.Project;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiMethod;
-import com.intellij.psi.PsiReferenceExpression;
 import com.intellij.psi.PsiStatement;
-import com.intellij.psi.util.PsiTreeUtil;
 import com.simonstuck.vignelli.refactoring.steps.ExtractMethodRefactoringStep;
-import com.simonstuck.vignelli.refactoring.steps.IntroduceParameterRefactoringStep;
 import com.simonstuck.vignelli.refactoring.steps.MoveMethodRefactoringStep;
 import com.simonstuck.vignelli.refactoring.steps.RenameMethodRefactoringStep;
 import com.simonstuck.vignelli.utils.IOUtils;
@@ -18,8 +12,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 
 public class TrainWreckExpressionRefactoringImpl implements Refactoring {
@@ -32,9 +24,8 @@ public class TrainWreckExpressionRefactoringImpl implements Refactoring {
 
     private ExtractMethodRefactoringStep.Result extractMethodResult;
     private MoveMethodRefactoringStep.Result moveMethodResult;
-    private Iterator<PsiElement> fieldIterator;
     private ExtractMethodRefactoringStep extractMethodStep;
-    private IntroduceParameterRefactoringStep introduceParameterStep;
+    private Refactoring introduceParameterRefactoring;
 
     public TrainWreckExpressionRefactoringImpl(@NotNull Collection<PsiStatement> extractRegion, RefactoringTracker tracker, Project project, PsiFile file) {
         this.extractRegion = extractRegion;
@@ -55,21 +46,13 @@ public class TrainWreckExpressionRefactoringImpl implements Refactoring {
         switch (currentStepIndex) {
             case 0:
                 extractMethodResult = extractMethodStep.process();
-                prepareExtractFieldParameters();
+                introduceParameterRefactoring = new IntroduceParametersForMembersRefactoringImpl(extractMethodResult.getExtractedMethod(), tracker, project, file);
+                finishParameterIntroductionIfNothingMoreToIntroduce();
                 currentStepIndex++;
-                if (fieldIterator.hasNext()) {
-                    introduceParameterStep = new IntroduceParameterRefactoringStep(project, file, fieldIterator.next());
-                } else {
-                    currentStepIndex++;
-                }
                 break;
             case 1:
-                introduceParameterStep.process();
-                if (fieldIterator.hasNext()) {
-                    introduceParameterStep = new IntroduceParameterRefactoringStep(project, file, fieldIterator.next());
-                } else {
-                    currentStepIndex++;
-                }
+                introduceParameterRefactoring.nextStep();
+                finishParameterIntroductionIfNothingMoreToIntroduce();
                 break;
             case 2:
                 performMoveMethodStep();
@@ -84,6 +67,11 @@ public class TrainWreckExpressionRefactoringImpl implements Refactoring {
         }
     }
 
+    private void finishParameterIntroductionIfNothingMoreToIntroduce() {
+        if (!introduceParameterRefactoring.hasNextStep()) {
+            currentStepIndex++;
+        }
+    }
 
     private void performRenameMethodStep() {
         RenameMethodRefactoringStep step = new RenameMethodRefactoringStep(moveMethodResult.getNewMethod(), project);
@@ -95,20 +83,6 @@ public class TrainWreckExpressionRefactoringImpl implements Refactoring {
         moveMethodResult = step.process();
     }
 
-    private void prepareExtractFieldParameters() {
-        PsiMethod method = extractMethodResult.getExtractedMethod();
-        @SuppressWarnings("unchecked") Collection<PsiReferenceExpression> referenceExpressions= PsiTreeUtil.collectElementsOfType(method, PsiReferenceExpression.class);
-
-        Collection<PsiElement> fieldParameters = new HashSet<PsiElement>();
-        for (PsiReferenceExpression expression : referenceExpressions) {
-            PsiElement resolved = expression.resolve();
-            if (resolved instanceof PsiField || (resolved instanceof PsiMethod && ((PsiMethod) resolved).getContainingClass().equals(extractMethodResult.getExtractedMethod().getContainingClass()))) {
-                fieldParameters.add(expression);
-            }
-        }
-        fieldIterator = fieldParameters.iterator();
-    }
-
     @Override
     public void fillTemplateValues(Map<String, Object> templateValues) {
         templateValues.put("hasNextStep", hasNextStep());
@@ -117,7 +91,7 @@ public class TrainWreckExpressionRefactoringImpl implements Refactoring {
                 extractMethodStep.describeStep(templateValues);
                 break;
             case 1:
-                introduceParameterStep.describeStep(templateValues);
+                introduceParameterRefactoring.fillTemplateValues(templateValues);
             default:
         }
     }
