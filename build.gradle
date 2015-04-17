@@ -1,32 +1,10 @@
 buildscript {
   repositories {
     mavenCentral()
-    jcenter()
-    maven { url 'http://oss.jfrog.org/artifactory/oss-snapshot-local' }
-    maven {
-      url '${artifactory_contextUrl}/plugins-release'
-      credentials {
-        username = "${artifactory_user}"
-        password = "${artifactory_password}"
-      }
-      name = "maven-main-cache"
-    }
-  }
-  dependencies {
-    classpath(group: 'org.jfrog.buildinfo', name: 'build-info-extractor-gradle', version: '3.0.1')
-    classpath 'net.saliman:gradle-properties-plugin:1.4.2'
   }
 }
 
-repositories {
-    add buildscript.repositories.getByName("maven-main-cache")
-}
-
-apply plugin: 'com.jfrog.artifactory'
-apply plugin: 'maven-publish'
 apply plugin: 'java'
-apply plugin: 'net.saliman.properties'
-apply plugin: 'jacoco'
 
 version = '0.0.1-SNAPSHOT'
 group = 'com.simonstuck'
@@ -43,20 +21,9 @@ test {
   classpath = project.sourceSets.test.runtimeClasspath + files("${jdk_home}/lib/tools.jar")
 }
 
-jacocoTestReport {
-  afterEvaluate {
-    classDirectories = files(classDirectories.files.collect {
-      fileTree(dir: it, exclude: 'com/simonstuck/vignelli/ui/**')
-    })
-  }
-}
-
-jacocoTestReport.dependsOn(test)
-
 dependencies {
   repositories {
     mavenCentral()
-    jcenter()
     flatDir dirs: 'lib'
   }
 
@@ -93,29 +60,5 @@ jar {
       include 'plugin.xml'
     }
   }
-}
-
-artifactory {
-    contextUrl = "${artifactory_contextUrl}"
-    publish {
-        repository {
-            repoKey = 'libs-snapshot-local'
-            username = "${artifactory_user}"
-            password = "${artifactory_password}"
-            maven = true
-
-        }       
-        defaults {
-          publications ('vignelli')
-        }
-    }
-}
-
-publishing {
-    publications {
-        vignelli(MavenPublication) {
-            from components.java
-        }
-    }
 }
 
