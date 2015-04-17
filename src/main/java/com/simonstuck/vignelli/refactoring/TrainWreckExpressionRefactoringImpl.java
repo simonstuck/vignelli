@@ -9,7 +9,7 @@ import com.intellij.psi.PsiReferenceExpression;
 import com.intellij.psi.PsiStatement;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.simonstuck.vignelli.refactoring.steps.ExtractMethodRefactoringStep;
-import com.simonstuck.vignelli.refactoring.steps.ExtractParameterRefactoringStep;
+import com.simonstuck.vignelli.refactoring.steps.IntroduceParameterRefactoringStep;
 import com.simonstuck.vignelli.refactoring.steps.MoveMethodRefactoringStep;
 import com.simonstuck.vignelli.refactoring.steps.RenameMethodRefactoringStep;
 import com.simonstuck.vignelli.utils.IOUtils;
@@ -34,6 +34,7 @@ public class TrainWreckExpressionRefactoringImpl implements Refactoring {
     private MoveMethodRefactoringStep.Result moveMethodResult;
     private Iterator<PsiElement> fieldIterator;
     private ExtractMethodRefactoringStep extractMethodStep;
+    private IntroduceParameterRefactoringStep introduceParameterStep;
 
     public TrainWreckExpressionRefactoringImpl(@NotNull Collection<PsiStatement> extractRegion, RefactoringTracker tracker, Project project, PsiFile file) {
         this.extractRegion = extractRegion;
@@ -56,14 +57,17 @@ public class TrainWreckExpressionRefactoringImpl implements Refactoring {
                 extractMethodResult = extractMethodStep.process();
                 prepareExtractFieldParameters();
                 currentStepIndex++;
-                if (!fieldIterator.hasNext()) {
+                if (fieldIterator.hasNext()) {
+                    introduceParameterStep = new IntroduceParameterRefactoringStep(project, file, fieldIterator.next());
+                } else {
                     currentStepIndex++;
                 }
                 break;
             case 1:
-                ExtractParameterRefactoringStep step = new ExtractParameterRefactoringStep(project, file, fieldIterator.next());
-                step.process();
-                if (!fieldIterator.hasNext()) {
+                introduceParameterStep.process();
+                if (fieldIterator.hasNext()) {
+                    introduceParameterStep = new IntroduceParameterRefactoringStep(project, file, fieldIterator.next());
+                } else {
                     currentStepIndex++;
                 }
                 break;
@@ -112,6 +116,8 @@ public class TrainWreckExpressionRefactoringImpl implements Refactoring {
             case 0:
                 extractMethodStep.describeStep(templateValues);
                 break;
+            case 1:
+                introduceParameterStep.describeStep(templateValues);
             default:
         }
     }
