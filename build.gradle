@@ -5,8 +5,9 @@ buildscript {
 }
 
 apply plugin: 'java'
+apply plugin: 'distribution'
 
-version = '0.0.1-SNAPSHOT'
+version = '0.1-SNAPSHOT'
 group = 'com.simonstuck'
 
 targetCompatibility = 1.6
@@ -15,6 +16,7 @@ sourceCompatibility = 1.6
 
 configurations {
   antTask
+  pluginDep
 }
 
 test {
@@ -27,9 +29,11 @@ dependencies {
     flatDir dirs: 'lib'
   }
 
-  compile 'org.jdom:jdom:1.1'
-  compile 'com.google.guava:guava:18.0'
-  compile 'com.floreysoft:jmte:3.1.1'
+  pluginDep 'org.jdom:jdom:1.1'
+  pluginDep 'com.google.guava:guava:18.0'
+  pluginDep 'com.floreysoft:jmte:3.1.1'
+
+  compile configurations.pluginDep
   compile fileTree(dir: "${idea_home}/lib", include: '*.jar')
 
   antTask group: 'com.intellij', name: 'javac2', version: '12.1.0'
@@ -62,3 +66,14 @@ jar {
   }
 }
 
+distributions {
+    main {
+        baseName = 'vignelli'
+        contents {
+            from configurations.pluginDep
+            from jar
+
+            into "lib"
+        }
+    }
+}
