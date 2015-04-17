@@ -7,9 +7,17 @@ import com.intellij.openapi.util.ActionCallback;
 import com.intellij.openapi.wm.IdeFocusManager;
 import com.intellij.psi.PsiMethod;
 import com.intellij.refactoring.rename.inplace.MemberInplaceRenameHandler;
+import com.simonstuck.vignelli.ui.description.HTMLFileTemplate;
+import com.simonstuck.vignelli.ui.description.Template;
+import com.simonstuck.vignelli.utils.IOUtils;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 public class RenameMethodRefactoringStep {
 
+    private static final String RENAME_METHOD_STEP_NAME = "Rename Method";
     private PsiMethod methodToRename;
     private Editor editor;
     private Project project;
@@ -53,6 +61,21 @@ public class RenameMethodRefactoringStep {
      */
     private void moveCaretToMethodToRename() {
         editor.getCaretModel().moveToOffset(methodToRename.getTextOffset());
+    }
+
+    public void describeStep(Map<String, Object> templateValues) {
+        Template template = new HTMLFileTemplate(template());
+        templateValues.put("nextStepDescription", template.render(new HashMap<String, Object>()));
+        templateValues.put("nextStepName", RENAME_METHOD_STEP_NAME);
+    }
+
+    private String template() {
+        try {
+            return IOUtils.readFile("descriptionTemplates/renameMethodStepDescription.html");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return "";
     }
 
     /**

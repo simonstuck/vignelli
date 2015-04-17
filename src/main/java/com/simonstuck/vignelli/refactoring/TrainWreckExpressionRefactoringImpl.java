@@ -22,11 +22,10 @@ public class TrainWreckExpressionRefactoringImpl implements Refactoring {
     private final PsiFile file;
     private int currentStepIndex = 0;
 
-    private ExtractMethodRefactoringStep.Result extractMethodResult;
-    private MoveMethodRefactoringStep.Result moveMethodResult;
     private ExtractMethodRefactoringStep extractMethodStep;
     private Refactoring introduceParameterRefactoring;
     private MoveMethodRefactoringStep moveMethodRefactoringStep;
+    private RenameMethodRefactoringStep renameMethodRefactoringStep;
 
     public TrainWreckExpressionRefactoringImpl(@NotNull Collection<PsiStatement> extractRegion, RefactoringTracker tracker, Project project, PsiFile file) {
         this.extractRegion = extractRegion;
@@ -46,7 +45,7 @@ public class TrainWreckExpressionRefactoringImpl implements Refactoring {
     public void nextStep() throws NoSuchMethodException {
         switch (currentStepIndex) {
             case 0:
-                extractMethodResult = extractMethodStep.process();
+                ExtractMethodRefactoringStep.Result extractMethodResult = extractMethodStep.process();
                 introduceParameterRefactoring = new IntroduceParametersForMembersRefactoringImpl(extractMethodResult.getExtractedMethod(), tracker, project, file);
                 moveMethodRefactoringStep = new MoveMethodRefactoringStep(project, extractMethodResult.getExtractedMethod());
                 finishParameterIntroductionIfNothingMoreToIntroduce();
@@ -57,11 +56,12 @@ public class TrainWreckExpressionRefactoringImpl implements Refactoring {
                 finishParameterIntroductionIfNothingMoreToIntroduce();
                 break;
             case 2:
-                moveMethodResult = moveMethodRefactoringStep.process();
+                MoveMethodRefactoringStep.Result moveMethodResult = moveMethodRefactoringStep.process();
+                renameMethodRefactoringStep = new RenameMethodRefactoringStep(moveMethodResult.getNewMethod(), project);
                 currentStepIndex++;
                 break;
             case 3:
-                performRenameMethodStep();
+                renameMethodRefactoringStep.process();
                 currentStepIndex++;
                 break;
             default:
@@ -73,11 +73,6 @@ public class TrainWreckExpressionRefactoringImpl implements Refactoring {
         if (!introduceParameterRefactoring.hasNextStep()) {
             currentStepIndex++;
         }
-    }
-
-    private void performRenameMethodStep() {
-        RenameMethodRefactoringStep step = new RenameMethodRefactoringStep(moveMethodResult.getNewMethod(), project);
-        step.process();
     }
 
     @Override
@@ -92,6 +87,9 @@ public class TrainWreckExpressionRefactoringImpl implements Refactoring {
                 break;
             case 2:
                 moveMethodRefactoringStep.describeStep(templateValues);
+                break;
+            case 3:
+                renameMethodRefactoringStep.describeStep(templateValues);
                 break;
             default:
         }
