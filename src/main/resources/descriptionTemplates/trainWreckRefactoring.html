@@ -11,7 +11,16 @@ ${nextStepDescription}
 <p><a href="vignelli://nextStep">Perform Next Step</a></p>
 <p><a href="vignelli://complete">Stop Refactoring</a></p>
 ${else}
-<p>You have completed the refactoring steps.</p>
+<p>You have completed the required refactoring steps.</p>
+<p>To summarise the steps:</p>
+<ul>
+    <li>Identify train wreck</li>
+    <li>Inline train wreck if it is assigned to a variable</li>
+    <li>Extract train wreck and corresponding statements</li>
+    <li>Introduce method parameters for all class members that are accessed in the new helper method</li>
+    <li>Move new method to target class</li>
+    <li>Give the method a meaninful name</li>
+</ul>
 <p><a href="vignelli://complete">Complete Refactoring</a></p>
 ${end}
 </body>
