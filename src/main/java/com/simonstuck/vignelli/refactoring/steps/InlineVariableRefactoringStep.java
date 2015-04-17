@@ -80,7 +80,7 @@ public class InlineVariableRefactoringStep {
         return "";
     }
 
-    public final class Result {
+    public static final class Result {
         private final Collection<PsiStatement> affectedStatements;
 
         public Result(Collection<PsiStatement> affectedStatements) {

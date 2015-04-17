@@ -4,7 +4,6 @@ import com.google.common.base.Optional;
 import com.intellij.codeInspection.InspectionManager;
 import com.intellij.codeInspection.ProblemDescriptor;
 import com.intellij.codeInspection.ProblemHighlightType;
-import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiExpression;
 import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.PsiReferenceExpression;
@@ -14,6 +13,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class MethodChainIdentification {
+    private static final String SHORT_DESCRIPTION = "Short description";
+
     private final PsiMethodCallExpression finalCall;
 
     private MethodChainIdentification(PsiMethodCallExpression finalCall) {
@@ -66,7 +67,7 @@ public class MethodChainIdentification {
      * @return A new problem descriptor.
      */
     public ProblemDescriptor problemDescriptor(InspectionManager manager) {
-        return manager.createProblemDescriptor(finalCall, finalCall, "Short description", ProblemHighlightType.GENERIC_ERROR_OR_WARNING, false);
+        return manager.createProblemDescriptor(finalCall, finalCall, SHORT_DESCRIPTION, ProblemHighlightType.GENERIC_ERROR_OR_WARNING, false);
     }
 
     @Override

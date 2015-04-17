@@ -147,7 +147,7 @@ public class MoveMethodRefactoringStep {
         }
     }
 
-    public class Result {
+    public static final class Result {
         private final PsiMethod newMethod;
 
         public Result(PsiMethod newMethod) {

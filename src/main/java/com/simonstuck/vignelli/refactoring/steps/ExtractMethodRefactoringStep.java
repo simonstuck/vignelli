@@ -66,7 +66,7 @@ public class ExtractMethodRefactoringStep {
     }
 
 
-    public final class Result {
+    public static final class Result {
         private final PsiMethod extractedMethod;
 
         public Result(PsiMethod extractedMethod) {

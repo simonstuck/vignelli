@@ -28,6 +28,7 @@ public final class IOUtils {
             InputStream in = zip.getInputStream(entry);
             String result = convertStreamToString(in);
             in.close();
+            zip.close();
             return result;
         }
     }

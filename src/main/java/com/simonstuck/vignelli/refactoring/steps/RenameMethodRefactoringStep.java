@@ -81,7 +81,7 @@ public class RenameMethodRefactoringStep {
     /**
      * Represents a result of a rename refactoring step.
      */
-    public final class Result {
+    public static final class Result {
         final PsiMethod method;
 
         private Result(PsiMethod method) {

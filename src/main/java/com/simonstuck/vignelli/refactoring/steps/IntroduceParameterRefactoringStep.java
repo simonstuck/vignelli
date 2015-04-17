@@ -95,6 +95,6 @@ public class IntroduceParameterRefactoringStep {
         editor.getCaretModel().moveToOffset(element.getTextOffset());
     }
 
-    public final class Result {
+    public static final class Result {
     }
 }
