@@ -26,6 +26,7 @@ public class TrainWreckExpressionRefactoringImpl implements Refactoring {
     private MoveMethodRefactoringStep.Result moveMethodResult;
     private ExtractMethodRefactoringStep extractMethodStep;
     private Refactoring introduceParameterRefactoring;
+    private MoveMethodRefactoringStep moveMethodRefactoringStep;
 
     public TrainWreckExpressionRefactoringImpl(@NotNull Collection<PsiStatement> extractRegion, RefactoringTracker tracker, Project project, PsiFile file) {
         this.extractRegion = extractRegion;
@@ -47,6 +48,7 @@ public class TrainWreckExpressionRefactoringImpl implements Refactoring {
             case 0:
                 extractMethodResult = extractMethodStep.process();
                 introduceParameterRefactoring = new IntroduceParametersForMembersRefactoringImpl(extractMethodResult.getExtractedMethod(), tracker, project, file);
+                moveMethodRefactoringStep = new MoveMethodRefactoringStep(project, extractMethodResult.getExtractedMethod());
                 finishParameterIntroductionIfNothingMoreToIntroduce();
                 currentStepIndex++;
                 break;
@@ -55,7 +57,7 @@ public class TrainWreckExpressionRefactoringImpl implements Refactoring {
                 finishParameterIntroductionIfNothingMoreToIntroduce();
                 break;
             case 2:
-                performMoveMethodStep();
+                moveMethodResult = moveMethodRefactoringStep.process();
                 currentStepIndex++;
                 break;
             case 3:
@@ -78,11 +80,6 @@ public class TrainWreckExpressionRefactoringImpl implements Refactoring {
         step.process();
     }
 
-    private void performMoveMethodStep() {
-        MoveMethodRefactoringStep step = new MoveMethodRefactoringStep(project, extractMethodResult.getExtractedMethod());
-        moveMethodResult = step.process();
-    }
-
     @Override
     public void fillTemplateValues(Map<String, Object> templateValues) {
         templateValues.put("hasNextStep", hasNextStep());
@@ -92,6 +89,10 @@ public class TrainWreckExpressionRefactoringImpl implements Refactoring {
                 break;
             case 1:
                 introduceParameterRefactoring.fillTemplateValues(templateValues);
+                break;
+            case 2:
+                moveMethodRefactoringStep.describeStep(templateValues);
+                break;
             default:
         }
     }

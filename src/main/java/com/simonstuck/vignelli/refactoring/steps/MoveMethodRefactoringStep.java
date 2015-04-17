@@ -1,23 +1,39 @@
 package com.simonstuck.vignelli.refactoring.steps;
 
+import com.intellij.codeInspection.InspectionManager;
+import com.intellij.codeInspection.ProblemDescriptor;
+import com.intellij.codeInspection.ex.InspectionManagerEx;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiMethod;
+import com.intellij.psi.PsiMethodCallExpression;
+import com.intellij.psi.PsiReferenceExpression;
 import com.intellij.psi.PsiTreeChangeAdapter;
 import com.intellij.psi.PsiTreeChangeEvent;
 import com.intellij.psi.PsiTreeChangeListener;
+import com.intellij.psi.PsiVariable;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.refactoring.move.MoveCallback;
 import com.intellij.refactoring.move.moveInstanceMethod.MoveInstanceMethodHandlerDelegate;
+import com.simonstuck.vignelli.inspection.MethodChainingInspectionTool;
+import com.simonstuck.vignelli.ui.description.HTMLFileTemplate;
+import com.simonstuck.vignelli.ui.description.Template;
+import com.simonstuck.vignelli.utils.IOUtils;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MoveMethodRefactoringStep {
 
     private static final Logger LOG = Logger.getInstance(MoveMethodRefactoringStep.class.getName());
+    private static final String MOVE_METHOD_STEP_NAME = "Move Method";
 
     private Project project;
     private PsiMethod methodToMove;
@@ -30,9 +46,8 @@ public class MoveMethodRefactoringStep {
     public Result process() {
         MoveInstanceMethodHandlerDelegate delegate = new MoveInstanceMethodHandlerDelegate();
         final PsiMethod targetMethod = performMoveRefactoring(delegate, methodToMove);
-        PsiClass targetClass = getClassForMethod(targetMethod);
 
-        return new Result(targetClass, targetMethod);
+        return new Result(targetMethod);
     }
 
     private PsiMethod performMoveRefactoring(MoveInstanceMethodHandlerDelegate delegate, PsiMethod method) {
@@ -54,8 +69,65 @@ public class MoveMethodRefactoringStep {
         return targetMethod[0];
     }
 
-    private PsiClass getClassForMethod(PsiMethod targetMethod) {
-        return PsiTreeUtil.getParentOfType(targetMethod, PsiClass.class);
+    public void describeStep(Map<String, Object> templateValues) {
+        templateValues.put("nextStepDescription", getDescription());
+        templateValues.put("nextStepName", MOVE_METHOD_STEP_NAME);
+    }
+
+    private String getDescription() {
+        Template template = new HTMLFileTemplate(template());
+        HashMap<String, Object> contentMap = new HashMap<String, Object>();
+        contentMap.put("method", methodToMove.getText());
+
+        PsiElement targetExpression = getTargetExpression(methodToMove);
+        if (targetExpression != null) {
+            contentMap.put("targetVariable", targetExpression.getText());
+            PsiClass clazz = PsiTreeUtil.getParentOfType(targetExpression, PsiClass.class);
+            if (clazz != null) {
+                contentMap.put("targetClass", clazz.getName());
+            }
+        }
+
+        return template.render(contentMap);
+    }
+
+    private boolean isVariableReference(PsiElement finalElement) {
+        return finalElement instanceof PsiReferenceExpression && ((PsiReferenceExpression) finalElement).resolve() instanceof PsiVariable;
+    }
+
+    public PsiElement getFinalQualifier(PsiElement element) {
+        if (element instanceof PsiMethodCallExpression) {
+            PsiMethodCallExpression expression = (PsiMethodCallExpression) element;
+            PsiReferenceExpression methodRefExpression = expression.getMethodExpression();
+            return getFinalQualifier(methodRefExpression.getQualifierExpression());
+        } else {
+            return element;
+        }
+    }
+
+    private String template() {
+        try {
+            return IOUtils.readFile("descriptionTemplates/moveMethodStepDescription.html");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return "";
+    }
+
+    @Nullable
+    private PsiElement getTargetExpression(PsiMethod methodToMove) {
+        MethodChainingInspectionTool tool = new MethodChainingInspectionTool();
+
+        InspectionManager manager = new InspectionManagerEx(project);
+        ProblemDescriptor[] descriptors = tool.checkMethod(methodToMove, manager, false);
+        if (descriptors != null && descriptors.length > 0) {
+            ProblemDescriptor first = descriptors[0];
+            PsiElement finalElement = getFinalQualifier(first.getPsiElement());
+            if (isVariableReference(finalElement)) {
+                return finalElement;
+            }
+        }
+        return null;
     }
 
     private static class MoveTargetListener extends PsiTreeChangeAdapter {
@@ -76,16 +148,10 @@ public class MoveMethodRefactoringStep {
     }
 
     public class Result {
-        private final PsiClass newClass;
         private final PsiMethod newMethod;
 
-        public Result(PsiClass newClass, PsiMethod newMethod) {
-            this.newClass = newClass;
+        public Result(PsiMethod newMethod) {
             this.newMethod = newMethod;
-        }
-
-        public PsiClass getNewClass() {
-            return newClass;
         }
 
         public PsiMethod getNewMethod() {
