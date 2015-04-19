@@ -14,8 +14,8 @@ import org.jetbrains.annotations.NotNull;
 
 public class TrainWreckProblemIdentification extends ProblemIdentification {
 
-    private static final String NAME = "Train Wreck";
-    public static final String DESCRIPTION_TEMPLATE_FILE_PATH = "descriptionTemplates/trainWreckDescription.html";
+    public static final String NAME = "Train Wreck";
+    private  static final String DESCRIPTION_TEMPLATE_FILE_PATH = "descriptionTemplates/trainWreckDescription.html";
 
     /**
      * Creates a new {@link com.simonstuck.vignelli.inspection.identification.TrainWreckProblemIdentification}.

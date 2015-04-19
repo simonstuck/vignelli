@@ -12,7 +12,7 @@ import com.intellij.psi.PsiType;
 import java.util.HashSet;
 import java.util.Set;
 
-public class MethodChainIdentification {
+public class MethodChainIdentification implements ProblemDescriptorProvider {
     private static final String SHORT_DESCRIPTION = "Short description";
 
     private final PsiMethodCallExpression finalCall;
@@ -61,11 +61,7 @@ public class MethodChainIdentification {
         return finalCall.getType();
     }
 
-    /**
-     * Returns the corresponding problem descriptor for the method chain.
-     * @param manager The inspection manager to use to create the problem descriptor
-     * @return A new problem descriptor.
-     */
+    @Override
     public ProblemDescriptor problemDescriptor(InspectionManager manager) {
         return manager.createProblemDescriptor(finalCall, finalCall, SHORT_DESCRIPTION, ProblemHighlightType.GENERIC_ERROR_OR_WARNING, false);
     }

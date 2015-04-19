@@ -1,7 +1,6 @@
 package com.simonstuck.vignelli.inspection.identification;
 
 import com.google.common.base.Predicate;
-import com.intellij.psi.JavaRecursiveElementVisitor;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiMethodCallExpression;
 import com.simonstuck.vignelli.inspection.identification.predicates.MethodChainDifferentAdjacentTypesPredicate;
@@ -21,7 +20,7 @@ public class MethodChainIdentificationEngine {
      * @param element The element in which to search for method chains.
      * @return A new
      */
-    public Collection<MethodChainIdentification> identifyMethodChains(PsiElement element) {
+    public Set<MethodChainIdentification> identifyMethodChains(PsiElement element) {
         final Collection<MethodChainIdentification> candidates = computeIdentificationCandidates(element);
         final Collection<MethodChainIdentification> toIgnore = allMethodChainQualifiers(candidates);
 

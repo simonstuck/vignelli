@@ -5,7 +5,7 @@ import com.intellij.codeInspection.ProblemDescriptor;
 import com.intellij.codeInspection.ProblemHighlightType;
 import com.intellij.psi.PsiMethodCallExpression;
 
-public class DirectSingletonUseIdentification {
+public class DirectSingletonUseIdentification implements ProblemDescriptorProvider {
     private static final String SHORT_DESCRIPTION = "Direct Use of Singleton";
     private final PsiMethodCallExpression methodCall;
 
@@ -13,6 +13,7 @@ public class DirectSingletonUseIdentification {
         this.methodCall = methodCall;
     }
 
+    @Override
     public ProblemDescriptor problemDescriptor(InspectionManager manager) {
         return manager.createProblemDescriptor(methodCall, methodCall, SHORT_DESCRIPTION, ProblemHighlightType.GENERIC_ERROR_OR_WARNING, false);
     }

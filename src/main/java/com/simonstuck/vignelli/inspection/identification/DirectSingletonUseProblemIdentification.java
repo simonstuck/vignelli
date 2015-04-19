@@ -7,8 +7,8 @@ import org.jetbrains.annotations.NotNull;
 
 public class DirectSingletonUseProblemIdentification extends ProblemIdentification {
 
-    private static final String NAME = "Direct Use of Singleton";
-    public static final String DESCRIPTION_TEMPLATE_FILE_PATH = "descriptionTemplates/directSingletonUseDescription.html";
+    public static final String NAME = "Direct Use of Singleton";
+    private static final String DESCRIPTION_TEMPLATE_FILE_PATH = "descriptionTemplates/directSingletonUseDescription.html";
 
     /**
      * Creates a new {@link com.simonstuck.vignelli.inspection.identification.DirectSingletonUseProblemIdentification}.
