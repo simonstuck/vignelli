@@ -5,11 +5,16 @@ import com.intellij.codeInspection.InspectionManager;
 import com.intellij.codeInspection.ProblemDescriptor;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.psi.PsiMethod;
+import com.simonstuck.vignelli.inspection.identification.DirectSingletonUseIdentification;
 import com.simonstuck.vignelli.inspection.identification.DirectSingletonUseIdentificationEngine;
 
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 
 public class DirectSingletonUseInspectionTool extends BaseJavaLocalInspectionTool {
 
@@ -17,12 +22,21 @@ public class DirectSingletonUseInspectionTool extends BaseJavaLocalInspectionToo
 
     @Nullable
     @Override
-    public ProblemDescriptor[] checkMethod(final PsiMethod method, InspectionManager manager, boolean isOnTheFly) {
+    public ProblemDescriptor[] checkMethod(final @NotNull PsiMethod method, @NotNull InspectionManager manager, boolean isOnTheFly) {
         LOG.debug("checkMethod");
         DirectSingletonUseIdentificationEngine engine = new DirectSingletonUseIdentificationEngine();
-        engine.process(method);
-        return super.checkMethod(method, manager, isOnTheFly);
+        Set<DirectSingletonUseIdentification> uses = engine.process(method);
+        return constructProblemDescriptors(manager, uses);
     }
+
+    private ProblemDescriptor[] constructProblemDescriptors(InspectionManager manager, Set<DirectSingletonUseIdentification> uses) {
+        List<ProblemDescriptor> descriptors = new LinkedList<ProblemDescriptor>();
+        for (DirectSingletonUseIdentification id : uses) {
+            descriptors.add(id.problemDescriptor(manager));
+        }
+        return descriptors.toArray(new ProblemDescriptor[descriptors.size()]);
+    }
+
     @Nls
     @NotNull
     @Override
