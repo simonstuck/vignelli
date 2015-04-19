@@ -69,17 +69,8 @@ public class MethodChainIdentificationEngine {
      * @return A set of all method calls
      */
     private Set<PsiMethodCallExpression> getMethodCalls(PsiElement element) {
-        final Set<PsiMethodCallExpression> methodCalls = new HashSet<PsiMethodCallExpression>();
-
-        JavaRecursiveElementVisitor visitor = new JavaRecursiveElementVisitor() {
-            @Override
-            public void visitMethodCallExpression(PsiMethodCallExpression expression) {
-                super.visitMethodCallExpression(expression);
-                methodCalls.add(expression);
-            }
-        };
-
+        MethodCallCollectorElementVisitor visitor = new MethodCallCollectorElementVisitor();
         element.accept(visitor);
-        return methodCalls;
+        return visitor.getMethodCalls();
     }
 }

@@ -1,0 +1,4 @@
+void emptyMethod() {
+    hello();
+    world();
+}

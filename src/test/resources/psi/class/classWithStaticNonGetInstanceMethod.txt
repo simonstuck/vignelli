@@ -1,0 +1,9 @@
+void test() {
+    King.doSomeWork();
+}
+
+class King {
+    static void doSomeWork() {
+        return this;
+    }
+}

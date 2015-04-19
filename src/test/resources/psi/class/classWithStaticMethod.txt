@@ -1,0 +1,9 @@
+void test() {
+    King.getInstance();
+}
+
+class King {
+    static King getInstance() {
+        return this;
+    }
+}
