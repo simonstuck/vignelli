@@ -3,28 +3,18 @@ package com.simonstuck.vignelli.inspection.identification;
 import com.google.common.base.Optional;
 import com.intellij.codeInspection.ProblemDescriptor;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiExpressionList;
-import com.intellij.psi.PsiLocalVariable;
-import com.intellij.psi.util.PsiTreeUtil;
 import com.jgoodies.common.base.Objects;
 import com.simonstuck.vignelli.inspection.ImprovementOpportunity;
-import com.simonstuck.vignelli.inspection.TrainWreckExpressionImprovementOpportunity;
-import com.simonstuck.vignelli.inspection.TrainWreckVariableImprovementOpportunity;
-import com.simonstuck.vignelli.utils.IOUtils;
 
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
-
-public class ProblemIdentification implements com.simonstuck.vignelli.Templatable {
-
-    public static final String TRAIN_WRECK_NAME = "Train Wreck";
+public abstract class ProblemIdentification implements com.simonstuck.vignelli.Templatable {
 
     @NotNull
     private final ProblemDescriptor problemDescriptor;
     private final String name;
-    private final PsiElement element;
+    protected final PsiElement element;
 
     /**
      * Creates a new {@link com.simonstuck.vignelli.inspection.identification.ProblemIdentification}.
@@ -41,6 +31,14 @@ public class ProblemIdentification implements com.simonstuck.vignelli.Templatabl
     @NotNull
     public ProblemDescriptor getProblemDescriptor() {
         return problemDescriptor;
+    }
+
+    /**
+     * Returns an {@link com.simonstuck.vignelli.inspection.ImprovementOpportunity} for this problem if one exists
+     * @return An optional {@link com.simonstuck.vignelli.inspection.ImprovementOpportunity}.
+     */
+    public Optional<? extends ImprovementOpportunity> improvementOpportunity() {
+        return Optional.absent();
     }
 
     @Override
@@ -81,30 +79,7 @@ public class ProblemIdentification implements com.simonstuck.vignelli.Templatabl
 
     @Override
     public String toString() {
-        return TRAIN_WRECK_NAME;
+        return name;
     }
 
-    @Override
-    public String template() {
-        try {
-            return IOUtils.readFile("descriptionTemplates/trainWreckDescription.html");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return "";
-    }
-
-    public Optional<? extends ImprovementOpportunity> improvementOpportunity() {
-        PsiExpressionList expressionListParent = PsiTreeUtil.getParentOfType(element, PsiExpressionList.class);
-        PsiLocalVariable varParent = PsiTreeUtil.getParentOfType(element, PsiLocalVariable.class);
-
-        if (expressionListParent != null) {
-            // check for the expression list first as a variable assignment can exist higher up the tree.
-            return Optional.of(new TrainWreckExpressionImprovementOpportunity(element));
-        } else if (varParent != null) {
-            return Optional.of(new TrainWreckVariableImprovementOpportunity(element,varParent));
-        } else {
-            return Optional.of(new TrainWreckExpressionImprovementOpportunity(element));
-        }
-    }
 }

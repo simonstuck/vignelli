@@ -27,7 +27,7 @@ public class ProblemIdentificationCacheComponent implements ProjectComponent {
 
     private static final String COMPONENT_NAME = "Vignelli Problem Identification Cache";
 
-    private final Map<VirtualFile, LinkedList<ProblemIdentification>> problemIdentifications;
+    private final Map<VirtualFile, Map<Object, LinkedList<ProblemIdentification>>> problemIdentifications;
     private final ProblemFileSelectionListener problemFileSelectionListener;
     private final Project project;
 
@@ -40,7 +40,7 @@ public class ProblemIdentificationCacheComponent implements ProjectComponent {
      */
     public ProblemIdentificationCacheComponent(Project project) {
         this.project = project;
-        problemIdentifications = new HashMap<VirtualFile, LinkedList<ProblemIdentification>>();
+        problemIdentifications = new HashMap<VirtualFile, Map<Object,LinkedList<ProblemIdentification>>>();
         problemFileSelectionListener = new ProblemFileSelectionListener();
         subscribeToFileSelectionChanges(project);
     }
@@ -54,12 +54,18 @@ public class ProblemIdentificationCacheComponent implements ProjectComponent {
      * Updates the problems for the given file.
      * <p>This replaces all problems for the file, so this method cannot be called with incremental changes.</p>
      * @param file The file for which problems are updated
+     * @param problemOwner The owner of the problems to be inserted, other owners may not remove problems of another owner
      * @param problems The new problems that were found
      */
-    public void updateFileProblems(VirtualFile file, Collection<ProblemIdentification> problems) {
-        problemIdentifications.put(file, new LinkedList<ProblemIdentification>(problems));
+    public synchronized void updateFileProblems(VirtualFile file, Object problemOwner, Collection<ProblemIdentification> problems) {
+        Map<Object, LinkedList<ProblemIdentification>> problemOwnerIdentifications = problemIdentifications.get(file);
+        if (problemOwnerIdentifications == null) {
+            problemOwnerIdentifications = new HashMap<Object, LinkedList<ProblemIdentification>>();
+        }
+        problemOwnerIdentifications.put(problemOwner, new LinkedList<ProblemIdentification>(problems));
+        problemIdentifications.put(file, problemOwnerIdentifications);
         if (file.equals(selectedFile)) {
-            broadcastCurrentProblems(problems);
+            broadcastCurrentProblems(getFileProblems(selectedFile));
         }
     }
 
@@ -75,12 +81,18 @@ public class ProblemIdentificationCacheComponent implements ProjectComponent {
      * @return The problems for the file that is currently selected
      */
     public Collection<ProblemIdentification> selectedFileProblems() {
-        Collection<ProblemIdentification> result = problemIdentifications.get(selectedFile);
-        if (result != null) {
-            return result;
-        } else {
-            return new ArrayList<ProblemIdentification>();
+        return getFileProblems(selectedFile);
+    }
+
+    private Collection<ProblemIdentification> getFileProblems(VirtualFile file) {
+        Map<Object, LinkedList<ProblemIdentification>> ownerResults = problemIdentifications.get(file);
+        Collection<ProblemIdentification> result = new ArrayList<ProblemIdentification>();
+        if (ownerResults != null) {
+            for (LinkedList<ProblemIdentification> results : ownerResults.values()) {
+                result.addAll(results);
+            }
         }
+        return result;
     }
 
     @Override
@@ -104,7 +116,7 @@ public class ProblemIdentificationCacheComponent implements ProjectComponent {
     private class ProblemFileSelectionListener implements FileEditorManagerListener {
         @Override
         public void fileOpened(@NotNull FileEditorManager source, @NotNull VirtualFile file) {
-            problemIdentifications.put(file, new LinkedList<ProblemIdentification>());
+            problemIdentifications.put(file, new HashMap<Object, LinkedList<ProblemIdentification>>());
         }
 
         @Override

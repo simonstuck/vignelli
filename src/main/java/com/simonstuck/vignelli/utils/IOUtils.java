@@ -2,7 +2,6 @@ package com.simonstuck.vignelli.utils;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.util.PathUtil;
 
 import java.io.File;
@@ -14,9 +13,14 @@ import java.util.zip.ZipFile;
 
 public final class IOUtils {
 
-    private static final Logger LOG = Logger.getInstance(IOUtils.class.getName());
     private static final String PATH_PREFIX = "/classes/";
 
+    /**
+     * Reads a file from within the plugin sources.
+     * @param path The relative path to the file in the plugin
+     * @return The contents of the file
+     * @throws IOException When the file cannot be found
+     */
     public static String readFile(String path) throws IOException {
         File base = new File(PathUtil.getJarPathForClass(IOUtils.class));
         if (base.isDirectory()) {
@@ -33,6 +37,25 @@ public final class IOUtils {
         }
     }
 
+    /**
+     * Tries to read a file from within the plugin sources and returns the empty string if it cannot be found.
+     * @param path The relative path to the file in the plugin sources
+     * @return The contents of the file, or "" if it cannot be found
+     */
+    public static String tryReadFile(String path) {
+        try {
+            return IOUtils.readFile(path);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return "";
+    }
+
+    /**
+     * Reads an entire {@link java.io.InputStream} into a {@link java.lang.String} that is then returned.
+     * @param in The input stream to read
+     * @return The entire contents of the input stream.
+     */
     private static String convertStreamToString(InputStream in) {
         Scanner s = new Scanner(in, Charsets.UTF_8.displayName()).useDelimiter("\\A");
         return s.hasNext() ? s.next() : "";

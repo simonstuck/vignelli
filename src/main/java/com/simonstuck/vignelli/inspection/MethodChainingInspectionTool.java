@@ -10,6 +10,7 @@ import com.intellij.psi.PsiMethod;
 import com.simonstuck.vignelli.inspection.identification.MethodChainIdentification;
 import com.simonstuck.vignelli.inspection.identification.MethodChainIdentificationEngine;
 import com.simonstuck.vignelli.inspection.identification.ProblemIdentification;
+import com.simonstuck.vignelli.inspection.identification.TrainWreckProblemIdentification;
 
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
@@ -26,7 +27,6 @@ import java.util.Set;
 
 public class MethodChainingInspectionTool extends BaseJavaLocalInspectionTool {
 
-    private static final String METHOD_CHAIN_IDENTIFICATION_NAME = "Train Wreck";
     private final MethodChainIdentificationEngine engine;
 
     private final Map<PsiMethod, Collection<ProblemIdentification>> methodProblemsMap = new HashMap<PsiMethod, Collection<ProblemIdentification>>();
@@ -123,13 +123,13 @@ public class MethodChainingInspectionTool extends BaseJavaLocalInspectionTool {
             allIdentifications.addAll(identifications);
         }
 
-        cache.updateFileProblems(virtualFile, allIdentifications);
+        cache.updateFileProblems(virtualFile, this, allIdentifications);
     }
 
     private Collection<ProblemIdentification> buildProblemIdentifications(Collection<ProblemDescriptor> problemDescriptors) {
         List<ProblemIdentification> result = new ArrayList<ProblemIdentification>();
         for (ProblemDescriptor descriptor : problemDescriptors) {
-            result.add(new ProblemIdentification(descriptor, METHOD_CHAIN_IDENTIFICATION_NAME));
+            result.add(new TrainWreckProblemIdentification(descriptor));
         }
         return result;
     }
