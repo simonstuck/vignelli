@@ -7,7 +7,7 @@ buildscript {
 apply plugin: 'java'
 apply plugin: 'distribution'
 
-version = '0.1-SNAPSHOT'
+version = '0.2-SNAPSHOT'
 group = 'com.simonstuck'
 
 targetCompatibility = 1.6
