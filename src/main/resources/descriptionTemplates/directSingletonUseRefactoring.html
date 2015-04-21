@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>Direct Use of Singleton Refactoring</title>
+</head>
+<body class="vignelli-description">
+${if hasNextStep}
+<h2>Next Step: ${nextStepName}</h2>
+${nextStepDescription}
+<p><a href="vignelli://nextStep">Perform Next Step</a></p>
+<p><a href="vignelli://complete">Stop Refactoring</a></p>
+${else}
+<p>You have completed the required refactoring steps.</p>
+<p>To summarise the steps:</p>
+<ul>
+    <li>Extract method to retrieve singleton instance</li>
+    <li>Convert Singleton instance to field, initialising it in the constructor</li>
+    <li>Inline the method to retrieve singleton instance</li>
+    <li>Introduce a parameter for the singleton instance in the constructor</li>
+    <li>Extract an interface for the singleton</li>
+    <li>Perform a type migration, replacing the singleton type by the new interface</li>
+</ul>
+<p><a href="vignelli://complete">Complete Refactoring</a></p>
+${end}
+</body>
+</html>

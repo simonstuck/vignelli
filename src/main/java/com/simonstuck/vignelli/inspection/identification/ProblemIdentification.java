@@ -12,7 +12,7 @@ import org.jetbrains.annotations.NotNull;
 public abstract class ProblemIdentification implements com.simonstuck.vignelli.Templatable {
 
     @NotNull
-    private final ProblemDescriptor problemDescriptor;
+    protected final ProblemDescriptor problemDescriptor;
     private final String name;
     protected final PsiElement element;
 
