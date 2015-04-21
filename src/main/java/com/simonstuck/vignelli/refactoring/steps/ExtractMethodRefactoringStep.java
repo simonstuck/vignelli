@@ -10,7 +10,6 @@ import com.simonstuck.vignelli.ui.description.HTMLFileTemplate;
 import com.simonstuck.vignelli.ui.description.Template;
 import com.simonstuck.vignelli.utils.IOUtils;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -23,8 +22,10 @@ public class ExtractMethodRefactoringStep {
     private final Project project;
     private final Collection<? extends PsiElement> elementsToExtract;
     private PsiFile file;
+    private String templateDescriptionPath;
 
-    public ExtractMethodRefactoringStep(Collection<? extends PsiElement> elementsToExtract, PsiFile file, Project project) {
+    public ExtractMethodRefactoringStep(Collection<? extends PsiElement> elementsToExtract, PsiFile file, Project project, String templateDescriptionPath) {
+        this.templateDescriptionPath = templateDescriptionPath;
         this.elementsToExtract = elementsToExtract;
         this.file = file;
         this.project = project;
@@ -57,12 +58,7 @@ public class ExtractMethodRefactoringStep {
     }
 
     private String template() {
-        try {
-            return IOUtils.readFile("descriptionTemplates/extractMethodStepDescription.html");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return "";
+        return IOUtils.tryReadFile(templateDescriptionPath);
     }
 
 

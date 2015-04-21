@@ -16,6 +16,7 @@ import java.util.Map;
 
 public class TrainWreckExpressionRefactoringImpl implements Refactoring {
 
+    private static final String EXTRACT_METHOD_DESCRIPTION_PATH = "descriptionTemplates/extractMethodTrainWreckStepDescription.html";
     private final Collection<PsiStatement> extractRegion;
     private final RefactoringTracker tracker;
     private final Project project;
@@ -33,7 +34,7 @@ public class TrainWreckExpressionRefactoringImpl implements Refactoring {
         this.project = project;
         this.file = file;
 
-        extractMethodStep = new ExtractMethodRefactoringStep(extractRegion,file,project);
+        extractMethodStep = new ExtractMethodRefactoringStep(extractRegion,file,project, EXTRACT_METHOD_DESCRIPTION_PATH);
     }
 
     @Override

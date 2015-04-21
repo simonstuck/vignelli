@@ -1,0 +1,11 @@
+<p>In this step we extract the statement that retrieves the singleton instance from the singleton class into a local method.</p>
+<p>Although not strictly necessary, we can use IntelliJ to find other occurrences of this and replace it with the method call, thus enabling us to solve multiple direct uses of a singleton in one refactoring.</p>
+<table class="code">
+    ${foreach elementsToExtract elem}
+        <tr>
+            <td>${elem}</td>
+        </tr>
+    ${end}
+</table>
+<p>As this is only a temporary method, you do not need to give it a meaningful name. For example, <span class="code">getSingletonInstance</span>. is a perfectly reasonable name in this case.</p>
+<p>Click below to perform this refactoring step.</p>
