@@ -4,15 +4,18 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.simonstuck.vignelli.refactoring.Refactoring;
 
 import java.util.HashMap;
+import java.util.Observable;
+import java.util.Observer;
 import javax.swing.event.HyperlinkEvent;
 
-public class RefactoringDescription extends Description {
+public class RefactoringDescription extends Description implements Observer {
 
     private static final Logger LOG = Logger.getInstance(RefactoringDescription.class.getName());
     private final Refactoring refactoring;
 
     public RefactoringDescription(Refactoring refactoring) {
         this.refactoring = refactoring;
+        this.refactoring.addObserver(this);
     }
 
     @Override
@@ -48,5 +51,17 @@ public class RefactoringDescription extends Description {
         } catch (NoSuchMethodException e) {
             LOG.error(e.getMessage(), e);
         }
+    }
+
+    @Override
+    public void update(Observable observable, Object o) {
+        if (observable == refactoring) {
+            setChanged();
+            notifyObservers(this);
+        }
+    }
+
+    public void tearDown() {
+        this.refactoring.deleteObserver(this);
     }
 }

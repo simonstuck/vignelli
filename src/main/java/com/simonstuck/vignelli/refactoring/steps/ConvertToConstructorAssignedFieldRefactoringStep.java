@@ -16,43 +16,64 @@ import com.simonstuck.vignelli.ui.description.Template;
 import com.simonstuck.vignelli.utils.IOUtils;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ConvertToConstructorAssignedFieldRefactoringStep {
+public class ConvertToConstructorAssignedFieldRefactoringStep implements RefactoringStep {
     private static final String STEP_NAME = "Convert Expression to Constructor-Initialised Field";
     private static final String TEMPLATE_PATH = "descriptionTemplates/convertToConstructorAssignedFieldDescription.html";
     private final Project project;
     private final PsiExpression expression;
+    private final ExpressionMovedToConstructorListener expressionMovedToConstructorListener;
+    private final PsiManager psiManager;
 
-    public ConvertToConstructorAssignedFieldRefactoringStep(PsiExpression expression, Project project) {
+    @Nullable
+    private final RefactoringStepDelegate delegate;
+
+    public ConvertToConstructorAssignedFieldRefactoringStep(
+            @NotNull PsiExpression expression,
+            @NotNull Project project,
+            @NotNull PsiManager psiManager,
+            @Nullable RefactoringStepDelegate delegate
+    ) {
         this.expression = expression;
         this.project = project;
+        this.psiManager = psiManager;
+        this.delegate = delegate;
+        expressionMovedToConstructorListener = new ExpressionMovedToConstructorListener();
     }
 
+    @Override
+    public void startListeningForGoal() {
+        psiManager.addPsiTreeChangeListener(expressionMovedToConstructorListener);
+    }
+
+    @Override
+    public void endListeningForGoal() {
+        psiManager.removePsiTreeChangeListener(expressionMovedToConstructorListener);
+    }
+
+    @Override
     public Result process() {
         PsiElement[] elements = new PsiElement[] { expression };
-        ExpressionMovedToConstructorListener adapter = new ExpressionMovedToConstructorListener();
-
-        PsiManager manager = PsiManager.getInstance(project);
-        manager.addPsiTreeChangeListener(adapter);
 
         IntroduceFieldHandler handler = new IntroduceFieldHandler();
         handler.invoke(project, elements, null);
-        manager.removePsiTreeChangeListener(adapter);
 
-        return new Result(adapter.constructorExpression);
+        return new Result(expressionMovedToConstructorListener.constructorExpression);
     }
 
+    @Override
     public void describeStep(Map<String, Object> templateValues) {
-        templateValues.put("nextStepDescription", getDescription());
-        templateValues.put("nextStepName", STEP_NAME);
+        templateValues.put(STEP_NAME_TEMPLATE_KEY, STEP_NAME);
+        templateValues.put(STEP_DESCRIPTION_TEMPLATE_KEY, getDescription());
     }
 
     private String getDescription() {
-        Template template = new HTMLFileTemplate(template());
+        Template template = new HTMLFileTemplate(IOUtils.tryReadFile(TEMPLATE_PATH));
         HashMap<String, Object> contentMap = new HashMap<String, Object>();
         PsiClass thisClass = PsiTreeUtil.getParentOfType(expression, PsiClass.class);
         if (thisClass != null) {
@@ -62,12 +83,8 @@ public class ConvertToConstructorAssignedFieldRefactoringStep {
         return template.render(contentMap);
     }
 
-    private String template() {
-        return IOUtils.tryReadFile(TEMPLATE_PATH);
-    }
 
-
-    public static final class Result {
+    public static final class Result implements RefactoringStepResult {
         PsiExpression constructorExpression;
 
         public Result(PsiExpression constructorExpression) {
@@ -76,6 +93,11 @@ public class ConvertToConstructorAssignedFieldRefactoringStep {
 
         public PsiExpression getConstructorExpression() {
             return constructorExpression;
+        }
+
+        @Override
+        public boolean isSuccess() {
+            return false;
         }
     }
 
@@ -97,6 +119,9 @@ public class ConvertToConstructorAssignedFieldRefactoringStep {
             PsiElement foundEquivalent = new PsiContainsChecker(assignmentExpression).findEquivalent(expression);
             if (foundEquivalent != null) {
                 constructorExpression = (PsiExpression) foundEquivalent;
+                if (delegate != null) {
+                    delegate.didFinishRefactoringStep(ConvertToConstructorAssignedFieldRefactoringStep.this, new Result(constructorExpression));
+                }
             }
         }
 

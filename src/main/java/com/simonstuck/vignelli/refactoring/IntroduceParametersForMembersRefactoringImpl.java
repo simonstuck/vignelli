@@ -5,6 +5,7 @@ import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiReferenceExpression;
 import com.intellij.psi.util.PsiTreeUtil;
@@ -15,7 +16,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 
-public class IntroduceParametersForMembersRefactoringImpl implements Refactoring {
+public class IntroduceParametersForMembersRefactoringImpl extends Refactoring {
 
     private static final String STEP_DESCRIPTION_PATH = "descriptionTemplates/introduceParameterStepDescription.html";
     private final Iterator<PsiElement> memberIterator;
@@ -79,7 +80,7 @@ public class IntroduceParametersForMembersRefactoringImpl implements Refactoring
     private void prepareNextStep() {
         if (memberIterator.hasNext()) {
             PsiElement next = memberIterator.next();
-            introduceParameterStep = new IntroduceParameterRefactoringStep(project, file, next, STEP_DESCRIPTION_PATH);
+            introduceParameterStep = new IntroduceParameterRefactoringStep(project, file, next, STEP_DESCRIPTION_PATH, PsiManager.getInstance(project), null);
         }
     }
 

@@ -17,6 +17,8 @@ class AnalysisToolJComponentWindow extends JPanel {
 
     private final ProblemUIPane problemUIPane;
 
+    private RefactoringUIPane currentRefactoringUIPane = null;
+
     public AnalysisToolJComponentWindow(Project project) {
         super();
         this.problemUIPane = new ProblemUIPane(project);
@@ -33,6 +35,7 @@ class AnalysisToolJComponentWindow extends JPanel {
     }
 
     private void showProblemUI() {
+        tearDownCurrentRefactoringUIPaneIfNecessary();
         this.removeAll();
         this.add(problemUIPane);
         validate();
@@ -40,10 +43,19 @@ class AnalysisToolJComponentWindow extends JPanel {
     }
 
     private void showRefactoringUI(Refactoring refactoring) {
+        tearDownCurrentRefactoringUIPaneIfNecessary();
         this.removeAll();
-        this.add(new RefactoringUIPane(refactoring));
+        currentRefactoringUIPane = new RefactoringUIPane(refactoring);
+        this.add(currentRefactoringUIPane);
         validate();
         repaint();
+    }
+
+    private void tearDownCurrentRefactoringUIPaneIfNecessary() {
+        if (currentRefactoringUIPane != null) {
+            currentRefactoringUIPane.tearDown();
+        }
+        currentRefactoringUIPane = null;
     }
 
     private class UIActiveRefactoringCollectionListener implements ActiveRefactoringCollectionListener {

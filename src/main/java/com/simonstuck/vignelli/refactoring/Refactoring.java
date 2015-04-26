@@ -3,34 +3,36 @@ package com.simonstuck.vignelli.refactoring;
 import com.simonstuck.vignelli.Templatable;
 
 import java.util.Map;
+import java.util.Observable;
+import java.util.Observer;
 
-public interface Refactoring extends Templatable {
+public abstract class Refactoring extends Observable implements Templatable {
 
     /**
      * Checks if there are more steps remaining.
      * @return true iff no more steps are required.
      */
-    boolean hasNextStep();
+    public abstract boolean hasNextStep();
 
     /**
      * Performs the next step.
      * @throws NoSuchMethodException When no more steps are required.
      */
-    void nextStep() throws NoSuchMethodException;
+    public abstract void nextStep() throws NoSuchMethodException;
 
     /**
      * Fills the given template value map with correct values that describe this refactoring to be shown in a UI.
      * @param templateValues The map of values to fill
      */
-    void fillTemplateValues(Map<String, Object> templateValues);
+    public abstract void fillTemplateValues(Map<String, Object> templateValues);
 
     /**
      * Begins the refactoring.
      */
-    void begin();
+    public abstract void begin();
 
     /**
      * Completes the refactoring.
      */
-    void complete();
+    public abstract void complete();
 }

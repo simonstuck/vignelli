@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 
-public class TrainWreckVariableRefactoringImpl implements Refactoring {
+public class TrainWreckVariableRefactoringImpl extends Refactoring {
 
     public static final String TRAIN_WRECK_REFACTORING_DESCRIPTION = "Train Wreck Refactoring";
     private final PsiElement trainWreckElement;

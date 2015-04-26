@@ -58,8 +58,8 @@ public class InlineMethodRefactoringStep implements RefactoringStep {
 
     @Override
     public void describeStep(Map<String, Object> templateValues) {
-        templateValues.put("nextStepDescription", getDescription());
-        templateValues.put("nextStepName", STEP_NAME);
+        templateValues.put(STEP_DESCRIPTION_TEMPLATE_KEY, getDescription());
+        templateValues.put(STEP_NAME_TEMPLATE_KEY, STEP_NAME);
     }
 
     private String getDescription() {

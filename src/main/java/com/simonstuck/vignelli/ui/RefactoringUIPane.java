@@ -15,6 +15,8 @@ import javax.swing.border.EmptyBorder;
 
 public class RefactoringUIPane extends JPanel {
 
+    private final RefactoringDescription refactoringDescription;
+
     public RefactoringUIPane(Refactoring refactoring) {
         setLayout(new BorderLayout(5,5));
 
@@ -28,8 +30,13 @@ public class RefactoringUIPane extends JPanel {
         DescriptionPane descriptionPane = new DescriptionPane();
 
         add(new JBScrollPane(descriptionPane));
-        descriptionPane.showDescription(new RefactoringDescription(refactoring));
+        refactoringDescription = new RefactoringDescription(refactoring);
+        descriptionPane.showDescription(refactoringDescription);
         validate();
         repaint();
+    }
+
+    public void tearDown() {
+        refactoringDescription.tearDown();
     }
 }

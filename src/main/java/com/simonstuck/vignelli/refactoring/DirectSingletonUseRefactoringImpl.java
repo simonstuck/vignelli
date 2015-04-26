@@ -22,7 +22,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 
-public class DirectSingletonUseRefactoringImpl implements Refactoring, RefactoringStepDelegate {
+public class DirectSingletonUseRefactoringImpl extends Refactoring implements RefactoringStepDelegate {
 
     private static final Logger LOG = Logger.getInstance(DirectSingletonUseRefactoringImpl.class.getName());
 
@@ -47,7 +47,9 @@ public class DirectSingletonUseRefactoringImpl implements Refactoring, Refactori
     public DirectSingletonUseRefactoringImpl(PsiMethodCallExpression getInstanceElement, RefactoringTracker tracker, Project project, PsiFile file) {
         this.tracker = tracker;
         this.project = project;
-        extractMethodRefactoringStep = new ExtractMethodRefactoringStep(Collections.singleton(getInstanceElement), file, project, EXTRACT_METHOD_DESCRIPTION_PATH);
+        extractMethodRefactoringStep = new ExtractMethodRefactoringStep(Collections.singleton(getInstanceElement), file, project, EXTRACT_METHOD_DESCRIPTION_PATH,PsiManager.getInstance(project),this);
+        extractMethodRefactoringStep.startListeningForGoal();
+
         this.file = file;
         this.singletonClass = PsiTreeUtil.getParentOfType(getInstanceElement.getMethodExpression().resolve(), PsiClass.class);
         assert singletonClass != null;
@@ -65,29 +67,21 @@ public class DirectSingletonUseRefactoringImpl implements Refactoring, Refactori
     public void nextStep() throws NoSuchMethodException {
         switch (currentStepIndex) {
             case 0:
-                extractMethodResult = extractMethodRefactoringStep.process();
-                Collection<PsiExpression> expressions = PsiTreeUtil.collectElementsOfType(extractMethodResult.getExtractedMethod().getBody(), PsiExpression.class);
-                PsiExpression expression = expressions.iterator().next();
-                convertToConstructorAssignedFieldRefactoringStep = new ConvertToConstructorAssignedFieldRefactoringStep(expression, project);
+                extractMethodRefactoringStep.process();
                 break;
             case 1:
-                convertToConstructorAssignedFieldStepResult = convertToConstructorAssignedFieldRefactoringStep.process();
-                inlineMethodRefactoringStep = new InlineMethodRefactoringStep(project, extractMethodResult.getExtractedMethod(), PsiManager.getInstance(project), this);
-                inlineMethodRefactoringStep.startListeningForGoal();
+                convertToConstructorAssignedFieldRefactoringStep.process();
                 break;
             case 2:
                 inlineMethodRefactoringStep.process();
-                inlineMethodRefactoringStep.endListeningForGoal();
-                introduceParameterRefactoringStep = new IntroduceParameterRefactoringStep(project, file, convertToConstructorAssignedFieldStepResult.getConstructorExpression(), INTRODUCE_CONSTRUCTOR_PARAMETER_STEP_DESCRIPTION_PATH);
                 break;
             case 3:
-                introduceParameterRefactoringStepResult = introduceParameterRefactoringStep.process();
+                introduceParameterRefactoringStep.process();
                 break;
             case 4:
                 extractInterfaceRefactoringStep.process();
                 break;
         }
-        currentStepIndex++;
     }
 
     @Override
@@ -130,5 +124,35 @@ public class DirectSingletonUseRefactoringImpl implements Refactoring, Refactori
     @Override
     public void didFinishRefactoringStep(RefactoringStep step, RefactoringStepResult result) {
         LOG.info("didFinishRefactoringStep!");
+        if (step == extractMethodRefactoringStep) {
+            extractMethodRefactoringStep.endListeningForGoal();
+            extractMethodResult = (ExtractMethodRefactoringStep.Result) result;
+            Collection<PsiExpression> expressions = PsiTreeUtil.collectElementsOfType(extractMethodResult.getExtractedMethod().getBody(), PsiExpression.class);
+            PsiExpression expression = expressions.iterator().next();
+            convertToConstructorAssignedFieldRefactoringStep = new ConvertToConstructorAssignedFieldRefactoringStep(expression, project, PsiManager.getInstance(project), this);
+            convertToConstructorAssignedFieldRefactoringStep.startListeningForGoal();
+            currentStepIndex = 1;
+        } else if (step == convertToConstructorAssignedFieldRefactoringStep) {
+            convertToConstructorAssignedFieldRefactoringStep.endListeningForGoal();
+            convertToConstructorAssignedFieldStepResult = (ConvertToConstructorAssignedFieldRefactoringStep.Result) result;
+            inlineMethodRefactoringStep = new InlineMethodRefactoringStep(project, extractMethodResult.getExtractedMethod(), PsiManager.getInstance(project), this);
+            inlineMethodRefactoringStep.startListeningForGoal();
+            currentStepIndex = 2;
+        } else if (step == inlineMethodRefactoringStep) {
+            inlineMethodRefactoringStep.endListeningForGoal();
+            introduceParameterRefactoringStep = new IntroduceParameterRefactoringStep(project, file, convertToConstructorAssignedFieldStepResult.getConstructorExpression(), INTRODUCE_CONSTRUCTOR_PARAMETER_STEP_DESCRIPTION_PATH, PsiManager.getInstance(project), this);
+            introduceParameterRefactoringStep.startListeningForGoal();
+            currentStepIndex = 3;
+        } else if (step == introduceParameterRefactoringStep) {
+            introduceParameterRefactoringStep.endListeningForGoal();
+            introduceParameterRefactoringStepResult = (IntroduceParameterRefactoringStep.Result) result;
+            extractInterfaceRefactoringStep.startListeningForGoal();
+            currentStepIndex = 4;
+        } else if (step == extractInterfaceRefactoringStep) {
+            extractInterfaceRefactoringStep.endListeningForGoal();
+            currentStepIndex = 5;
+        }
+        setChanged();
+        notifyObservers();
     }
 }

@@ -2,6 +2,7 @@ package com.simonstuck.vignelli.refactoring;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiStatement;
 import com.simonstuck.vignelli.refactoring.steps.ExtractMethodRefactoringStep;
 import com.simonstuck.vignelli.refactoring.steps.MoveMethodRefactoringStep;
@@ -14,7 +15,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 
-public class TrainWreckExpressionRefactoringImpl implements Refactoring {
+public class TrainWreckExpressionRefactoringImpl extends Refactoring {
 
     private static final String EXTRACT_METHOD_DESCRIPTION_PATH = "descriptionTemplates/extractMethodTrainWreckStepDescription.html";
     private final Collection<PsiStatement> extractRegion;
@@ -34,7 +35,7 @@ public class TrainWreckExpressionRefactoringImpl implements Refactoring {
         this.project = project;
         this.file = file;
 
-        extractMethodStep = new ExtractMethodRefactoringStep(extractRegion,file,project, EXTRACT_METHOD_DESCRIPTION_PATH);
+        extractMethodStep = new ExtractMethodRefactoringStep(extractRegion,file,project, EXTRACT_METHOD_DESCRIPTION_PATH, PsiManager.getInstance(project), null);
     }
 
     @Override
