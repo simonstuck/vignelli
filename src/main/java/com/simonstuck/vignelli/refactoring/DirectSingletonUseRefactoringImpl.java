@@ -2,12 +2,14 @@ package com.simonstuck.vignelli.refactoring;
 
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
+import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiExpression;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.simonstuck.vignelli.refactoring.steps.ConvertToConstructorAssignedFieldRefactoringStep;
+import com.simonstuck.vignelli.refactoring.steps.ExtractInterfaceRefactoringStep;
 import com.simonstuck.vignelli.refactoring.steps.ExtractMethodRefactoringStep;
 import com.simonstuck.vignelli.refactoring.steps.InlineMethodRefactoringStep;
 import com.simonstuck.vignelli.refactoring.steps.IntroduceParameterRefactoringStep;
@@ -30,26 +32,33 @@ public class DirectSingletonUseRefactoringImpl implements Refactoring, Refactori
 
     private final Project project;
     private final RefactoringTracker tracker;
+    private final PsiClass singletonClass;
     private ExtractMethodRefactoringStep extractMethodRefactoringStep;
     private int currentStepIndex = 0;
     private ExtractMethodRefactoringStep.Result extractMethodResult;
     private ConvertToConstructorAssignedFieldRefactoringStep convertToConstructorAssignedFieldRefactoringStep;
     private InlineMethodRefactoringStep inlineMethodRefactoringStep;
-    private ConvertToConstructorAssignedFieldRefactoringStep.Result convertToConstructurAssignedFieldStepResult;
+    private ConvertToConstructorAssignedFieldRefactoringStep.Result convertToConstructorAssignedFieldStepResult;
     private final PsiFile file;
     private IntroduceParameterRefactoringStep introduceParameterRefactoringStep;
     private IntroduceParameterRefactoringStep.Result introduceParameterRefactoringStepResult;
+    private final ExtractInterfaceRefactoringStep extractInterfaceRefactoringStep;
 
     public DirectSingletonUseRefactoringImpl(PsiMethodCallExpression getInstanceElement, RefactoringTracker tracker, Project project, PsiFile file) {
         this.tracker = tracker;
         this.project = project;
         extractMethodRefactoringStep = new ExtractMethodRefactoringStep(Collections.singleton(getInstanceElement), file, project, EXTRACT_METHOD_DESCRIPTION_PATH);
         this.file = file;
+        this.singletonClass = PsiTreeUtil.getParentOfType(getInstanceElement.getMethodExpression().resolve(), PsiClass.class);
+        assert singletonClass != null;
+        PsiClass currentClass = PsiTreeUtil.getParentOfType(getInstanceElement, PsiClass.class);
+        assert currentClass != null;
+        extractInterfaceRefactoringStep = new ExtractInterfaceRefactoringStep(project, singletonClass, currentClass);
     }
 
     @Override
     public boolean hasNextStep() {
-        return currentStepIndex < 4;
+        return currentStepIndex < 5;
     }
 
     @Override
@@ -62,17 +71,21 @@ public class DirectSingletonUseRefactoringImpl implements Refactoring, Refactori
                 convertToConstructorAssignedFieldRefactoringStep = new ConvertToConstructorAssignedFieldRefactoringStep(expression, project);
                 break;
             case 1:
-                convertToConstructurAssignedFieldStepResult = convertToConstructorAssignedFieldRefactoringStep.process();
+                convertToConstructorAssignedFieldStepResult = convertToConstructorAssignedFieldRefactoringStep.process();
                 inlineMethodRefactoringStep = new InlineMethodRefactoringStep(project, extractMethodResult.getExtractedMethod(), PsiManager.getInstance(project), this);
                 inlineMethodRefactoringStep.startListeningForGoal();
                 break;
             case 2:
                 inlineMethodRefactoringStep.process();
                 inlineMethodRefactoringStep.endListeningForGoal();
-                introduceParameterRefactoringStep = new IntroduceParameterRefactoringStep(project, file, convertToConstructurAssignedFieldStepResult.getConstructorExpression(), INTRODUCE_CONSTRUCTOR_PARAMETER_STEP_DESCRIPTION_PATH);
+                introduceParameterRefactoringStep = new IntroduceParameterRefactoringStep(project, file, convertToConstructorAssignedFieldStepResult.getConstructorExpression(), INTRODUCE_CONSTRUCTOR_PARAMETER_STEP_DESCRIPTION_PATH);
                 break;
             case 3:
                 introduceParameterRefactoringStepResult = introduceParameterRefactoringStep.process();
+                break;
+            case 4:
+                extractInterfaceRefactoringStep.process();
+                break;
         }
         currentStepIndex++;
     }
@@ -93,6 +106,8 @@ public class DirectSingletonUseRefactoringImpl implements Refactoring, Refactori
             case 3:
                 introduceParameterRefactoringStep.describeStep(templateValues);
                 break;
+            case 4:
+                extractInterfaceRefactoringStep.describeStep(templateValues);
         }
     }
 

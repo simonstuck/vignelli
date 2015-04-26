@@ -15,11 +15,10 @@ ${else}
 <p>To summarise the steps:</p>
 <ul>
     <li>Extract method to retrieve singleton instance</li>
-    <li>Convert Singleton instance to field, initialising it in the constructor</li>
-    <li>Inline the method to retrieve singleton instance</li>
-    <li>Introduce a parameter for the singleton instance in the constructor</li>
-    <li>Extract an interface for the singleton</li>
-    <li>Perform a type migration, replacing the singleton type by the new interface</li>
+    <li>Convert Singleton instance to field, initialising it in the constructor.</li>
+    <li>Inline the method to retrieve singleton instance.</li>
+    <li>Introduce a parameter for the singleton instance in the constructor.</li>
+    <li>Extract an interface for the singleton and use it wherever possible instead of the actual singleton.</li>
 </ul>
 <p><a href="vignelli://complete">Complete Refactoring</a></p>
 ${end}

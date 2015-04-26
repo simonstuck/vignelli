@@ -43,10 +43,12 @@ public class InlineMethodRefactoringStep implements RefactoringStep {
         psiManager.addPsiTreeChangeListener(methodRemovalWaitChecker);
     }
 
-    public void process() {
+    @Override
+    public Result process() {
         Editor editor = FileEditorManager.getInstance(project).getSelectedTextEditor();
         InlineMethodDialog dialog = new InlineMethodDialog(project,method,null,editor,false);
         dialog.show();
+        return new Result();
     }
 
     @Override
