@@ -6,7 +6,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.ActionCallback;
 import com.intellij.openapi.wm.IdeFocusManager;
 import com.intellij.psi.PsiClass;
-import com.intellij.psi.PsiClassType;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
@@ -15,25 +14,24 @@ import com.simonstuck.vignelli.ui.description.HTMLFileTemplate;
 import com.simonstuck.vignelli.ui.description.Template;
 import com.simonstuck.vignelli.utils.IOUtils;
 
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class IntroduceParameterRefactoringStep {
 
     private static final String INTRODUCE_PARAMETER_STEP_NAME = "Introduce Parameter";
+    private final String descriptionPath;
     private Project project;
     private final PsiFile file;
     private final PsiElement element;
     private Editor editor;
 
-    public IntroduceParameterRefactoringStep(Project project, PsiFile file, PsiElement element) {
+    public IntroduceParameterRefactoringStep(Project project, PsiFile file, PsiElement element, String descriptionPath) {
         this.project = project;
         this.file = file;
         this.element = element;
         editor = FileEditorManager.getInstance(project).getSelectedTextEditor();
+        this.descriptionPath = descriptionPath;
     }
 
     public Result process() {
@@ -49,7 +47,7 @@ public class IntroduceParameterRefactoringStep {
     }
 
     private String getDescription() {
-        Template template = new HTMLFileTemplate(template());
+        Template template = new HTMLFileTemplate(IOUtils.tryReadFile(descriptionPath));
         HashMap<String, Object> contentMap = new HashMap<String, Object>();
         contentMap.put("parameterElement", element.getText());
 
@@ -59,15 +57,6 @@ public class IntroduceParameterRefactoringStep {
         }
 
         return template.render(contentMap);
-    }
-
-    private String template() {
-        try {
-            return IOUtils.readFile("descriptionTemplates/introduceParameterStepDescription.html");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return "";
     }
 
 

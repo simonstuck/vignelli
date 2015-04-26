@@ -73,6 +73,10 @@ public class ConvertToConstructorAssignedFieldRefactoringStep {
         public Result(PsiExpression constructorExpression) {
             this.constructorExpression = constructorExpression;
         }
+
+        public PsiExpression getConstructorExpression() {
+            return constructorExpression;
+        }
     }
 
     private class ExpressionMovedToConstructorListener extends PsiTreeChangeAdapter {

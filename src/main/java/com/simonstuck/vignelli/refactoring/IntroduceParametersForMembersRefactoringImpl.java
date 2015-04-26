@@ -17,6 +17,7 @@ import java.util.Map;
 
 public class IntroduceParametersForMembersRefactoringImpl implements Refactoring {
 
+    private static final String STEP_DESCRIPTION_PATH = "descriptionTemplates/introduceParameterStepDescription.html";
     private final Iterator<PsiElement> memberIterator;
     private final RefactoringTracker tracker;
     private Project project;
@@ -78,7 +79,7 @@ public class IntroduceParametersForMembersRefactoringImpl implements Refactoring
     private void prepareNextStep() {
         if (memberIterator.hasNext()) {
             PsiElement next = memberIterator.next();
-            introduceParameterStep = new IntroduceParameterRefactoringStep(project, file, next);
+            introduceParameterStep = new IntroduceParameterRefactoringStep(project, file, next, STEP_DESCRIPTION_PATH);
         }
     }
 

@@ -10,6 +10,7 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.simonstuck.vignelli.refactoring.steps.ConvertToConstructorAssignedFieldRefactoringStep;
 import com.simonstuck.vignelli.refactoring.steps.ExtractMethodRefactoringStep;
 import com.simonstuck.vignelli.refactoring.steps.InlineMethodRefactoringStep;
+import com.simonstuck.vignelli.refactoring.steps.IntroduceParameterRefactoringStep;
 import com.simonstuck.vignelli.refactoring.steps.RefactoringStep;
 import com.simonstuck.vignelli.refactoring.steps.RefactoringStepDelegate;
 import com.simonstuck.vignelli.refactoring.steps.RefactoringStepResult;
@@ -25,6 +26,8 @@ public class DirectSingletonUseRefactoringImpl implements Refactoring, Refactori
 
     private static final String DESCRIPTION_TEMPLATE = "descriptionTemplates/directSingletonUseRefactoring.html";
     private static final String EXTRACT_METHOD_DESCRIPTION_PATH = "descriptionTemplates/extractMethodSingletonStepDescription.html";
+    private static final String INTRODUCE_CONSTRUCTOR_PARAMETER_STEP_DESCRIPTION_PATH = "descriptionTemplates/introduceConstructorParameterStepDescription.html";
+
     private final Project project;
     private final RefactoringTracker tracker;
     private ExtractMethodRefactoringStep extractMethodRefactoringStep;
@@ -32,16 +35,21 @@ public class DirectSingletonUseRefactoringImpl implements Refactoring, Refactori
     private ExtractMethodRefactoringStep.Result extractMethodResult;
     private ConvertToConstructorAssignedFieldRefactoringStep convertToConstructorAssignedFieldRefactoringStep;
     private InlineMethodRefactoringStep inlineMethodRefactoringStep;
+    private ConvertToConstructorAssignedFieldRefactoringStep.Result convertToConstructurAssignedFieldStepResult;
+    private final PsiFile file;
+    private IntroduceParameterRefactoringStep introduceParameterRefactoringStep;
+    private IntroduceParameterRefactoringStep.Result introduceParameterRefactoringStepResult;
 
     public DirectSingletonUseRefactoringImpl(PsiMethodCallExpression getInstanceElement, RefactoringTracker tracker, Project project, PsiFile file) {
         this.tracker = tracker;
         this.project = project;
         extractMethodRefactoringStep = new ExtractMethodRefactoringStep(Collections.singleton(getInstanceElement), file, project, EXTRACT_METHOD_DESCRIPTION_PATH);
+        this.file = file;
     }
 
     @Override
     public boolean hasNextStep() {
-        return currentStepIndex < 3;
+        return currentStepIndex < 4;
     }
 
     @Override
@@ -54,14 +62,17 @@ public class DirectSingletonUseRefactoringImpl implements Refactoring, Refactori
                 convertToConstructorAssignedFieldRefactoringStep = new ConvertToConstructorAssignedFieldRefactoringStep(expression, project);
                 break;
             case 1:
-                convertToConstructorAssignedFieldRefactoringStep.process();
+                convertToConstructurAssignedFieldStepResult = convertToConstructorAssignedFieldRefactoringStep.process();
                 inlineMethodRefactoringStep = new InlineMethodRefactoringStep(project, extractMethodResult.getExtractedMethod(), PsiManager.getInstance(project), this);
                 inlineMethodRefactoringStep.startListeningForGoal();
                 break;
             case 2:
                 inlineMethodRefactoringStep.process();
                 inlineMethodRefactoringStep.endListeningForGoal();
+                introduceParameterRefactoringStep = new IntroduceParameterRefactoringStep(project, file, convertToConstructurAssignedFieldStepResult.getConstructorExpression(), INTRODUCE_CONSTRUCTOR_PARAMETER_STEP_DESCRIPTION_PATH);
                 break;
+            case 3:
+                introduceParameterRefactoringStepResult = introduceParameterRefactoringStep.process();
         }
         currentStepIndex++;
     }
@@ -78,6 +89,9 @@ public class DirectSingletonUseRefactoringImpl implements Refactoring, Refactori
                 break;
             case 2:
                 inlineMethodRefactoringStep.describeStep(templateValues);
+                break;
+            case 3:
+                introduceParameterRefactoringStep.describeStep(templateValues);
                 break;
         }
     }
