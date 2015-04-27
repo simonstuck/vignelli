@@ -9,6 +9,11 @@ import java.util.Observer;
 public abstract class Refactoring extends Observable implements Templatable {
 
     /**
+     * The key used for the boolean value of whether there is a next step in the template engine.
+     */
+    public static final String HAS_NEXT_STEP_TEMPLATE_KEY = "hasNextStep";
+
+    /**
      * Checks if there are more steps remaining.
      * @return true iff no more steps are required.
      */

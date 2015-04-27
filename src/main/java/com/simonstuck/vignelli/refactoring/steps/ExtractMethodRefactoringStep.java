@@ -1,6 +1,7 @@
 package com.simonstuck.vignelli.refactoring.steps;
 
 import com.intellij.openapi.project.Project;
+import com.intellij.psi.PsiCodeBlock;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
@@ -12,7 +13,6 @@ import com.intellij.psi.PsiTreeChangeListener;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.refactoring.extractMethod.ExtractMethodHandler;
 import com.intellij.refactoring.extractMethod.ExtractMethodProcessor;
-import com.simonstuck.vignelli.psi.PsiContainsChecker;
 import com.simonstuck.vignelli.ui.description.HTMLFileTemplate;
 import com.simonstuck.vignelli.ui.description.Template;
 import com.simonstuck.vignelli.utils.IOUtils;
@@ -121,48 +121,55 @@ public class ExtractMethodRefactoringStep implements RefactoringStep {
     private class ExtractedMethodChecker extends PsiTreeChangeAdapter {
         private PsiMethod foundMethod = null;
         private Set<String> newMethodCallNames = new HashSet<String>();
+        private boolean hasNotified = false;
 
         @Override
         public void childAdded(@NotNull PsiTreeChangeEvent event) {
             super.childAdded(event);
 
-            if (event.getChild() instanceof PsiMethod) {
-                PsiMethod method = (PsiMethod) event.getChild();
-                if (containsAllStatementstoExtract(method)) {
-                    foundMethod = method;
-                }
+            addAnyNewMethods(event);
+            addAnyNewMethodCalls(event);
+            checkConditionsAndNotifyIfNecessary();
+        }
+
+        private void addAnyNewMethods(PsiTreeChangeEvent event) {
+            Collection<PsiMethod> newlyAddedMethods = PsiTreeUtil.collectElementsOfType(event.getChild(), PsiMethod.class);
+            for (PsiMethod method : newlyAddedMethods) {
+                foundMethod = method;
             }
-            checkMe();
         }
 
         @Override
         public void childrenChanged(@NotNull PsiTreeChangeEvent event) {
             super.childrenChanged(event);
 
-            doAThing(event);
-            checkMe();
+            addAnyNewMethods(event);
+            addAnyNewMethodCalls(event);
+            checkConditionsAndNotifyIfNecessary();
         }
 
         @Override
         public void childReplaced(@NotNull PsiTreeChangeEvent event) {
             super.childReplaced(event);
-            doAThing(event);
-            checkMe();
+            addAnyNewMethodCalls(event);
+            addAnyNewMethods(event);
+            checkConditionsAndNotifyIfNecessary();
         }
 
-        private void doAThing(PsiTreeChangeEvent event) {
+        private void addAnyNewMethodCalls(PsiTreeChangeEvent event) {
             @SuppressWarnings("unchecked")
             Collection<PsiMethodCallExpression> addedMethodCalls = PsiTreeUtil.collectElementsOfType(event.getChild(), PsiMethodCallExpression.class);
             for (PsiMethodCallExpression addedMethodCall : addedMethodCalls) {
                 newMethodCallNames.add(addedMethodCall.getMethodExpression().getText());
             }
 
-            checkMe();
+            checkConditionsAndNotifyIfNecessary();
         }
 
-        private void checkMe() {
-            if (delegate != null && foundMethod != null && newMethodCallNames.contains(foundMethod.getName())) {
+        private void checkConditionsAndNotifyIfNecessary() {
+            if (delegate != null && foundMethod != null && newMethodCallNames.contains(foundMethod.getName()) && containsAllStatementstoExtract(foundMethod) && !hasNotified) {
                 delegate.didFinishRefactoringStep(ExtractMethodRefactoringStep.this, new Result(foundMethod));
+                hasNotified = true;
             }
         }
 
@@ -170,8 +177,12 @@ public class ExtractMethodRefactoringStep implements RefactoringStep {
             boolean containsAll = true;
             for (PsiElement element : elementsToExtract) {
                 //FIXME: Checking for actual equivalence fails because of invalid file.
-                containsAll &= correspondingMethod.getBody().getText().contains(element.getText());
-//                containsAll &= new PsiContainsChecker(correspondingMethod.getBody()).findEquivalent(element) != null;
+                PsiCodeBlock body = correspondingMethod.getBody();
+                if (body != null) {
+                    String bodyText = body.getText();
+                    containsAll &= bodyText.contains(element.getText());
+                }
+                //containsAll &= new PsiContainsChecker(correspondingMethod.getBody()).findEquivalent(element) != null;
             }
             return containsAll;
         }
