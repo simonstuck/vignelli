@@ -4,13 +4,15 @@ package com.simonstuck.vignelli.refactoring.steps;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
-import com.intellij.psi.PsiElement;
+import com.intellij.psi.JavaRecursiveElementVisitor;
+import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiMethod;
+import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.PsiTreeChangeAdapter;
 import com.intellij.psi.PsiTreeChangeEvent;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.refactoring.inline.InlineMethodDialog;
-import com.simonstuck.vignelli.psi.PsiContainsChecker;
 import com.simonstuck.vignelli.ui.description.HTMLFileTemplate;
 import com.simonstuck.vignelli.ui.description.Template;
 import com.simonstuck.vignelli.utils.IOUtils;
@@ -76,13 +78,60 @@ public class InlineMethodRefactoringStep implements RefactoringStep {
     }
 
     private class MethodRemovalWaitChecker extends PsiTreeChangeAdapter {
+
+        private final PsiClass clazz;
+
+        public MethodRemovalWaitChecker() {
+            clazz = PsiTreeUtil.getParentOfType(method, PsiClass.class);
+        }
+
+        private void performCheck() {
+            final int[] callsFound = {0};
+            JavaRecursiveElementVisitor visitor = new JavaRecursiveElementVisitor() {
+                @Override
+                public void visitMethodCallExpression(PsiMethodCallExpression expression) {
+                    super.visitMethodCallExpression(expression);
+                    PsiMethod resolvedMethod = expression.resolveMethod();
+                    if (resolvedMethod == null || resolvedMethod == method) {
+                        callsFound[0]++;
+                    }
+                }
+            };
+            clazz.accept(visitor);
+
+            if (callsFound[0] == 0 && delegate != null) {
+                delegate.didFinishRefactoringStep(InlineMethodRefactoringStep.this, new Result());
+            }
+
+        }
         @Override
         public void childRemoved(@NotNull PsiTreeChangeEvent event) {
             super.childRemoved(event);
-            PsiElement removedMethod = new PsiContainsChecker(event.getChild()).findEquivalent(method);
-            if (removedMethod != null && delegate != null) {
-                delegate.didFinishRefactoringStep(InlineMethodRefactoringStep.this, new Result());
-            }
+            performCheck();
+        }
+
+        @Override
+        public void childrenChanged(@NotNull PsiTreeChangeEvent event) {
+            super.childrenChanged(event);
+            performCheck();
+        }
+
+        @Override
+        public void childAdded(@NotNull PsiTreeChangeEvent event) {
+            super.childAdded(event);
+            performCheck();
+        }
+
+        @Override
+        public void childMoved(@NotNull PsiTreeChangeEvent event) {
+            super.childMoved(event);
+            performCheck();
+        }
+
+        @Override
+        public void childReplaced(@NotNull PsiTreeChangeEvent event) {
+            super.childReplaced(event);
+            performCheck();
         }
     }
 

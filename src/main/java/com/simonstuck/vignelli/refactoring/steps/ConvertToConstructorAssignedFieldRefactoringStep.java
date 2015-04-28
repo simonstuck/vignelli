@@ -1,11 +1,16 @@
 package com.simonstuck.vignelli.refactoring.steps;
 
 import com.intellij.openapi.project.Project;
+import com.intellij.psi.JavaRecursiveElementVisitor;
 import com.intellij.psi.PsiAssignmentExpression;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiExpression;
+import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiManager;
+import com.intellij.psi.PsiMethod;
+import com.intellij.psi.PsiReference;
+import com.intellij.psi.PsiReferenceExpression;
 import com.intellij.psi.PsiTreeChangeAdapter;
 import com.intellij.psi.PsiTreeChangeEvent;
 import com.intellij.psi.util.PsiTreeUtil;
@@ -20,14 +25,16 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class ConvertToConstructorAssignedFieldRefactoringStep implements RefactoringStep {
     private static final String STEP_NAME = "Convert Expression to Constructor-Initialised Field";
     private static final String TEMPLATE_PATH = "descriptionTemplates/convertToConstructorAssignedFieldDescription.html";
     private final Project project;
     private final PsiExpression expression;
-    private final ExpressionMovedToConstructorListener expressionMovedToConstructorListener;
+    private final ExpressionMovedToConstructorChecker expressionMovedToConstructorChecker;
     private final PsiManager psiManager;
 
     @Nullable
@@ -43,17 +50,17 @@ public class ConvertToConstructorAssignedFieldRefactoringStep implements Refacto
         this.project = project;
         this.psiManager = psiManager;
         this.delegate = delegate;
-        expressionMovedToConstructorListener = new ExpressionMovedToConstructorListener();
+        expressionMovedToConstructorChecker = new ExpressionMovedToConstructorChecker();
     }
 
     @Override
     public void startListeningForGoal() {
-        psiManager.addPsiTreeChangeListener(expressionMovedToConstructorListener);
+        psiManager.addPsiTreeChangeListener(expressionMovedToConstructorChecker);
     }
 
     @Override
     public void endListeningForGoal() {
-        psiManager.removePsiTreeChangeListener(expressionMovedToConstructorListener);
+        psiManager.removePsiTreeChangeListener(expressionMovedToConstructorChecker);
     }
 
     @Override
@@ -63,7 +70,7 @@ public class ConvertToConstructorAssignedFieldRefactoringStep implements Refacto
         IntroduceFieldHandler handler = new IntroduceFieldHandler();
         handler.invoke(project, elements, null);
 
-        return new Result(expressionMovedToConstructorListener.constructorExpression);
+        return new Result(null);
     }
 
     @Override
@@ -101,35 +108,154 @@ public class ConvertToConstructorAssignedFieldRefactoringStep implements Refacto
         }
     }
 
-    private class ExpressionMovedToConstructorListener extends PsiTreeChangeAdapter {
-        private PsiExpression constructorExpression;
+
+    /**
+     * This checker checks whether the original expression has been moved to the constructor
+     *
+     * <p>This works as follows:</p>
+     * <ol>
+     *     <li>Record all assignments to fields in all constructors before we begin.</li>
+     *     <li>
+     *         <span>Then, for every change:</span>
+     *         <ol>
+     *             <li>Check for field assignments in the constructor that have been added since recording the originals</li>
+     *             <li>For every new assignment expression, check if the original expression is within the RHS</li>
+     *             <li>If so, check if the field is used in the code block that we originally removed it from.</li>
+     *             <li>Check if the original expression is invalid</li>
+     *         </ol>
+     *     </li>
+     * </ol>
+     */
+    private class ExpressionMovedToConstructorChecker extends PsiTreeChangeAdapter {
+
+        private Set<PsiAssignmentExpression> originalConstructorFieldAssignments = new HashSet<PsiAssignmentExpression>();
+        private final PsiClass clazz;
+        private final PsiMethod originalExpressionMethod;
+        private boolean notified = false;
+
+
+        public ExpressionMovedToConstructorChecker() {
+            clazz = PsiTreeUtil.getParentOfType(expression, PsiClass.class);
+            setUpOriginalConstructorAssignmentExpressions();
+            originalExpressionMethod = PsiTreeUtil.getParentOfType(expression, PsiMethod.class);
+        }
+
+        private void setUpOriginalConstructorAssignmentExpressions() {
+            originalConstructorFieldAssignments.addAll(getAllConstructorFieldAssignmentExpressions());
+        }
+
+        private Set<PsiAssignmentExpression> getAllConstructorFieldAssignmentExpressions() {
+            Set<PsiAssignmentExpression> result = new HashSet<PsiAssignmentExpression>();
+            if (clazz != null) {
+                Set<PsiMethod> methods = getDefinedMethods(clazz);
+                for (PsiMethod method : methods) {
+                    result.addAll(getFieldAssignmentsIfConstructor(method));
+                }
+            }
+            return result;
+        }
+
+        private Set<PsiAssignmentExpression> getFieldAssignmentsIfConstructor(PsiMethod method) {
+            Set<PsiAssignmentExpression> result = new HashSet<PsiAssignmentExpression>();
+            if (method.isValid() && method.isConstructor()) {
+                @SuppressWarnings("unchecked")
+                Collection<PsiAssignmentExpression> assignmentExpressions = PsiTreeUtil.collectElementsOfType(method, PsiAssignmentExpression.class);
+                for (PsiAssignmentExpression assignmentExpression : assignmentExpressions) {
+                    PsiExpression lExpression = assignmentExpression.getLExpression();
+                    if (lExpression instanceof PsiReferenceExpression && ((PsiReferenceExpression) lExpression).resolve() instanceof PsiField) {
+                        result.add(assignmentExpression);
+                    }
+                }
+            }
+            return result;
+        }
+
+        private Set<PsiMethod> getDefinedMethods(PsiClass clazz) {
+            final Set<PsiMethod> methods = new HashSet<PsiMethod>();
+            JavaRecursiveElementVisitor methodFinder = new JavaRecursiveElementVisitor() {
+                @Override
+                public void visitMethod(PsiMethod method) {
+                    super.visitMethod(method);
+                    methods.add(method);
+                }
+            };
+            clazz.accept(methodFinder);
+            return methods;
+        }
+
+
+        @Override
+        public void childrenChanged(@NotNull PsiTreeChangeEvent event) {
+            super.childrenChanged(event);
+            performCheck();
+        }
 
         @Override
         public void childAdded(@NotNull PsiTreeChangeEvent event) {
             super.childAdded(event);
-
-            PsiElement newlyAdded = event.getChild();
-            Collection<PsiAssignmentExpression> possibleAssignments = getAssignmentExpressions(newlyAdded);
-            for (PsiAssignmentExpression assignmentExpression : possibleAssignments) {
-                processAssignmentExpression(assignmentExpression);
-            }
+            performCheck();
         }
 
-        private void processAssignmentExpression(PsiAssignmentExpression assignmentExpression) {
-            PsiElement foundEquivalent = new PsiContainsChecker(assignmentExpression).findEquivalent(expression);
-            if (foundEquivalent != null) {
-                constructorExpression = (PsiExpression) foundEquivalent;
-                if (delegate != null) {
-                    delegate.didFinishRefactoringStep(ConvertToConstructorAssignedFieldRefactoringStep.this, new Result(constructorExpression));
+        @Override
+        public void childReplaced(@NotNull PsiTreeChangeEvent event) {
+            super.childReplaced(event);
+            performCheck();
+        }
+
+        @Override
+        public void childRemoved(@NotNull PsiTreeChangeEvent event) {
+            super.childRemoved(event);
+            performCheck();
+        }
+
+        private void performCheck() {
+            Set<PsiAssignmentExpression> newAssignments = getAllConstructorFieldAssignmentExpressions();
+            newAssignments.removeAll(originalConstructorFieldAssignments);
+
+            for (PsiAssignmentExpression newAssignment : newAssignments) {
+                PsiExpression constructorExpression = (PsiExpression) new PsiContainsChecker().findEquivalent(newAssignment, expression);
+                PsiExpression lExpression = newAssignment.getLExpression();
+                if (constructorExpression != null && lExpression instanceof PsiReferenceExpression) {
+                    PsiElement lResolved = ((PsiReferenceExpression) lExpression).resolve();
+                    if (lResolved instanceof PsiField) {
+                        PsiField assignee = (PsiField) lResolved;
+
+                        if (containsReferencesToField(originalExpressionMethod, assignee)) {
+                            notifyDelegateIfNecessary(constructorExpression);
+                        }
+                    }
                 }
             }
+
         }
 
-        private Collection<PsiAssignmentExpression> getAssignmentExpressions(PsiElement newlyAdded) {
-            @SuppressWarnings("unchecked") Collection<PsiAssignmentExpression> result = PsiTreeUtil.collectElementsOfType(newlyAdded, PsiAssignmentExpression.class);
-            return result;
+        /**
+         * Checks whether the given method contains references to the given field.
+         * @param method The method to check.
+         * @param field The field for which to find references.
+         * @return True iff the method contains references to the field.
+         */
+        private boolean containsReferencesToField(PsiMethod method, PsiField field) {
+            @SuppressWarnings("unchecked")
+            Collection<PsiReferenceExpression> referencesInOriginalMethod = PsiTreeUtil.collectElementsOfType(method, PsiReferenceExpression.class);
+            for (PsiReference referenceInOriginalMethod : referencesInOriginalMethod) {
+                PsiElement resolvedReference = referenceInOriginalMethod.resolve();
+                if (resolvedReference != null && resolvedReference.equals(field) && !expression.isValid()) {
+                    return true;
+                }
+            }
+            return false;
         }
 
+        /**
+         * Notified the delegate if it exists and it hasn't been notified before.
+         * @param constructorExpression The constructor expression to pass to the result.
+         */
+        private void notifyDelegateIfNecessary(PsiExpression constructorExpression) {
+            if (delegate != null && !notified) {
+                delegate.didFinishRefactoringStep(ConvertToConstructorAssignedFieldRefactoringStep.this, new Result(constructorExpression));
+                notified = true;
+            }
+        }
     }
-
 }

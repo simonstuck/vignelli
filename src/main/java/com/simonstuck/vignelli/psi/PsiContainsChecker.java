@@ -1,44 +1,44 @@
 package com.simonstuck.vignelli.psi;
 
-import com.intellij.codeInsight.PsiEquivalenceUtil;
+import com.intellij.openapi.application.Application;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.util.Computable;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiRecursiveElementVisitor;
+import com.intellij.psi.util.PsiTreeUtil;
 
 import org.jetbrains.annotations.Nullable;
 
-public class PsiContainsChecker extends PsiRecursiveElementVisitor {
+import java.util.Collection;
 
-    private final PsiElement base;
-    private PsiElement equivalent;
-    private PsiElement originalElement;
-
-    /**
-     * Creates a new {@link com.simonstuck.vignelli.psi.PsiContainsChecker} that can check the tree from the given base.
-     * @param base The root of the tree from where to search using this checker instance.
-     */
-    public PsiContainsChecker(PsiElement base) {
-        this.base = base;
-    }
+public class PsiContainsChecker {
 
     /**
      * Checks if the Psi tree from base contains a PsiElement that is structurally equivalent to the originalElement.
+     * @param base The root of the tree from where to search using this checker instance.
      * @param originalElement The element to search for
      * @return The equivalent element if found, null otherwise.
      */
     @Nullable
-    public PsiElement findEquivalent(PsiElement originalElement) {
-        equivalent = null;
-        this.originalElement = originalElement;
-        base.accept(this);
+    public PsiElement findEquivalent(final PsiElement base, final PsiElement originalElement) {
+        Application application = ApplicationManager.getApplication();
 
-        return equivalent;
-    }
+        return application.runWriteAction(new Computable<PsiElement>() {
+            @Override
+            public PsiElement compute() {
 
-    @Override
-    public void visitElement(PsiElement element) {
-        super.visitElement(element);
-        if (PsiEquivalenceUtil.areElementsEquivalent(element, originalElement)) {
-            equivalent = element;
-        }
+                if (!base.isValid()) {
+                    return null;
+                }
+                @SuppressWarnings("unchecked")
+                Collection<PsiElement> allIndividualElements = PsiTreeUtil.collectElementsOfType(base, PsiElement.class);
+                for (PsiElement individualElement : allIndividualElements) {
+                    String elementText = individualElement.getText();
+                    if (elementText.equals(originalElement.getText())) {
+                        return individualElement;
+                    }
+                }
+                return null;
+            }
+        });
     }
 }
