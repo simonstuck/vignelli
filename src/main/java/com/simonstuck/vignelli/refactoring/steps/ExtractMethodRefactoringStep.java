@@ -1,7 +1,6 @@
 package com.simonstuck.vignelli.refactoring.steps;
 
 import com.intellij.openapi.project.Project;
-import com.intellij.psi.JavaRecursiveElementVisitor;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiCodeBlock;
 import com.intellij.psi.PsiElement;
@@ -10,7 +9,6 @@ import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.PsiReference;
-import com.intellij.psi.PsiTreeChangeAdapter;
 import com.intellij.psi.PsiTreeChangeEvent;
 import com.intellij.psi.PsiTreeChangeListener;
 import com.intellij.psi.search.searches.ReferencesSearch;
@@ -142,7 +140,7 @@ public class ExtractMethodRefactoringStep implements RefactoringStep {
      *     </li>
      * </ol>
      */
-    private class ExtractedMethodChecker extends PsiTreeChangeAdapter {
+    private class ExtractedMethodChecker extends RefactoringStepGoalChecker {
         private Set<PsiMethod> originalCallerMethods = new HashSet<PsiMethod>();
         private Set<PsiMethod> originalMethods = new HashSet<PsiMethod>();
         private PsiClass clazz;
@@ -170,36 +168,32 @@ public class ExtractMethodRefactoringStep implements RefactoringStep {
             }
         }
 
-        private Set<PsiMethod> getDefinedMethods(PsiClass clazz) {
-            final Set<PsiMethod> methods = new HashSet<PsiMethod>();
-            JavaRecursiveElementVisitor methodFinder = new JavaRecursiveElementVisitor() {
-                @Override
-                public void visitMethod(PsiMethod method) {
-                    super.visitMethod(method);
-                    methods.add(method);
-                }
-            };
-            clazz.accept(methodFinder);
-            return methods;
-        }
-
         @Override
         public void childrenChanged(@NotNull PsiTreeChangeEvent event) {
             super.childrenChanged(event);
             performCheck();
         }
 
-        private void performCheck() {
+        @Override
+        public RefactoringStepResult computeResult() {
             if (clazz == null) {
-                return;
+                return null;
             }
             Set<PsiMethod> newMethods = getDefinedMethods(clazz);
             newMethods.removeAll(originalMethods);
 
             for (PsiMethod newMethod : newMethods) {
                 if (containsElementsSimilarToThoseToExtract(newMethod) && callsHaveReplacedElementsToExtract(newMethod)) {
-                    notifyDelegateIfNecessary(newMethod, true);
+                    return new Result(newMethod, true);
                 }
+            }
+            return null;
+        }
+
+        @Override
+        protected void notifyDelegateIfNecessary(RefactoringStepResult result) {
+            if (delegate != null) {
+                delegate.didFinishRefactoringStep(ExtractMethodRefactoringStep.this, result);
             }
         }
 
@@ -244,12 +238,6 @@ public class ExtractMethodRefactoringStep implements RefactoringStep {
 
             }
             return callerCandidatesForBodyChange.isEmpty();
-        }
-
-        private void notifyDelegateIfNecessary(PsiMethod newMethod, boolean success) {
-            if (delegate != null) {
-                delegate.didFinishRefactoringStep(ExtractMethodRefactoringStep.this, new Result(newMethod, success));
-            }
         }
     }
 }

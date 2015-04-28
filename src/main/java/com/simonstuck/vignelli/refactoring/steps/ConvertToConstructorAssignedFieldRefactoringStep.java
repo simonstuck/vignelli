@@ -1,7 +1,6 @@
 package com.simonstuck.vignelli.refactoring.steps;
 
 import com.intellij.openapi.project.Project;
-import com.intellij.psi.JavaRecursiveElementVisitor;
 import com.intellij.psi.PsiAssignmentExpression;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
@@ -11,8 +10,6 @@ import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiReference;
 import com.intellij.psi.PsiReferenceExpression;
-import com.intellij.psi.PsiTreeChangeAdapter;
-import com.intellij.psi.PsiTreeChangeEvent;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.refactoring.introduceField.IntroduceFieldHandler;
 import com.simonstuck.vignelli.psi.PsiContainsChecker;
@@ -34,7 +31,7 @@ public class ConvertToConstructorAssignedFieldRefactoringStep implements Refacto
     private static final String TEMPLATE_PATH = "descriptionTemplates/convertToConstructorAssignedFieldDescription.html";
     private final Project project;
     private final PsiExpression expression;
-    private final ExpressionMovedToConstructorChecker expressionMovedToConstructorChecker;
+    private final RefactoringStepGoalChecker refactoringStepGoalChecker;
     private final PsiManager psiManager;
 
     @Nullable
@@ -50,17 +47,17 @@ public class ConvertToConstructorAssignedFieldRefactoringStep implements Refacto
         this.project = project;
         this.psiManager = psiManager;
         this.delegate = delegate;
-        expressionMovedToConstructorChecker = new ExpressionMovedToConstructorChecker();
+        refactoringStepGoalChecker = new ExpressionMovedToConstructorChecker();
     }
 
     @Override
     public void startListeningForGoal() {
-        psiManager.addPsiTreeChangeListener(expressionMovedToConstructorChecker);
+        psiManager.addPsiTreeChangeListener(refactoringStepGoalChecker);
     }
 
     @Override
     public void endListeningForGoal() {
-        psiManager.removePsiTreeChangeListener(expressionMovedToConstructorChecker);
+        psiManager.removePsiTreeChangeListener(refactoringStepGoalChecker);
     }
 
     @Override
@@ -126,13 +123,11 @@ public class ConvertToConstructorAssignedFieldRefactoringStep implements Refacto
      *     </li>
      * </ol>
      */
-    private class ExpressionMovedToConstructorChecker extends PsiTreeChangeAdapter {
+    private class ExpressionMovedToConstructorChecker extends RefactoringStepGoalChecker {
 
         private Set<PsiAssignmentExpression> originalConstructorFieldAssignments = new HashSet<PsiAssignmentExpression>();
         private final PsiClass clazz;
         private final PsiMethod originalExpressionMethod;
-        private boolean notified = false;
-
 
         public ExpressionMovedToConstructorChecker() {
             clazz = PsiTreeUtil.getParentOfType(expression, PsiClass.class);
@@ -170,45 +165,8 @@ public class ConvertToConstructorAssignedFieldRefactoringStep implements Refacto
             return result;
         }
 
-        private Set<PsiMethod> getDefinedMethods(PsiClass clazz) {
-            final Set<PsiMethod> methods = new HashSet<PsiMethod>();
-            JavaRecursiveElementVisitor methodFinder = new JavaRecursiveElementVisitor() {
-                @Override
-                public void visitMethod(PsiMethod method) {
-                    super.visitMethod(method);
-                    methods.add(method);
-                }
-            };
-            clazz.accept(methodFinder);
-            return methods;
-        }
-
-
         @Override
-        public void childrenChanged(@NotNull PsiTreeChangeEvent event) {
-            super.childrenChanged(event);
-            performCheck();
-        }
-
-        @Override
-        public void childAdded(@NotNull PsiTreeChangeEvent event) {
-            super.childAdded(event);
-            performCheck();
-        }
-
-        @Override
-        public void childReplaced(@NotNull PsiTreeChangeEvent event) {
-            super.childReplaced(event);
-            performCheck();
-        }
-
-        @Override
-        public void childRemoved(@NotNull PsiTreeChangeEvent event) {
-            super.childRemoved(event);
-            performCheck();
-        }
-
-        private void performCheck() {
+        public RefactoringStepResult computeResult() {
             Set<PsiAssignmentExpression> newAssignments = getAllConstructorFieldAssignmentExpressions();
             newAssignments.removeAll(originalConstructorFieldAssignments);
 
@@ -221,12 +179,12 @@ public class ConvertToConstructorAssignedFieldRefactoringStep implements Refacto
                         PsiField assignee = (PsiField) lResolved;
 
                         if (containsReferencesToField(originalExpressionMethod, assignee)) {
-                            notifyDelegateIfNecessary(constructorExpression);
+                            return new Result(constructorExpression);
                         }
                     }
                 }
             }
-
+            return null;
         }
 
         /**
@@ -249,12 +207,12 @@ public class ConvertToConstructorAssignedFieldRefactoringStep implements Refacto
 
         /**
          * Notified the delegate if it exists and it hasn't been notified before.
-         * @param constructorExpression The constructor expression to pass to the result.
+         * @param result The result to send to the delegate
          */
-        private void notifyDelegateIfNecessary(PsiExpression constructorExpression) {
-            if (delegate != null && !notified) {
-                delegate.didFinishRefactoringStep(ConvertToConstructorAssignedFieldRefactoringStep.this, new Result(constructorExpression));
-                notified = true;
+        @Override
+        protected void notifyDelegateIfNecessary(RefactoringStepResult result) {
+            if (delegate != null) {
+                delegate.didFinishRefactoringStep(ConvertToConstructorAssignedFieldRefactoringStep.this, result);
             }
         }
     }

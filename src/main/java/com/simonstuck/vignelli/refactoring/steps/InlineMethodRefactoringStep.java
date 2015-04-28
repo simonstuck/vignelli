@@ -10,7 +10,6 @@ import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.PsiTreeChangeAdapter;
-import com.intellij.psi.PsiTreeChangeEvent;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.refactoring.inline.InlineMethodDialog;
 import com.simonstuck.vignelli.ui.description.HTMLFileTemplate;
@@ -77,7 +76,12 @@ public class InlineMethodRefactoringStep implements RefactoringStep {
         }
     }
 
-    private class MethodRemovalWaitChecker extends PsiTreeChangeAdapter {
+    /**
+     * This checker checks if the method has been inlined yet
+     *
+     * <p>This is done by observing if all method calls to the method have been removed.</p>
+     */
+    private class MethodRemovalWaitChecker extends RefactoringStepGoalChecker {
 
         private final PsiClass clazz;
 
@@ -85,7 +89,8 @@ public class InlineMethodRefactoringStep implements RefactoringStep {
             clazz = PsiTreeUtil.getParentOfType(method, PsiClass.class);
         }
 
-        private void performCheck() {
+        @Override
+        public RefactoringStepResult computeResult() {
             final int[] callsFound = {0};
             JavaRecursiveElementVisitor visitor = new JavaRecursiveElementVisitor() {
                 @Override
@@ -99,39 +104,17 @@ public class InlineMethodRefactoringStep implements RefactoringStep {
             };
             clazz.accept(visitor);
 
-            if (callsFound[0] == 0 && delegate != null) {
-                delegate.didFinishRefactoringStep(InlineMethodRefactoringStep.this, new Result());
+            if (callsFound[0] == 0) {
+                return new Result();
             }
-
-        }
-        @Override
-        public void childRemoved(@NotNull PsiTreeChangeEvent event) {
-            super.childRemoved(event);
-            performCheck();
+            return null;
         }
 
         @Override
-        public void childrenChanged(@NotNull PsiTreeChangeEvent event) {
-            super.childrenChanged(event);
-            performCheck();
-        }
-
-        @Override
-        public void childAdded(@NotNull PsiTreeChangeEvent event) {
-            super.childAdded(event);
-            performCheck();
-        }
-
-        @Override
-        public void childMoved(@NotNull PsiTreeChangeEvent event) {
-            super.childMoved(event);
-            performCheck();
-        }
-
-        @Override
-        public void childReplaced(@NotNull PsiTreeChangeEvent event) {
-            super.childReplaced(event);
-            performCheck();
+        protected void notifyDelegateIfNecessary(RefactoringStepResult result) {
+            if (delegate != null) {
+                delegate.didFinishRefactoringStep(InlineMethodRefactoringStep.this, result);
+            }
         }
     }
 
