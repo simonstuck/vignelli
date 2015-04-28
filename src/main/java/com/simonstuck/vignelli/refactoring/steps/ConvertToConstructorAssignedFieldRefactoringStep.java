@@ -18,7 +18,6 @@ import com.simonstuck.vignelli.ui.description.Template;
 import com.simonstuck.vignelli.utils.IOUtils;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -34,14 +33,14 @@ public class ConvertToConstructorAssignedFieldRefactoringStep implements Refacto
     private final RefactoringStepGoalChecker refactoringStepGoalChecker;
     private final PsiManager psiManager;
 
-    @Nullable
+    @NotNull
     private final RefactoringStepDelegate delegate;
 
     public ConvertToConstructorAssignedFieldRefactoringStep(
             @NotNull PsiExpression expression,
             @NotNull Project project,
             @NotNull PsiManager psiManager,
-            @Nullable RefactoringStepDelegate delegate
+            @NotNull RefactoringStepDelegate delegate
     ) {
         this.expression = expression;
         this.project = project;
@@ -130,6 +129,7 @@ public class ConvertToConstructorAssignedFieldRefactoringStep implements Refacto
         private final PsiMethod originalExpressionMethod;
 
         public ExpressionMovedToConstructorChecker() {
+            super(ConvertToConstructorAssignedFieldRefactoringStep.this, delegate);
             clazz = PsiTreeUtil.getParentOfType(expression, PsiClass.class);
             setUpOriginalConstructorAssignmentExpressions();
             originalExpressionMethod = PsiTreeUtil.getParentOfType(expression, PsiMethod.class);
@@ -203,17 +203,6 @@ public class ConvertToConstructorAssignedFieldRefactoringStep implements Refacto
                 }
             }
             return false;
-        }
-
-        /**
-         * Notified the delegate if it exists and it hasn't been notified before.
-         * @param result The result to send to the delegate
-         */
-        @Override
-        protected void notifyDelegateIfNecessary(RefactoringStepResult result) {
-            if (delegate != null) {
-                delegate.didFinishRefactoringStep(ConvertToConstructorAssignedFieldRefactoringStep.this, result);
-            }
         }
     }
 }

@@ -6,6 +6,9 @@ import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiStatement;
 import com.simonstuck.vignelli.refactoring.steps.ExtractMethodRefactoringStep;
 import com.simonstuck.vignelli.refactoring.steps.MoveMethodRefactoringStep;
+import com.simonstuck.vignelli.refactoring.steps.RefactoringStep;
+import com.simonstuck.vignelli.refactoring.steps.RefactoringStepDelegate;
+import com.simonstuck.vignelli.refactoring.steps.RefactoringStepResult;
 import com.simonstuck.vignelli.refactoring.steps.RenameMethodRefactoringStep;
 import com.simonstuck.vignelli.utils.IOUtils;
 
@@ -15,7 +18,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 
-public class TrainWreckExpressionRefactoringImpl extends Refactoring {
+public class TrainWreckExpressionRefactoringImpl extends Refactoring implements RefactoringStepDelegate {
 
     private static final String EXTRACT_METHOD_DESCRIPTION_PATH = "descriptionTemplates/extractMethodTrainWreckStepDescription.html";
     private final Collection<PsiStatement> extractRegion;
@@ -35,7 +38,7 @@ public class TrainWreckExpressionRefactoringImpl extends Refactoring {
         this.project = project;
         this.file = file;
 
-        extractMethodStep = new ExtractMethodRefactoringStep(extractRegion,file,project, EXTRACT_METHOD_DESCRIPTION_PATH, PsiManager.getInstance(project), null);
+        extractMethodStep = new ExtractMethodRefactoringStep(extractRegion,file,project, EXTRACT_METHOD_DESCRIPTION_PATH, PsiManager.getInstance(project), this);
     }
 
     @Override
@@ -124,7 +127,7 @@ public class TrainWreckExpressionRefactoringImpl extends Refactoring {
 
         TrainWreckExpressionRefactoringImpl that = (TrainWreckExpressionRefactoringImpl) o;
 
-        return extractRegion.equals(that.extractRegion) && !(file != null ? !file.equals(that.file) : that.file != null) && !(project != null ? !project.equals(that.project) : that.project != null) && !(tracker != null ? !tracker.equals(that.tracker) : that.tracker != null);
+        return extractRegion.equals(that.extractRegion) && !(file != null ? !file.equals(that.file) : that.file != null) && project.equals(that.project) && !(tracker != null ? !tracker.equals(that.tracker) : that.tracker != null);
 
     }
 
@@ -132,8 +135,13 @@ public class TrainWreckExpressionRefactoringImpl extends Refactoring {
     public int hashCode() {
         int result = extractRegion.hashCode();
         result = 31 * result + (tracker != null ? tracker.hashCode() : 0);
-        result = 31 * result + (project != null ? project.hashCode() : 0);
+        result = 31 * result + (project.hashCode());
         result = 31 * result + (file != null ? file.hashCode() : 0);
         return result;
+    }
+
+    @Override
+    public void didFinishRefactoringStep(RefactoringStep step, RefactoringStepResult result) {
+
     }
 }

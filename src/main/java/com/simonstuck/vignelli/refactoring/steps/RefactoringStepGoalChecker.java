@@ -20,6 +20,15 @@ import java.util.Set;
 public abstract class RefactoringStepGoalChecker extends PsiTreeChangeAdapter {
 
     private boolean notified = false;
+    @NotNull
+    private final RefactoringStep refactoringStep;
+    @NotNull
+    private final RefactoringStepDelegate delegate;
+
+    public RefactoringStepGoalChecker(@NotNull RefactoringStep refactoringStep, @NotNull RefactoringStepDelegate delegate) {
+        this.refactoringStep = refactoringStep;
+        this.delegate = delegate;
+    }
 
     /**
      * Computes the refactoring step result for the current state.
@@ -29,16 +38,21 @@ public abstract class RefactoringStepGoalChecker extends PsiTreeChangeAdapter {
     public abstract RefactoringStepResult computeResult();
 
     /**
-     * Notifies the delegate if possible. This method is only ever called at most once.
+     * Performs the check at the current state of the AST.
      */
-    protected abstract void notifyDelegateIfNecessary(RefactoringStepResult result);
-
-    public final synchronized void performCheck() {
+    private synchronized void performCheck() {
         RefactoringStepResult result = computeResult();
         if (result != null && !notified) {
             notifyDelegateIfNecessary(result);
             notified = true;
         }
+    }
+
+    /**
+     * Notifies the delegate if possible. This method is only ever called at most once.
+     */
+    private void notifyDelegateIfNecessary(RefactoringStepResult result) {
+        delegate.didFinishRefactoringStep(refactoringStep, result);
     }
 
     /**

@@ -9,7 +9,6 @@ import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.PsiReference;
-import com.intellij.psi.PsiTreeChangeEvent;
 import com.intellij.psi.PsiTreeChangeListener;
 import com.intellij.psi.search.searches.ReferencesSearch;
 import com.intellij.psi.util.PsiTreeUtil;
@@ -51,7 +50,7 @@ public class ExtractMethodRefactoringStep implements RefactoringStep {
             @NotNull Project project,
             @NotNull String templateDescriptionPath,
             @NotNull PsiManager psiManager,
-            @Nullable RefactoringStepDelegate delegate
+            @NotNull RefactoringStepDelegate delegate
     ) {
         this.templateDescriptionPath = templateDescriptionPath;
         this.elementsToExtract = elementsToExtract;
@@ -146,6 +145,7 @@ public class ExtractMethodRefactoringStep implements RefactoringStep {
         private PsiClass clazz;
 
         public ExtractedMethodChecker() {
+            super(ExtractMethodRefactoringStep.this, delegate);
             setUpOriginalCallerMethods();
             setUpOriginalMethods();
         }
@@ -169,12 +169,6 @@ public class ExtractMethodRefactoringStep implements RefactoringStep {
         }
 
         @Override
-        public void childrenChanged(@NotNull PsiTreeChangeEvent event) {
-            super.childrenChanged(event);
-            performCheck();
-        }
-
-        @Override
         public RefactoringStepResult computeResult() {
             if (clazz == null) {
                 return null;
@@ -188,13 +182,6 @@ public class ExtractMethodRefactoringStep implements RefactoringStep {
                 }
             }
             return null;
-        }
-
-        @Override
-        protected void notifyDelegateIfNecessary(RefactoringStepResult result) {
-            if (delegate != null) {
-                delegate.didFinishRefactoringStep(ExtractMethodRefactoringStep.this, result);
-            }
         }
 
         private boolean containsElementsSimilarToThoseToExtract(PsiMethod newMethod) {

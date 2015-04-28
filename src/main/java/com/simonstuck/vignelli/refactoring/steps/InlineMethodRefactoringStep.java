@@ -31,7 +31,7 @@ public class InlineMethodRefactoringStep implements RefactoringStep {
     private final PsiManager psiManager;
     private PsiTreeChangeAdapter methodRemovalWaitChecker;
 
-    public InlineMethodRefactoringStep(@NotNull Project project, @NotNull PsiMethod method, @NotNull PsiManager psiManager, @Nullable RefactoringStepDelegate delegate) {
+    public InlineMethodRefactoringStep(@NotNull Project project, @NotNull PsiMethod method, @NotNull PsiManager psiManager, @NotNull RefactoringStepDelegate delegate) {
         this.project = project;
         this.method = method;
         this.delegate = delegate;
@@ -49,7 +49,7 @@ public class InlineMethodRefactoringStep implements RefactoringStep {
         Editor editor = FileEditorManager.getInstance(project).getSelectedTextEditor();
         InlineMethodDialog dialog = new InlineMethodDialog(project,method,null,editor,false);
         dialog.show();
-        return new Result();
+        return new Result(true);
     }
 
     @Override
@@ -70,9 +70,15 @@ public class InlineMethodRefactoringStep implements RefactoringStep {
 
     static final class Result implements RefactoringStepResult {
 
+        private final boolean success;
+
+        public Result(boolean success) {
+            this.success = success;
+        }
+
         @Override
         public boolean isSuccess() {
-            return true;
+            return success;
         }
     }
 
@@ -83,14 +89,19 @@ public class InlineMethodRefactoringStep implements RefactoringStep {
      */
     private class MethodRemovalWaitChecker extends RefactoringStepGoalChecker {
 
+        @Nullable
         private final PsiClass clazz;
 
         public MethodRemovalWaitChecker() {
+            super(InlineMethodRefactoringStep.this, delegate);
             clazz = PsiTreeUtil.getParentOfType(method, PsiClass.class);
         }
 
         @Override
         public RefactoringStepResult computeResult() {
+            if (clazz == null) {
+                return new Result(false);
+            }
             final int[] callsFound = {0};
             JavaRecursiveElementVisitor visitor = new JavaRecursiveElementVisitor() {
                 @Override
@@ -105,16 +116,9 @@ public class InlineMethodRefactoringStep implements RefactoringStep {
             clazz.accept(visitor);
 
             if (callsFound[0] == 0) {
-                return new Result();
+                return new Result(true);
             }
             return null;
-        }
-
-        @Override
-        protected void notifyDelegateIfNecessary(RefactoringStepResult result) {
-            if (delegate != null) {
-                delegate.didFinishRefactoringStep(InlineMethodRefactoringStep.this, result);
-            }
         }
     }
 
