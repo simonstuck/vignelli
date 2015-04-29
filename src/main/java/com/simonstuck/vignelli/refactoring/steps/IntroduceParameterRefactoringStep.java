@@ -10,26 +10,24 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiMethod;
-import com.intellij.psi.PsiMethodCallExpression;
-import com.intellij.psi.PsiMethodReferenceExpression;
 import com.intellij.psi.PsiParameter;
 import com.intellij.psi.PsiParameterList;
-import com.intellij.psi.PsiReference;
-import com.intellij.psi.PsiTreeChangeAdapter;
-import com.intellij.psi.PsiTreeChangeEvent;
-import com.intellij.psi.search.searches.ReferencesSearch;
-import com.intellij.psi.util.PsiClassUtil;
+import com.intellij.psi.PsiReferenceExpression;
 import com.intellij.psi.util.PsiTreeUtil;
-import com.intellij.psi.util.PsiTypesUtil;
 import com.intellij.refactoring.introduceParameter.IntroduceParameterHandler;
-import com.simonstuck.vignelli.psi.PsiContainsChecker;
 import com.simonstuck.vignelli.ui.description.HTMLFileTemplate;
 import com.simonstuck.vignelli.ui.description.Template;
 import com.simonstuck.vignelli.utils.IOUtils;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class IntroduceParameterRefactoringStep implements RefactoringStep {
 
@@ -39,19 +37,17 @@ public class IntroduceParameterRefactoringStep implements RefactoringStep {
     private final PsiFile file;
     private final PsiElement element;
     private final PsiManager psiManager;
-    private final RefactoringStepDelegate delegate;
     private Editor editor;
-    private final ParameterIntroducedListener parameterIntroducedListener;
+    private final ParameterIntroducedChecker parameterIntroducedListener;
 
     public IntroduceParameterRefactoringStep(Project project, PsiFile file, PsiElement element, String descriptionPath, PsiManager psiManager, RefactoringStepDelegate delegate) {
         this.project = project;
         this.file = file;
         this.element = element;
         this.psiManager = psiManager;
-        this.delegate = delegate;
         editor = FileEditorManager.getInstance(project).getSelectedTextEditor();
         this.descriptionPath = descriptionPath;
-        parameterIntroducedListener = new ParameterIntroducedListener();
+        parameterIntroducedListener = new ParameterIntroducedChecker(this,delegate);
     }
 
     @Override
@@ -72,7 +68,7 @@ public class IntroduceParameterRefactoringStep implements RefactoringStep {
         handler.invoke(project, editor, file, null);
 
         focusOnEditorForTyping();
-        return new Result();
+        return new Result(true);
     }
 
     @Override
@@ -112,24 +108,68 @@ public class IntroduceParameterRefactoringStep implements RefactoringStep {
     }
 
     public static final class Result implements RefactoringStepResult {
+        private final boolean success;
+
+        public Result(boolean success) {
+            this.success = success;
+        }
+
         @Override
         public boolean isSuccess() {
-            return true;
+            return success;
         }
     }
 
-    private class ParameterIntroducedListener extends PsiTreeChangeAdapter {
-        @Override
-        public void childAdded(PsiTreeChangeEvent event) {
-            super.childAdded(event);
-            PsiParameterList parameterList = PsiTreeUtil.getParentOfType(event.getChild(), PsiParameterList.class);
+    /**
+     * This checker checks whether a parameter has been introduced to the method for the element.
+     *
+     * <p>This works in the following way:</p>
+     * <ol></ol>
+     */
+    private class ParameterIntroducedChecker extends RefactoringStepGoalChecker {
 
-            if (event.getChild() instanceof PsiParameter && parameterList != null) {
-                PsiMethod correspondingMethod = PsiTreeUtil.getParentOfType(event.getChild(), PsiMethod.class);
-                if (correspondingMethod != null && correspondingMethod.getParameterList() == parameterList && delegate != null) {
-                    delegate.didFinishRefactoringStep(IntroduceParameterRefactoringStep.this, new Result());
+        @Nullable
+        private final PsiMethod method;
+        private final Set<PsiParameter> originalParameters = new HashSet<PsiParameter>();
+        private final PsiElement elementParent;
+
+        public ParameterIntroducedChecker(@NotNull RefactoringStep refactoringStep, @NotNull RefactoringStepDelegate delegate) {
+            super(refactoringStep, delegate);
+            method = PsiTreeUtil.getParentOfType(element, PsiMethod.class);
+            elementParent = element.getParent();
+
+            originalParameters.addAll(getParameters(method));
+        }
+
+        private Set<PsiParameter> getParameters(@Nullable PsiMethod method) {
+            Set<PsiParameter> parameters = new HashSet<PsiParameter>();
+            if (method != null) {
+                PsiParameterList parameterList = method.getParameterList();
+                parameters.addAll(Arrays.asList(parameterList.getParameters()));
+            }
+            return parameters;
+        }
+
+        @Override
+        public RefactoringStepResult computeResult() {
+            if (isAnyNullOrInvalid(method, elementParent)) {
+                return new Result(false);
+            }
+
+            Set<PsiParameter> newParameters = getParameters(method);
+            newParameters.removeAll(originalParameters);
+
+            for (PsiParameter newParameter : newParameters) {
+                @SuppressWarnings("unchecked")
+                Collection<PsiReferenceExpression> allReferences = PsiTreeUtil.collectElementsOfType(method, PsiReferenceExpression.class);
+                for (PsiReferenceExpression referenceExpression : allReferences) {
+                    if (referenceExpression.resolve() == newParameter && PsiTreeUtil.isAncestor(elementParent, referenceExpression, false)) {
+                        return new Result(true);
+                    }
                 }
             }
+
+            return null;
         }
     }
 }

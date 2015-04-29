@@ -20,7 +20,6 @@ import com.simonstuck.vignelli.ui.description.Template;
 import com.simonstuck.vignelli.utils.IOUtils;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -37,7 +36,7 @@ public class ExtractMethodRefactoringStep implements RefactoringStep {
 
     @NotNull
     private final PsiManager psiManager;
-    @Nullable
+    @NotNull
     private final RefactoringStepDelegate delegate;
     private final Collection<? extends PsiElement> elementsToExtract;
     private PsiFile file;

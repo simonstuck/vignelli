@@ -2,6 +2,7 @@ package com.simonstuck.vignelli.refactoring.steps;
 
 import com.intellij.psi.JavaRecursiveElementVisitor;
 import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiTreeChangeAdapter;
 import com.intellij.psi.PsiTreeChangeEvent;
@@ -33,7 +34,7 @@ public abstract class RefactoringStepGoalChecker extends PsiTreeChangeAdapter {
     /**
      * Computes the refactoring step result for the current state.
      * <p>If the current state is not the goal state, this method should return null.</p>
-     * @return result instance if the goal has been reached (sucessful) or cannot be reached (unsuccessful), otherwise null if no conclusion has been reached.
+     * @return result instance if the goal has been reached (successful) or cannot be reached (unsuccessful), otherwise null if no conclusion has been reached.
      */
     public abstract RefactoringStepResult computeResult();
 
@@ -53,6 +54,21 @@ public abstract class RefactoringStepGoalChecker extends PsiTreeChangeAdapter {
      */
     private void notifyDelegateIfNecessary(RefactoringStepResult result) {
         delegate.didFinishRefactoringStep(refactoringStep, result);
+    }
+
+
+    /**
+     * Checks if any of the given {@link com.intellij.psi.PsiElement}s are null or invalid.
+     * @param elements The elements to check.
+     * @return True iff any fo the elements are null or invalid.
+     */
+    protected boolean isAnyNullOrInvalid(PsiElement... elements) {
+        for (PsiElement element : elements) {
+            if (element == null || !element.isValid()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -102,5 +118,4 @@ public abstract class RefactoringStepGoalChecker extends PsiTreeChangeAdapter {
         super.childMoved(event);
         performCheck();
     }
-
 }
