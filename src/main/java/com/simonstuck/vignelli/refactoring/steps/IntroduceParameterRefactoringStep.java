@@ -31,7 +31,7 @@ import java.util.Set;
 
 public class IntroduceParameterRefactoringStep implements RefactoringStep {
 
-    private static final String INTRODUCE_PARAMETER_STEP_NAME = "Introduce Parameter";
+    private static final String STEP_NAME = "Introduce Parameter";
     private final String descriptionPath;
     private Project project;
     private final PsiFile file;
@@ -73,7 +73,7 @@ public class IntroduceParameterRefactoringStep implements RefactoringStep {
 
     @Override
     public void describeStep(Map<String, Object> templateValues) {
-        templateValues.put(STEP_NAME_TEMPLATE_KEY, INTRODUCE_PARAMETER_STEP_NAME);
+        templateValues.put(STEP_NAME_TEMPLATE_KEY, STEP_NAME);
         templateValues.put(STEP_DESCRIPTION_TEMPLATE_KEY, getDescription());
     }
 
@@ -124,7 +124,19 @@ public class IntroduceParameterRefactoringStep implements RefactoringStep {
      * This checker checks whether a parameter has been introduced to the method for the element.
      *
      * <p>This works in the following way:</p>
-     * <ol></ol>
+     * <ol>
+     *     <li>Save the parent of the original element for which to introduce the parameter</li>
+     *     <li>Save the original parameters</li>
+     *     <li>Save the method in which to introduce the parameter</li>
+     *     <li>
+     *         <span>For every change:</span>
+     *         <ol>
+     *             <li>Get the new parameters (current - original)</li>
+     *             <li>For any new parameter, check all of its references in the method body</li>
+     *             <li>If any of the reference's ancestors contains the original element's parent we have succeeded.</li>
+     *         </ol>
+     *     </li>
+     * </ol>
      */
     private class ParameterIntroducedChecker extends RefactoringStepGoalChecker {
 
@@ -141,6 +153,11 @@ public class IntroduceParameterRefactoringStep implements RefactoringStep {
             originalParameters.addAll(getParameters(method));
         }
 
+        /**
+         * Retrieves all parameters for a given method
+         * @param method The method for which to find all parameters
+         * @return A new set with all the methods parameters.
+         */
         private Set<PsiParameter> getParameters(@Nullable PsiMethod method) {
             Set<PsiParameter> parameters = new HashSet<PsiParameter>();
             if (method != null) {
