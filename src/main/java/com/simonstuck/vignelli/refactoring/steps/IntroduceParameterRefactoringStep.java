@@ -1,9 +1,11 @@
 package com.simonstuck.vignelli.refactoring.steps;
 
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.ActionCallback;
+import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.wm.IdeFocusManager;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
@@ -138,7 +140,7 @@ public class IntroduceParameterRefactoringStep implements RefactoringStep {
      *     </li>
      * </ol>
      */
-    private class ParameterIntroducedChecker extends RefactoringStepGoalChecker {
+    public class ParameterIntroducedChecker extends RefactoringStepGoalChecker {
 
         @Nullable
         private final PsiMethod method;

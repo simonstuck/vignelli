@@ -71,7 +71,9 @@ public class DirectSingletonUseRefactoringImpl extends Refactoring implements Re
     @Override
     public void fillTemplateValues(Map<String, Object> templateValues) {
         templateValues.put(HAS_NEXT_STEP_TEMPLATE_KEY, hasNextStep());
-        currentRefactoringStep.describeStep(templateValues);
+        if (currentRefactoringStep != null) {
+            currentRefactoringStep.describeStep(templateValues);
+        }
     }
 
     @Override
@@ -80,8 +82,11 @@ public class DirectSingletonUseRefactoringImpl extends Refactoring implements Re
     }
 
     @Override
-    public void complete() {
+    public synchronized void complete() {
         tracker.remove(this);
+        if (currentRefactoringStep != null) {
+            currentRefactoringStep.endListeningForGoal();
+        }
     }
 
     @Override
@@ -91,7 +96,7 @@ public class DirectSingletonUseRefactoringImpl extends Refactoring implements Re
 
 
     @Override
-    public void didFinishRefactoringStep(RefactoringStep step, RefactoringStepResult result) {
+    public synchronized void didFinishRefactoringStep(RefactoringStep step, RefactoringStepResult result) {
         LOG.info("didFinishRefactoringStep!");
         currentRefactoringStep.endListeningForGoal();
 
@@ -125,7 +130,7 @@ public class DirectSingletonUseRefactoringImpl extends Refactoring implements Re
     }
 
     private ExtractInterfaceRefactoringStep createExtractInterfaceRefactoringStep() {
-        return new ExtractInterfaceRefactoringStep(project, singletonClass, currentClass);
+        return new ExtractInterfaceRefactoringStep(project, PsiManager.getInstance(project), singletonClass, currentClass, this);
     }
 
     private IntroduceParameterRefactoringStep createIntroduceParameterRefactoringStep() {

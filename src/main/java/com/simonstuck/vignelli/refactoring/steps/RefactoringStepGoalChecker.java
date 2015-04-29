@@ -1,8 +1,10 @@
 package com.simonstuck.vignelli.refactoring.steps;
 
+import com.intellij.psi.FileViewProvider;
 import com.intellij.psi.JavaRecursiveElementVisitor;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiTreeChangeAdapter;
 import com.intellij.psi.PsiTreeChangeEvent;
@@ -65,6 +67,26 @@ public abstract class RefactoringStepGoalChecker extends PsiTreeChangeAdapter {
     protected boolean isAnyNullOrInvalid(PsiElement... elements) {
         for (PsiElement element : elements) {
             if (element == null || !element.isValid()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Checks if any of the files is currently in an invalid state.
+     *
+     * <p>Note that this method is necessary because there appears to be an IntelliJ bug that causes files to have two contents at once.</p>
+     * @see {https://devnet.jetbrains.com/message/5541319}
+     *
+     * @param files The files to check
+     * @return true iff any of the files are invalid, false otherwise.
+     */
+    protected boolean isAnyOfTheseFilesInvalidHack(PsiFile... files) {
+        for (PsiFile file : files) {
+            FileViewProvider viewProvider = file.getViewProvider();
+            CharSequence contents = viewProvider.getContents();
+            if (contents.length() != file.getTextLength()) {
                 return true;
             }
         }
