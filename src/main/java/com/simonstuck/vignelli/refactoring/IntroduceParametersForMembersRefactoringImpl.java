@@ -1,11 +1,11 @@
 package com.simonstuck.vignelli.refactoring;
 
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiReferenceExpression;
 import com.intellij.psi.util.PsiTreeUtil;
@@ -80,7 +80,7 @@ public class IntroduceParametersForMembersRefactoringImpl extends Refactoring {
     private void prepareNextStep() {
         if (memberIterator.hasNext()) {
             PsiElement next = memberIterator.next();
-            introduceParameterStep = new IntroduceParameterRefactoringStep(project, file, next, STEP_DESCRIPTION_PATH, PsiManager.getInstance(project), null);
+            introduceParameterStep = new IntroduceParameterRefactoringStep(project, file, next, STEP_DESCRIPTION_PATH, ApplicationManager.getApplication(), null);
         }
     }
 

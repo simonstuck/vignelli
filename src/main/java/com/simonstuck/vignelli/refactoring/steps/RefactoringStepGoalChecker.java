@@ -1,16 +1,14 @@
 package com.simonstuck.vignelli.refactoring.steps;
 
-import com.intellij.psi.FileViewProvider;
-import com.intellij.psi.JavaRecursiveElementVisitor;
+import com.intellij.openapi.application.ApplicationListener;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiMethod;
-import com.intellij.psi.PsiTreeChangeAdapter;
-import com.intellij.psi.PsiTreeChangeEvent;
+import com.intellij.psi.util.PsiTreeUtil;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -20,7 +18,7 @@ import java.util.Set;
  * <p>Goal checkers find a pattern in the code as it currently stands and once they have found it
  * report a result to a delegate.</p>
  */
-public abstract class RefactoringStepGoalChecker extends PsiTreeChangeAdapter {
+public abstract class RefactoringStepGoalChecker implements ApplicationListener {
 
     private boolean notified = false;
     @NotNull
@@ -74,70 +72,38 @@ public abstract class RefactoringStepGoalChecker extends PsiTreeChangeAdapter {
     }
 
     /**
-     * Checks if any of the files is currently in an invalid state.
-     *
-     * <p>Note that this method is necessary because there appears to be an IntelliJ bug that causes files to have two contents at once.</p>
-     * @see {https://devnet.jetbrains.com/message/5541319}
-     *
-     * @param files The files to check
-     * @return true iff any of the files are invalid, false otherwise.
-     */
-    protected boolean isAnyOfTheseFilesInvalidHack(PsiFile... files) {
-        for (PsiFile file : files) {
-            FileViewProvider viewProvider = file.getViewProvider();
-            CharSequence contents = viewProvider.getContents();
-            if (contents.length() != file.getTextLength()) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
      * Helper method that retrieves all defined methods in the given class.
      * @param clazz The class for which to compute methods.
      * @return The set of defined methods in the given class.
      */
     protected Set<PsiMethod> getDefinedMethods(PsiClass clazz) {
-        final Set<PsiMethod> methods = new HashSet<PsiMethod>();
-        JavaRecursiveElementVisitor methodFinder = new JavaRecursiveElementVisitor() {
-            @Override
-            public void visitMethod(PsiMethod method) {
-                super.visitMethod(method);
-                methods.add(method);
-            }
-        };
-        clazz.accept(methodFinder);
-        return methods;
+        @SuppressWarnings("unchecked")
+        Collection<PsiMethod> methods = PsiTreeUtil.collectElementsOfType(clazz, PsiMethod.class);
+        return new HashSet<PsiMethod>(methods);
     }
 
     @Override
-    public void childrenChanged(@NotNull PsiTreeChangeEvent event) {
-        super.childrenChanged(event);
+    public void writeActionFinished(Object action) {
         performCheck();
     }
 
     @Override
-    public void childAdded(@NotNull PsiTreeChangeEvent event) {
-        super.childAdded(event);
-        performCheck();
+    public boolean canExitApplication() {
+        return false;
     }
 
     @Override
-    public void childReplaced(@NotNull PsiTreeChangeEvent event) {
-        super.childReplaced(event);
-        performCheck();
+    public void applicationExiting() {
+
     }
 
     @Override
-    public void childRemoved(@NotNull PsiTreeChangeEvent event) {
-        super.childRemoved(event);
-        performCheck();
+    public void beforeWriteActionStart(Object action) {
+
     }
 
     @Override
-    public void childMoved(@NotNull PsiTreeChangeEvent event) {
-        super.childMoved(event);
-        performCheck();
+    public void writeActionStarted(Object action) {
+
     }
 }

@@ -1,16 +1,14 @@
 package com.simonstuck.vignelli.refactoring.steps;
 
-import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.Application;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.ActionCallback;
-import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.wm.IdeFocusManager;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiParameter;
 import com.intellij.psi.PsiParameterList;
@@ -38,15 +36,15 @@ public class IntroduceParameterRefactoringStep implements RefactoringStep {
     private Project project;
     private final PsiFile file;
     private final PsiElement element;
-    private final PsiManager psiManager;
+    private final Application application;
     private Editor editor;
     private final ParameterIntroducedChecker parameterIntroducedListener;
 
-    public IntroduceParameterRefactoringStep(Project project, PsiFile file, PsiElement element, String descriptionPath, PsiManager psiManager, RefactoringStepDelegate delegate) {
+    public IntroduceParameterRefactoringStep(Project project, PsiFile file, PsiElement element, String descriptionPath, Application application, RefactoringStepDelegate delegate) {
         this.project = project;
         this.file = file;
         this.element = element;
-        this.psiManager = psiManager;
+        this.application = application;
         editor = FileEditorManager.getInstance(project).getSelectedTextEditor();
         this.descriptionPath = descriptionPath;
         parameterIntroducedListener = new ParameterIntroducedChecker(this,delegate);
@@ -54,12 +52,12 @@ public class IntroduceParameterRefactoringStep implements RefactoringStep {
 
     @Override
     public void startListeningForGoal() {
-        psiManager.addPsiTreeChangeListener(parameterIntroducedListener);
+        application.addApplicationListener(parameterIntroducedListener);
     }
 
     @Override
     public void endListeningForGoal() {
-        psiManager.removePsiTreeChangeListener(parameterIntroducedListener);
+        application.removeApplicationListener(parameterIntroducedListener);
     }
 
     @Override

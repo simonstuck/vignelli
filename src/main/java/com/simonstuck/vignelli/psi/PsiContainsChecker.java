@@ -1,8 +1,5 @@
 package com.simonstuck.vignelli.psi;
 
-import com.intellij.openapi.application.Application;
-import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.util.Computable;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
 
@@ -20,25 +17,17 @@ public class PsiContainsChecker {
      */
     @Nullable
     public PsiElement findEquivalent(final PsiElement base, final PsiElement originalElement) {
-        Application application = ApplicationManager.getApplication();
-
-        return application.runWriteAction(new Computable<PsiElement>() {
-            @Override
-            public PsiElement compute() {
-
-                if (!base.isValid()) {
-                    return null;
-                }
-                @SuppressWarnings("unchecked")
-                Collection<PsiElement> allIndividualElements = PsiTreeUtil.collectElementsOfType(base, PsiElement.class);
-                for (PsiElement individualElement : allIndividualElements) {
-                    String elementText = individualElement.getText();
-                    if (elementText.equals(originalElement.getText())) {
-                        return individualElement;
-                    }
-                }
-                return null;
+        if (!base.isValid()) {
+            return null;
+        }
+        @SuppressWarnings("unchecked")
+        Collection<PsiElement> allIndividualElements = PsiTreeUtil.collectElementsOfType(base, PsiElement.class);
+        for (PsiElement individualElement : allIndividualElements) {
+            String elementText = individualElement.getText();
+            if (elementText.equals(originalElement.getText())) {
+                return individualElement;
             }
-        });
+        }
+        return null;
     }
 }

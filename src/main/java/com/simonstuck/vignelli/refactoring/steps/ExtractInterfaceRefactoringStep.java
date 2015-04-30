@@ -1,24 +1,18 @@
 package com.simonstuck.vignelli.refactoring.steps;
 
+import com.intellij.openapi.application.Application;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.Computable;
-import com.intellij.psi.FileViewProvider;
 import com.intellij.psi.PsiClass;
-import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiParameter;
 import com.intellij.psi.PsiParameterList;
 import com.intellij.psi.PsiReference;
 import com.intellij.psi.PsiTypeElement;
-import com.intellij.psi.impl.search.NonPhysicalReferenceSearcher;
 import com.intellij.psi.search.LocalSearchScope;
 import com.intellij.psi.search.searches.ReferencesSearch;
 import com.intellij.psi.util.PsiTypesUtil;
 import com.intellij.refactoring.extractInterface.ExtractInterfaceHandler;
-import com.intellij.util.Processor;
 import com.intellij.util.Query;
 import com.simonstuck.vignelli.ui.description.HTMLFileTemplate;
 import com.simonstuck.vignelli.ui.description.Template;
@@ -28,7 +22,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -44,7 +37,7 @@ public class ExtractInterfaceRefactoringStep implements RefactoringStep {
     private final PsiClass clazz;
 
     @NotNull
-    private final PsiManager psiManager;
+    private final Application application;
 
     @NotNull
     private final PsiClass currentClass;
@@ -52,10 +45,10 @@ public class ExtractInterfaceRefactoringStep implements RefactoringStep {
     @NotNull
     private InterfaceExtractedAndUsedChecker goalChecker;
 
-    public ExtractInterfaceRefactoringStep(@NotNull Project project, @NotNull PsiManager psiManager, @NotNull PsiClass clazz, @NotNull PsiClass currentClass, @NotNull RefactoringStepDelegate delegate) {
+    public ExtractInterfaceRefactoringStep(@NotNull Project project, @NotNull Application application, @NotNull PsiClass clazz, @NotNull PsiClass currentClass, @NotNull RefactoringStepDelegate delegate) {
         this.project = project;
         this.clazz = clazz;
-        this.psiManager = psiManager;
+        this.application = application;
         this.currentClass = currentClass;
 
         goalChecker = new InterfaceExtractedAndUsedChecker(this, delegate);
@@ -63,12 +56,12 @@ public class ExtractInterfaceRefactoringStep implements RefactoringStep {
 
     @Override
     public void startListeningForGoal() {
-        psiManager.addPsiTreeChangeListener(goalChecker);
+        application.addApplicationListener(goalChecker);
     }
 
     @Override
     public void endListeningForGoal() {
-        psiManager.removePsiTreeChangeListener(goalChecker);
+        application.removeApplicationListener(goalChecker);
     }
 
     @Override
@@ -129,12 +122,6 @@ public class ExtractInterfaceRefactoringStep implements RefactoringStep {
         }
 
         private boolean currentClassContainsReferencesToClassUpForInterfaceExtraction() {
-
-            //HACK: This appears to be an IntelliJ issue: https://devnet.jetbrains.com/message/5541319
-            if (isAnyOfTheseFilesInvalidHack(clazz.getContainingFile(),currentClass.getContainingFile())) {
-                return true;
-            }
-
             Query<PsiReference> search = ReferencesSearch.search(clazz, new LocalSearchScope(currentClass.getScope()));
             Collection<PsiReference> references = search.findAll();
 

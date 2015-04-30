@@ -1,15 +1,14 @@
 package com.simonstuck.vignelli.refactoring.steps;
 
 
+import com.intellij.openapi.application.Application;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.JavaRecursiveElementVisitor;
 import com.intellij.psi.PsiClass;
-import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiMethodCallExpression;
-import com.intellij.psi.PsiTreeChangeAdapter;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.refactoring.inline.InlineMethodDialog;
 import com.simonstuck.vignelli.ui.description.HTMLFileTemplate;
@@ -28,20 +27,20 @@ public class InlineMethodRefactoringStep implements RefactoringStep {
     private final Project project;
     private final PsiMethod method;
     private final RefactoringStepDelegate delegate;
-    private final PsiManager psiManager;
-    private PsiTreeChangeAdapter methodRemovalWaitChecker;
+    private final Application application;
+    private MethodRemovalWaitChecker methodRemovalWaitChecker;
 
-    public InlineMethodRefactoringStep(@NotNull Project project, @NotNull PsiMethod method, @NotNull PsiManager psiManager, @NotNull RefactoringStepDelegate delegate) {
+    public InlineMethodRefactoringStep(@NotNull Project project, @NotNull PsiMethod method, @NotNull Application application, @NotNull RefactoringStepDelegate delegate) {
         this.project = project;
         this.method = method;
         this.delegate = delegate;
-        this.psiManager = psiManager;
+        this.application = application;
     }
 
     @Override
     public void startListeningForGoal() {
         methodRemovalWaitChecker = new MethodRemovalWaitChecker();
-        psiManager.addPsiTreeChangeListener(methodRemovalWaitChecker);
+        application.addApplicationListener(methodRemovalWaitChecker);
     }
 
     @Override
@@ -54,7 +53,7 @@ public class InlineMethodRefactoringStep implements RefactoringStep {
 
     @Override
     public void endListeningForGoal() {
-        psiManager.removePsiTreeChangeListener(methodRemovalWaitChecker);
+        application.removeApplicationListener(methodRemovalWaitChecker);
     }
 
     @Override

@@ -1,15 +1,14 @@
 package com.simonstuck.vignelli.refactoring.steps;
 
+import com.intellij.openapi.application.Application;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiCodeBlock;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.PsiReference;
-import com.intellij.psi.PsiTreeChangeListener;
 import com.intellij.psi.search.searches.ReferencesSearch;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.refactoring.extractMethod.ExtractMethodHandler;
@@ -35,39 +34,39 @@ public class ExtractMethodRefactoringStep implements RefactoringStep {
     private final Project project;
 
     @NotNull
-    private final PsiManager psiManager;
+    private final Application application;
     @NotNull
     private final RefactoringStepDelegate delegate;
     private final Collection<? extends PsiElement> elementsToExtract;
     private PsiFile file;
     private String templateDescriptionPath;
-    private final PsiTreeChangeListener extractedMethodChecker;
+    private final ExtractedMethodChecker extractedMethodChecker;
 
     public ExtractMethodRefactoringStep(
             @NotNull Collection<? extends PsiElement> elementsToExtract,
             @NotNull PsiFile file,
             @NotNull Project project,
             @NotNull String templateDescriptionPath,
-            @NotNull PsiManager psiManager,
+            @NotNull Application application,
             @NotNull RefactoringStepDelegate delegate
     ) {
         this.templateDescriptionPath = templateDescriptionPath;
         this.elementsToExtract = elementsToExtract;
         this.file = file;
         this.project = project;
-        this.psiManager = psiManager;
+        this.application = application;
         this.delegate = delegate;
         extractedMethodChecker = new ExtractedMethodChecker();
     }
 
     @Override
     public void startListeningForGoal() {
-        psiManager.addPsiTreeChangeListener(extractedMethodChecker);
+        application.addApplicationListener(extractedMethodChecker);
     }
 
     @Override
     public void endListeningForGoal() {
-        psiManager.removePsiTreeChangeListener(extractedMethodChecker);
+        application.removeApplicationListener(extractedMethodChecker);
     }
 
     @Override

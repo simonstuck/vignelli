@@ -1,8 +1,8 @@
 package com.simonstuck.vignelli.refactoring;
 
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiStatement;
 import com.simonstuck.vignelli.refactoring.steps.ExtractMethodRefactoringStep;
 import com.simonstuck.vignelli.refactoring.steps.MoveMethodRefactoringStep;
@@ -38,7 +38,7 @@ public class TrainWreckExpressionRefactoringImpl extends Refactoring implements 
         this.project = project;
         this.file = file;
 
-        extractMethodStep = new ExtractMethodRefactoringStep(extractRegion,file,project, EXTRACT_METHOD_DESCRIPTION_PATH, PsiManager.getInstance(project), this);
+        extractMethodStep = new ExtractMethodRefactoringStep(extractRegion,file,project, EXTRACT_METHOD_DESCRIPTION_PATH, ApplicationManager.getApplication(), this);
     }
 
     @Override

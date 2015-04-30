@@ -1,12 +1,12 @@
 package com.simonstuck.vignelli.refactoring.steps;
 
+import com.intellij.openapi.application.Application;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiAssignmentExpression;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiExpression;
 import com.intellij.psi.PsiField;
-import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiReference;
 import com.intellij.psi.PsiReferenceExpression;
@@ -31,7 +31,7 @@ public class ConvertToConstructorAssignedFieldRefactoringStep implements Refacto
     private final Project project;
     private final PsiExpression expression;
     private final RefactoringStepGoalChecker refactoringStepGoalChecker;
-    private final PsiManager psiManager;
+    private final Application application;
 
     @NotNull
     private final RefactoringStepDelegate delegate;
@@ -39,24 +39,24 @@ public class ConvertToConstructorAssignedFieldRefactoringStep implements Refacto
     public ConvertToConstructorAssignedFieldRefactoringStep(
             @NotNull PsiExpression expression,
             @NotNull Project project,
-            @NotNull PsiManager psiManager,
+            @NotNull Application application,
             @NotNull RefactoringStepDelegate delegate
     ) {
         this.expression = expression;
         this.project = project;
-        this.psiManager = psiManager;
+        this.application = application;
         this.delegate = delegate;
         refactoringStepGoalChecker = new ExpressionMovedToConstructorChecker();
     }
 
     @Override
     public void startListeningForGoal() {
-        psiManager.addPsiTreeChangeListener(refactoringStepGoalChecker);
+        application.addApplicationListener(refactoringStepGoalChecker);
     }
 
     @Override
     public void endListeningForGoal() {
-        psiManager.removePsiTreeChangeListener(refactoringStepGoalChecker);
+        application.removeApplicationListener(refactoringStepGoalChecker);
     }
 
     @Override
