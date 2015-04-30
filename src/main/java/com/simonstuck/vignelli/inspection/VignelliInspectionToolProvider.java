@@ -6,6 +6,7 @@ public class VignelliInspectionToolProvider implements InspectionToolProvider {
     @Override
     public Class[] getInspectionClasses() {
         return new Class[] {
+            LongMethodInspectionTool.class,
             MethodChainingInspectionTool.class,
             DirectSingletonUseInspectionTool.class
         };
