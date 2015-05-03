@@ -10,6 +10,6 @@ public class MethodChainDifferentAdjacentTypesPredicate implements Predicate<Met
     public boolean apply(MethodChainIdentification methodChainIdentification) {
         PsiType finalCallType = methodChainIdentification.getMethodCallType();
         Optional<MethodChainIdentification> qualifier = methodChainIdentification.getMethodCallQualifier();
-        return !qualifier.isPresent() || qualifier.get().getMethodCallType() != finalCallType;
+        return !qualifier.isPresent() || !qualifier.get().getMethodCallType().equals(finalCallType);
     }
 }

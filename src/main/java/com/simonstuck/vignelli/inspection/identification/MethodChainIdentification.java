@@ -80,4 +80,31 @@ public class MethodChainIdentification implements ProblemDescriptorProvider {
         MethodChainIdentification other = (MethodChainIdentification) obj;
         return other.finalCall.equals(finalCall);
     }
+
+    /**
+     * Calculates how many times the type changes in the method call chain.
+     * @return The number of times the type in the method call chain changes.
+     */
+    public int calculateTypeDifference() {
+        int typeDifference = -1;
+        PsiType currentType = null;
+
+        PsiExpression currentExpression = finalCall;
+
+        while (currentExpression != null) {
+            PsiType newType = currentExpression.getType();
+            if (currentType != null ? !currentType.equals(newType) : newType != null) {
+                typeDifference++;
+            }
+            currentType = newType;
+
+            if (currentExpression instanceof PsiMethodCallExpression) {
+                PsiReferenceExpression methodExpression = ((PsiMethodCallExpression) currentExpression).getMethodExpression();
+                currentExpression = methodExpression.getQualifierExpression();
+            } else {
+                currentExpression = null;
+            }
+        }
+        return typeDifference;
+    }
 }

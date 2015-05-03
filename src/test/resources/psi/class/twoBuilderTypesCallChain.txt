@@ -1,7 +1,7 @@
 BuilderA a;
 
 void test() {
-    a.attrA().attrB().bb().attrA().attrB().attrC();
+    a.attrA().attrB().bb().attrA().attrB().cc();
 }
 
 class BuilderA {
@@ -27,7 +27,7 @@ class BuilderB {
         return this;
     }
 
-    BuilderC cc {
+    BuilderC cc() {
         return new BuilderC();
     }
 }

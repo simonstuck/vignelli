@@ -3,6 +3,7 @@ package com.simonstuck.vignelli.inspection.identification;
 import com.google.common.base.Predicate;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiMethodCallExpression;
+import com.intellij.psi.PsiType;
 import com.simonstuck.vignelli.inspection.identification.predicates.MethodChainDifferentAdjacentTypesPredicate;
 import com.simonstuck.vignelli.inspection.identification.predicates.MethodChainMultipleCallsPredicate;
 
@@ -15,6 +16,8 @@ import java.util.Set;
 
 public class MethodChainIdentificationEngine {
 
+    public static final int TYPE_DIFFERENCE_THRESHOLD = 1;
+
     /**
      * Identifies all method chains in the given {@link PsiElement}.
      * @param element The element in which to search for method chains.
@@ -26,9 +29,12 @@ public class MethodChainIdentificationEngine {
 
         Set<MethodChainIdentification> result = new HashSet<MethodChainIdentification>();
         for (MethodChainIdentification candidate : candidates) {
-            Predicate<MethodChainIdentification> differentAdjacentTypesPredicate = new MethodChainDifferentAdjacentTypesPredicate();
             Predicate<MethodChainIdentification> multipleCallsPredicate = new MethodChainMultipleCallsPredicate();
-            if (!toIgnore.contains(candidate) && differentAdjacentTypesPredicate.apply(candidate) && multipleCallsPredicate.apply(candidate)) {
+            int typeDifference = candidate.calculateTypeDifference();
+            if (!toIgnore.contains(candidate)
+                    && multipleCallsPredicate.apply(candidate)
+                    && typeDifference > TYPE_DIFFERENCE_THRESHOLD
+                ) {
                 result.add(candidate);
             }
         }

@@ -72,4 +72,62 @@ public class MethodChainIdentificationTest {
         when(refExprMock.getQualifierExpression()).thenReturn(qualifierExprMock);
         assertEquals(0, id.getAllMethodCallQualifiers().size());
     }
+
+    @Test
+    public void shouldReturnZeroTypeDifferenceForNoDifference() throws Exception {
+        PsiReferenceExpression q1RefMock = mock(PsiReferenceExpression.class);
+        PsiMethodCallExpression qualifier1ExprMock = mock(PsiMethodCallExpression.class);
+        when(qualifier1ExprMock.getMethodExpression()).thenReturn(q1RefMock);
+        when(qualifier1ExprMock.getType()).thenReturn(PsiType.BOOLEAN);
+
+
+        when(refExprMock.getQualifierExpression()).thenReturn(qualifier1ExprMock);
+        when(refExprMock.getType()).thenReturn(PsiType.BOOLEAN);
+        assertEquals(0, id.calculateTypeDifference());
+    }
+
+    @Test
+    public void shouldReturnOneTypeDifferenceForSimpleGetter() throws Exception {
+        PsiReferenceExpression q2RefMock = mock(PsiReferenceExpression.class);
+        PsiMethodCallExpression qualifier2ExprMock = mock(PsiMethodCallExpression.class);
+        when(qualifier2ExprMock.getMethodExpression()).thenReturn(q2RefMock);
+        when(qualifier2ExprMock.getType()).thenReturn(PsiType.BOOLEAN);
+
+        PsiReferenceExpression q1RefMock = mock(PsiReferenceExpression.class);
+        when(q1RefMock.getQualifierExpression()).thenReturn(qualifier2ExprMock);
+        PsiMethodCallExpression qualifier1ExprMock = mock(PsiMethodCallExpression.class);
+        when(qualifier1ExprMock.getMethodExpression()).thenReturn(q1RefMock);
+        when(qualifier1ExprMock.getType()).thenReturn(PsiType.INT);
+
+
+        when(refExprMock.getQualifierExpression()).thenReturn(qualifier1ExprMock);
+        assertEquals(1, id.calculateTypeDifference());
+    }
+
+    @Test
+    public void shouldReturnOneTypeDifferenceForBuilderBuildPattern() throws Exception {
+        //ta().ta().ta().tB()
+        PsiReferenceExpression q3RefMock = mock(PsiReferenceExpression.class);
+        PsiMethodCallExpression qualifier3ExprMock = mock(PsiMethodCallExpression.class);
+        when(qualifier3ExprMock.getMethodExpression()).thenReturn(q3RefMock);
+        when(qualifier3ExprMock.getType()).thenReturn(PsiType.BOOLEAN);
+
+        PsiReferenceExpression q2RefMock = mock(PsiReferenceExpression.class);
+        when(q2RefMock.getQualifierExpression()).thenReturn(qualifier3ExprMock);
+        PsiMethodCallExpression qualifier2ExprMock = mock(PsiMethodCallExpression.class);
+        when(qualifier2ExprMock.getMethodExpression()).thenReturn(q2RefMock);
+        when(qualifier2ExprMock.getType()).thenReturn(PsiType.BOOLEAN);
+
+        PsiReferenceExpression q1RefMock = mock(PsiReferenceExpression.class);
+        when(q1RefMock.getQualifierExpression()).thenReturn(qualifier2ExprMock);
+        PsiMethodCallExpression qualifier1ExprMock = mock(PsiMethodCallExpression.class);
+        when(qualifier1ExprMock.getMethodExpression()).thenReturn(q1RefMock);
+        when(qualifier1ExprMock.getType()).thenReturn(PsiType.INT);
+
+
+        when(refExprMock.getQualifierExpression()).thenReturn(qualifier1ExprMock);
+
+        assertEquals(1, id.calculateTypeDifference());
+
+    }
 }
