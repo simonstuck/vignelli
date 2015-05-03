@@ -11,6 +11,36 @@ public class LineUtil {
         return countLinesOfCode(element.getText());
     }
 
+    public static int countCommentLines(PsiElement element) {
+        if (element instanceof PsiCompiledElement) {
+            return 0;
+        }
+        return countCommentLines(element.getText());
+    }
+
+    private static int countCommentLines(String code) {
+        String[] lines = splitOnNewLines(code);
+        int count = 0;
+        boolean longComment = false;
+        for (String line : lines) {
+            if (line.startsWith("//")) {
+                count++;
+            }
+
+            if (line.contains("/*")) {
+                longComment = true;
+            }
+            if (longComment) {
+                count++;
+                continue;
+            }
+            if (longComment && line.contains("*/")) {
+                longComment = false;
+            }
+        }
+        return count;
+    }
+
     private static int countLinesOfCode(String code) {
         String[] lines = splitOnNewLines(code);
         int count = 0;
