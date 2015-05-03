@@ -1,6 +1,7 @@
 package com.simonstuck.vignelli.refactoring;
 
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiStatement;
@@ -14,90 +15,45 @@ import com.simonstuck.vignelli.utils.IOUtils;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 
 public class TrainWreckExpressionRefactoringImpl extends Refactoring implements RefactoringStepDelegate {
 
+    private static final Logger LOG = Logger.getInstance(TrainWreckExpressionRefactoringImpl.class.getName());
+
     private static final String EXTRACT_METHOD_DESCRIPTION_PATH = "descriptionTemplates/extractMethodTrainWreckStepDescription.html";
-    private final Collection<PsiStatement> extractRegion;
     private final RefactoringTracker tracker;
     private final Project project;
     private final PsiFile file;
-    private int currentStepIndex = 0;
 
-    private ExtractMethodRefactoringStep extractMethodStep;
-    private Refactoring introduceParameterRefactoring;
-    private MoveMethodRefactoringStep moveMethodRefactoringStep;
-    private RenameMethodRefactoringStep renameMethodRefactoringStep;
+    private RefactoringStep currentRefactoringStep;
+
+    private ExtractMethodRefactoringStep.Result extractMethodResult;
 
     public TrainWreckExpressionRefactoringImpl(@NotNull Collection<PsiStatement> extractRegion, RefactoringTracker tracker, Project project, PsiFile file) {
-        this.extractRegion = extractRegion;
         this.tracker = tracker;
         this.project = project;
         this.file = file;
 
-        extractMethodStep = new ExtractMethodRefactoringStep(extractRegion,file,project, EXTRACT_METHOD_DESCRIPTION_PATH, ApplicationManager.getApplication(), this);
+        currentRefactoringStep = new ExtractMethodRefactoringStep(extractRegion, file, project, EXTRACT_METHOD_DESCRIPTION_PATH, ApplicationManager.getApplication(), this);
+        currentRefactoringStep.startListeningForGoal();
     }
 
     @Override
     public boolean hasNextStep() {
-        return currentStepIndex < 4;
+        return currentRefactoringStep != null;
     }
 
     @Override
     public void nextStep() throws NoSuchMethodException {
-        switch (currentStepIndex) {
-            case 0:
-                ExtractMethodRefactoringStep.Result extractMethodResult = extractMethodStep.process();
-                introduceParameterRefactoring = new IntroduceParametersForMembersRefactoringImpl(extractMethodResult.getExtractedMethod(), tracker, project, file);
-                moveMethodRefactoringStep = new MoveMethodRefactoringStep(project, extractMethodResult.getExtractedMethod());
-                finishParameterIntroductionIfNothingMoreToIntroduce();
-                currentStepIndex++;
-                break;
-            case 1:
-                introduceParameterRefactoring.nextStep();
-                finishParameterIntroductionIfNothingMoreToIntroduce();
-                break;
-            case 2:
-                MoveMethodRefactoringStep.Result moveMethodResult = moveMethodRefactoringStep.process();
-                renameMethodRefactoringStep = new RenameMethodRefactoringStep(moveMethodResult.getNewMethod(), project);
-                currentStepIndex++;
-                break;
-            case 3:
-                renameMethodRefactoringStep.process();
-                currentStepIndex++;
-                break;
-            default:
-                throw new NoSuchMethodException("No more refactoring steps required.");
-        }
-    }
-
-    private void finishParameterIntroductionIfNothingMoreToIntroduce() {
-        if (!introduceParameterRefactoring.hasNextStep()) {
-            currentStepIndex++;
-        }
+        currentRefactoringStep.process();
     }
 
     @Override
     public void fillTemplateValues(Map<String, Object> templateValues) {
         templateValues.put("hasNextStep", hasNextStep());
-        switch (currentStepIndex) {
-            case 0:
-                extractMethodStep.describeStep(templateValues);
-                break;
-            case 1:
-                introduceParameterRefactoring.fillTemplateValues(templateValues);
-                break;
-            case 2:
-                moveMethodRefactoringStep.describeStep(templateValues);
-                break;
-            case 3:
-                renameMethodRefactoringStep.describeStep(templateValues);
-                break;
-            default:
-        }
+        currentRefactoringStep.describeStep(templateValues);
     }
 
     @Override
@@ -112,36 +68,30 @@ public class TrainWreckExpressionRefactoringImpl extends Refactoring implements 
 
     @Override
     public String template() {
-        try {
-            return IOUtils.readFile("descriptionTemplates/trainWreckRefactoring.html");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return "";
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        TrainWreckExpressionRefactoringImpl that = (TrainWreckExpressionRefactoringImpl) o;
-
-        return extractRegion.equals(that.extractRegion) && !(file != null ? !file.equals(that.file) : that.file != null) && project.equals(that.project) && !(tracker != null ? !tracker.equals(that.tracker) : that.tracker != null);
-
-    }
-
-    @Override
-    public int hashCode() {
-        int result = extractRegion.hashCode();
-        result = 31 * result + (tracker != null ? tracker.hashCode() : 0);
-        result = 31 * result + (project.hashCode());
-        result = 31 * result + (file != null ? file.hashCode() : 0);
-        return result;
+        return IOUtils.tryReadFile("descriptionTemplates/trainWreckRefactoring.html");
     }
 
     @Override
     public void didFinishRefactoringStep(RefactoringStep step, RefactoringStepResult result) {
+        LOG.info("didFinishRefactoringStep!");
+        currentRefactoringStep.endListeningForGoal();
 
+        if (step instanceof ExtractMethodRefactoringStep) {
+            extractMethodResult = (ExtractMethodRefactoringStep.Result) result;
+            currentRefactoringStep = new IntroduceParametersForMembersRefactoringImpl(extractMethodResult.getExtractedMethod(), tracker, project, file, this);
+        } else if (step instanceof IntroduceParametersForMembersRefactoringImpl) {
+            currentRefactoringStep = new MoveMethodRefactoringStep(project, extractMethodResult.getExtractedMethod());
+        } else if (step instanceof MoveMethodRefactoringStep) {
+            MoveMethodRefactoringStep.Result moveMethodResult = (MoveMethodRefactoringStep.Result) result;
+            currentRefactoringStep = new RenameMethodRefactoringStep(moveMethodResult.getNewMethod(), project);
+        } else if (step instanceof RenameMethodRefactoringStep) {
+            currentRefactoringStep = null;
+        }
+
+        if (currentRefactoringStep != null) {
+            currentRefactoringStep.startListeningForGoal();
+        }
+        setChanged();
+        notifyObservers();
     }
 }

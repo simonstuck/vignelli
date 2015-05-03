@@ -3,8 +3,6 @@ package com.simonstuck.vignelli.inspection.identification;
 import com.google.common.base.Predicate;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiMethodCallExpression;
-import com.intellij.psi.PsiType;
-import com.simonstuck.vignelli.inspection.identification.predicates.MethodChainDifferentAdjacentTypesPredicate;
 import com.simonstuck.vignelli.inspection.identification.predicates.MethodChainMultipleCallsPredicate;
 
 import java.util.ArrayList;

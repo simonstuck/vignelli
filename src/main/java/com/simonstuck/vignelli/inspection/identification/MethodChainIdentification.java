@@ -107,4 +107,8 @@ public class MethodChainIdentification implements ProblemDescriptorProvider {
         }
         return typeDifference;
     }
+
+    public PsiMethodCallExpression getFinalCall() {
+        return finalCall;
+    }
 }

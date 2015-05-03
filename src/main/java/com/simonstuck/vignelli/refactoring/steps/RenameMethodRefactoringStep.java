@@ -15,7 +15,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class RenameMethodRefactoringStep {
+public class RenameMethodRefactoringStep implements RefactoringStep {
 
     private static final String RENAME_METHOD_STEP_NAME = "Rename Method";
     private PsiMethod methodToRename;
@@ -26,6 +26,16 @@ public class RenameMethodRefactoringStep {
         this.methodToRename = methodToRename;
         this.project = project;
         editor = FileEditorManager.getInstance(project).getSelectedTextEditor();
+    }
+
+    @Override
+    public void startListeningForGoal() {
+
+    }
+
+    @Override
+    public void endListeningForGoal() {
+
     }
 
     /**
@@ -81,7 +91,7 @@ public class RenameMethodRefactoringStep {
     /**
      * Represents a result of a rename refactoring step.
      */
-    public static final class Result {
+    public static final class Result implements RefactoringStepResult {
         final PsiMethod method;
 
         private Result(PsiMethod method) {
@@ -90,6 +100,11 @@ public class RenameMethodRefactoringStep {
 
         public PsiMethod getMethod() {
             return method;
+        }
+
+        @Override
+        public boolean isSuccess() {
+            return true;
         }
     }
 }
