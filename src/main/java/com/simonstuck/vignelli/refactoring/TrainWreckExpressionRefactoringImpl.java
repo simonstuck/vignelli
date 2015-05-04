@@ -80,7 +80,7 @@ public class TrainWreckExpressionRefactoringImpl extends Refactoring implements 
             extractMethodResult = (ExtractMethodRefactoringStep.Result) result;
             currentRefactoringStep = new IntroduceParametersForMembersRefactoringImpl(extractMethodResult.getExtractedMethod(), tracker, project, file, this);
         } else if (step instanceof IntroduceParametersForMembersRefactoringImpl) {
-            currentRefactoringStep = new MoveMethodRefactoringStep(project, extractMethodResult.getExtractedMethod());
+            currentRefactoringStep = new MoveMethodRefactoringStep(project, extractMethodResult.getExtractedMethod(), ApplicationManager.getApplication(), this);
         } else if (step instanceof MoveMethodRefactoringStep) {
             MoveMethodRefactoringStep.Result moveMethodResult = (MoveMethodRefactoringStep.Result) result;
             currentRefactoringStep = new RenameMethodRefactoringStep(moveMethodResult.getNewMethod(), project);

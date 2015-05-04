@@ -1,5 +1,6 @@
 package com.simonstuck.vignelli.refactoring.steps;
 
+import com.intellij.openapi.application.Application;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
@@ -11,6 +12,7 @@ import com.intellij.psi.util.PsiTypesUtil;
 import com.intellij.refactoring.move.moveInstanceMethod.MoveInstanceMethodHandlerDelegate;
 import com.simonstuck.vignelli.inspection.identification.MethodChainIdentification;
 import com.simonstuck.vignelli.inspection.identification.MethodChainIdentificationEngine;
+import com.simonstuck.vignelli.psi.PsiContainsChecker;
 import com.simonstuck.vignelli.ui.description.HTMLFileTemplate;
 import com.simonstuck.vignelli.ui.description.Template;
 import com.simonstuck.vignelli.utils.IOUtils;
@@ -28,20 +30,35 @@ public class MoveMethodRefactoringStep implements RefactoringStep {
 
     private Project project;
     private PsiMethod methodToMove;
+    private final PsiExpression targetExpression;
+    private final PsiClass targetClass;
+    private final MethodMovedToTargetGoalChecker methodMovedToTargetGoalChecker;
+    private final Application application;
 
-    public MoveMethodRefactoringStep(Project project, PsiMethod methodToMove) {
+    public MoveMethodRefactoringStep(Project project, PsiMethod methodToMove, Application application, RefactoringStepDelegate delegate) {
         this.project = project;
         this.methodToMove = methodToMove;
+        this.application = application;
+
+        targetExpression = getTargetExpression(methodToMove);
+        if (targetExpression != null) {
+            targetClass = PsiTypesUtil.getPsiClass(targetExpression.getType());
+        } else {
+            targetClass = null;
+        }
+
+        methodMovedToTargetGoalChecker = new MethodMovedToTargetGoalChecker(this, delegate);
+
     }
 
     @Override
     public void startListeningForGoal() {
-
+        application.addApplicationListener(methodMovedToTargetGoalChecker);
     }
 
     @Override
     public void endListeningForGoal() {
-
+        application.removeApplicationListener(methodMovedToTargetGoalChecker);
     }
 
     @Override
@@ -63,14 +80,11 @@ public class MoveMethodRefactoringStep implements RefactoringStep {
         HashMap<String, Object> contentMap = new HashMap<String, Object>();
         contentMap.put("method", methodToMove.getText());
 
-        PsiExpression targetExpression = getTargetExpression(methodToMove);
         if (targetExpression != null) {
             contentMap.put("targetVariable", targetExpression.getText());
-            targetExpression.getType();
-            PsiClass clazz = PsiTypesUtil.getPsiClass(targetExpression.getType());
-            if (clazz != null) {
-                contentMap.put("targetClass", clazz.getName());
-            }
+        }
+        if (targetClass != null) {
+            contentMap.put("targetClass", targetClass.getName());
         }
 
         return template.render(contentMap);
@@ -103,22 +117,56 @@ public class MoveMethodRefactoringStep implements RefactoringStep {
     }
 
 
-    private static class MethodMovedToTargetGoalChecker extends RefactoringStepGoalChecker {
+    /**
+     * This checker checks whether the method to move has been moved onto the target class in question.
+     *
+     * <p>This is done in the following way:</p>
+     * <ol>
+     *     <li>Initially all methods of the target class are saved</li>
+     *     <li>
+     *         <span>For every change:</span>
+     *         <ol>
+     *             <li>Find new methods added to target class (using original methods from before)</li>
+     *             <li>If any of the new methods' bodies is similar to the original one (contains it) then the method has been moved.</li>
+     *         </ol>
+     *     </li>
+     * </ol>
+     */
+    private class MethodMovedToTargetGoalChecker extends RefactoringStepGoalChecker {
+
+        private final Set<PsiMethod> originalMethodsInTargetClass;
 
         public MethodMovedToTargetGoalChecker(@NotNull RefactoringStep refactoringStep, @NotNull RefactoringStepDelegate delegate) {
             super(refactoringStep, delegate);
+
+            originalMethodsInTargetClass = getDefinedMethods(targetClass);
         }
 
         @Override
         public RefactoringStepResult computeResult() {
+            if (isAnyNullOrInvalid(targetClass)) {
+                return new Result(false, null);
+            }
+
+            Set<PsiMethod> newMethodsInTargetClass = getDefinedMethods(targetClass);
+            newMethodsInTargetClass.removeAll(originalMethodsInTargetClass);
+
+            for (PsiMethod newMethod : newMethodsInTargetClass) {
+                if (new PsiContainsChecker().findEquivalent(newMethod.getBody(),methodToMove.getBody()) != null) {
+                    return new Result(true, newMethod);
+                }
+            }
+
             return null;
         }
     }
 
     public static final class Result implements RefactoringStepResult {
+        private final boolean success;
         private final PsiMethod newMethod;
 
-        public Result(PsiMethod newMethod) {
+        public Result(boolean success, PsiMethod newMethod) {
+            this.success = success;
             this.newMethod = newMethod;
         }
 
@@ -128,7 +176,7 @@ public class MoveMethodRefactoringStep implements RefactoringStep {
 
         @Override
         public boolean isSuccess() {
-            return true;
+            return success;
         }
     }
 }
