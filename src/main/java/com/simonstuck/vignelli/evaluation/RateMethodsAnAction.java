@@ -8,9 +8,7 @@ import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
-import com.intellij.pom.Navigatable;
 import com.intellij.psi.PsiClass;
-import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiParameterList;
 import com.intellij.psi.search.GlobalSearchScope;
@@ -19,8 +17,9 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.simonstuck.vignelli.evaluation.datamodel.ClassEval;
 import com.simonstuck.vignelli.evaluation.datamodel.MethodEval;
 import com.simonstuck.vignelli.evaluation.datamodel.ProjectEval;
-import com.simonstuck.vignelli.psi.LineUtil;
-import com.simonstuck.vignelli.utils.MetricsUtil;
+import com.simonstuck.vignelli.psi.util.LineUtil;
+import com.simonstuck.vignelli.psi.util.MetricsUtil;
+import com.simonstuck.vignelli.psi.util.NavigationUtil;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -79,7 +78,7 @@ public class RateMethodsAnAction extends AnAction {
             int nestedBlockDepth = MetricsUtil.getNestedBlockDepth(method);
             String[] options = new String[] { "complex", "not complex", "cancel", "stop and save"};
 
-            navigateToElement(method);
+            NavigationUtil.navigateToElement(method);
 
             int selection = Messages.showDialog(clazz.getQualifiedName() + ":" + method.getName(), "Is This Method Complex?", options, 1, 0, Messages.getQuestionIcon(), null);
 
@@ -95,12 +94,5 @@ public class RateMethodsAnAction extends AnAction {
             classEval.addMethodEval(new MethodEval(method.getName(), loc, cyclomaticComplexity, numParameters, nestedBlockDepth, commentLines, isComplex));
         }
         return Optional.of(classEval);
-    }
-
-    private void navigateToElement(PsiMethod method) {
-        PsiElement navigationElement = method.getNavigationElement();
-        if (navigationElement instanceof Navigatable && ((Navigatable) navigationElement).canNavigate()) {
-            ((Navigatable) navigationElement).navigate(true);
-        }
     }
 }

@@ -11,6 +11,7 @@ import com.intellij.psi.PsiExpression;
 import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.PsiReferenceExpression;
 import com.intellij.psi.PsiType;
+import com.simonstuck.vignelli.inspection.identification.impl.MethodChainIdentification;
 
 import org.junit.Before;
 import org.junit.Test;

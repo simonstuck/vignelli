@@ -1,7 +1,7 @@
 package com.simonstuck.vignelli.inspection.identification;
 
 import com.intellij.codeInspection.ProblemDescriptor;
-import com.simonstuck.vignelli.utils.IOUtils;
+import com.simonstuck.vignelli.util.IOUtil;
 
 public class LongMethodProblemIdentification extends ProblemIdentification {
 
@@ -21,6 +21,6 @@ public class LongMethodProblemIdentification extends ProblemIdentification {
 
     @Override
     public String template() {
-        return IOUtils.tryReadFile(DESCRIPTION_TEMPLATE_FILE_PATH);
+        return IOUtil.tryReadFile(DESCRIPTION_TEMPLATE_FILE_PATH);
     }
 }

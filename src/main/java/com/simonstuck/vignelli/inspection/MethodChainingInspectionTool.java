@@ -2,7 +2,7 @@ package com.simonstuck.vignelli.inspection;
 
 import com.intellij.codeInspection.ProblemDescriptor;
 import com.intellij.psi.PsiMethod;
-import com.simonstuck.vignelli.inspection.identification.MethodChainIdentificationEngine;
+import com.simonstuck.vignelli.inspection.identification.engine.MethodChainIdentificationEngine;
 import com.simonstuck.vignelli.inspection.identification.ProblemDescriptorProvider;
 import com.simonstuck.vignelli.inspection.identification.ProblemIdentification;
 import com.simonstuck.vignelli.inspection.identification.TrainWreckProblemIdentification;

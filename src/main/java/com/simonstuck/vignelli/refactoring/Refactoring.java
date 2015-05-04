@@ -14,14 +14,14 @@ public abstract class Refactoring extends Observable implements Templatable {
     public static final String HAS_NEXT_STEP_TEMPLATE_KEY = "hasNextStep";
 
     /**
-     * Checks if there are more steps remaining.
-     * @return true iff no more steps are required.
+     * Checks if there are more step remaining.
+     * @return true iff no more step are required.
      */
     public abstract boolean hasNextStep();
 
     /**
      * Performs the next step.
-     * @throws NoSuchMethodException When no more steps are required.
+     * @throws NoSuchMethodException When no more step are required.
      */
     public abstract void nextStep() throws NoSuchMethodException;
 

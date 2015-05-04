@@ -5,10 +5,10 @@ import com.intellij.codeInspection.ProblemDescriptor;
 import com.intellij.psi.PsiExpressionList;
 import com.intellij.psi.PsiLocalVariable;
 import com.intellij.psi.util.PsiTreeUtil;
-import com.simonstuck.vignelli.inspection.ImprovementOpportunity;
-import com.simonstuck.vignelli.inspection.TrainWreckExpressionImprovementOpportunity;
-import com.simonstuck.vignelli.inspection.TrainWreckVariableImprovementOpportunity;
-import com.simonstuck.vignelli.utils.IOUtils;
+import com.simonstuck.vignelli.inspection.improvement.ImprovementOpportunity;
+import com.simonstuck.vignelli.inspection.improvement.impl.TrainWreckExpressionImprovementOpportunity;
+import com.simonstuck.vignelli.inspection.improvement.impl.TrainWreckVariableImprovementOpportunity;
+import com.simonstuck.vignelli.util.IOUtil;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -29,7 +29,7 @@ public class TrainWreckProblemIdentification extends ProblemIdentification {
 
     @Override
     public String template() {
-        return IOUtils.tryReadFile(DESCRIPTION_TEMPLATE_FILE_PATH);
+        return IOUtil.tryReadFile(DESCRIPTION_TEMPLATE_FILE_PATH);
     }
 
     @Override

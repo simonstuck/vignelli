@@ -4,7 +4,7 @@ import com.google.common.base.Optional;
 import com.intellij.codeInspection.ProblemDescriptor;
 import com.intellij.psi.PsiElement;
 import com.jgoodies.common.base.Objects;
-import com.simonstuck.vignelli.inspection.ImprovementOpportunity;
+import com.simonstuck.vignelli.inspection.improvement.ImprovementOpportunity;
 
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.jetbrains.annotations.NotNull;
@@ -34,8 +34,8 @@ public abstract class ProblemIdentification implements com.simonstuck.vignelli.T
     }
 
     /**
-     * Returns an {@link com.simonstuck.vignelli.inspection.ImprovementOpportunity} for this problem if one exists
-     * @return An optional {@link com.simonstuck.vignelli.inspection.ImprovementOpportunity}.
+     * Returns an {@link com.simonstuck.vignelli.inspection.improvement.ImprovementOpportunity} for this problem if one exists
+     * @return An optional {@link com.simonstuck.vignelli.inspection.improvement.ImprovementOpportunity}.
      */
     public Optional<? extends ImprovementOpportunity> improvementOpportunity() {
         return Optional.absent();

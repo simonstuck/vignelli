@@ -3,6 +3,8 @@ package com.simonstuck.vignelli.inspection.identification;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiMethod;
 import com.intellij.testFramework.LightIdeaTestCase;
+import com.simonstuck.vignelli.inspection.identification.engine.MethodChainIdentificationEngine;
+import com.simonstuck.vignelli.inspection.identification.impl.MethodChainIdentification;
 import com.simonstuck.vignelli.testutils.IOUtils;
 
 import org.junit.Before;

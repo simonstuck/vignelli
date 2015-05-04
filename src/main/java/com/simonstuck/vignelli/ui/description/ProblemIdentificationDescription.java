@@ -2,7 +2,7 @@ package com.simonstuck.vignelli.ui.description;
 
 import com.google.common.base.Optional;
 import com.intellij.openapi.diagnostic.Logger;
-import com.simonstuck.vignelli.inspection.ImprovementOpportunity;
+import com.simonstuck.vignelli.inspection.improvement.ImprovementOpportunity;
 import com.simonstuck.vignelli.inspection.identification.ProblemIdentification;
 
 import org.jetbrains.annotations.NotNull;

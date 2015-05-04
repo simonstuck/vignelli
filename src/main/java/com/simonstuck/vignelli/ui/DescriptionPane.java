@@ -4,7 +4,7 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.simonstuck.vignelli.ui.description.Description;
 import com.simonstuck.vignelli.ui.description.HTMLFileTemplate;
 import com.simonstuck.vignelli.ui.description.Template;
-import com.simonstuck.vignelli.utils.IOUtils;
+import com.simonstuck.vignelli.util.IOUtil;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -36,7 +36,7 @@ class DescriptionPane extends JEditorPane implements Observer {
         Document doc = kit.createDefaultDocument();
 
         try {
-            String styles = IOUtils.readFile("descriptionTemplates/styles.css");
+            String styles = IOUtil.readFile("descriptionTemplates/styles.css");
             kit.getStyleSheet().addRule(styles);
         } catch (IOException e) {
             LOG.error(e.getMessage(), e);
@@ -112,7 +112,7 @@ class DescriptionPane extends JEditorPane implements Observer {
         public String render() {
             String strTemplate = null;
             try {
-                strTemplate = IOUtils.readFile("descriptionTemplates/emptyDescription.html");
+                strTemplate = IOUtil.readFile("descriptionTemplates/emptyDescription.html");
             } catch (IOException e) {
                 LOG.error(e.getMessage(), e);
             }

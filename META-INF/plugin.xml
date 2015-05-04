@@ -46,10 +46,6 @@
     </application-components>
 
     <project-components>
-        <!-- Add your project components here -->
-        <component>
-            <implementation-class>com.simonstuck.vignelli.VignelliProjectComponent</implementation-class>
-        </component>
         <component>
             <implementation-class>com.simonstuck.vignelli.inspection.ProblemIdentificationCacheComponent</implementation-class>
         </component>
