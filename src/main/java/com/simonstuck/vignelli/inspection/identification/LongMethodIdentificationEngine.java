@@ -51,7 +51,7 @@ public class LongMethodIdentificationEngine {
         double z = -11.336 + 0.598 * cyclomaticComplexity - 0.057 * loc + 4.701 * nestedBlockDepth + 0.486 * numParameters;
 
         double likelihood = 1 / (1 + Math.exp(-z));
-        LOG.info("LIKELIHOOD (" + method.getName() + "): " + likelihood);
+        LOG.debug("LIKELIHOOD (" + method.getName() + "): " + likelihood);
 
         if (likelihood > LIKELIHOOD_THRESHOLD) {
             return Optional.of(new LongMethodIdentification(method));

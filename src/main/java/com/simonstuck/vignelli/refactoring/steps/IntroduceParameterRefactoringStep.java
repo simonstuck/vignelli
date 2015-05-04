@@ -13,6 +13,7 @@ import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiParameter;
 import com.intellij.psi.PsiParameterList;
 import com.intellij.psi.PsiReferenceExpression;
+import com.intellij.psi.PsiStatement;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.refactoring.introduceParameter.IntroduceParameterHandler;
 import com.simonstuck.vignelli.ui.description.HTMLFileTemplate;
@@ -148,7 +149,7 @@ public class IntroduceParameterRefactoringStep implements RefactoringStep {
         public ParameterIntroducedChecker(@NotNull RefactoringStep refactoringStep, @NotNull RefactoringStepDelegate delegate) {
             super(refactoringStep, delegate);
             method = PsiTreeUtil.getParentOfType(element, PsiMethod.class);
-            elementParent = element.getParent();
+            elementParent = PsiTreeUtil.getParentOfType(element, PsiStatement.class);
 
             originalParameters.addAll(getParameters(method));
         }
@@ -180,7 +181,7 @@ public class IntroduceParameterRefactoringStep implements RefactoringStep {
                 @SuppressWarnings("unchecked")
                 Collection<PsiReferenceExpression> allReferences = PsiTreeUtil.collectElementsOfType(method, PsiReferenceExpression.class);
                 for (PsiReferenceExpression referenceExpression : allReferences) {
-                    if (referenceExpression.resolve() == newParameter && PsiTreeUtil.isAncestor(elementParent, referenceExpression, false)) {
+                    if (referenceExpression.getType() != null && referenceExpression.resolve() == newParameter && PsiTreeUtil.isAncestor(elementParent, referenceExpression, false)) {
                         return new Result(true);
                     }
                 }
