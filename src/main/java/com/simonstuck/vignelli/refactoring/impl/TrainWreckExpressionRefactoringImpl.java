@@ -55,7 +55,9 @@ public class TrainWreckExpressionRefactoringImpl extends Refactoring implements 
     @Override
     public void fillTemplateValues(Map<String, Object> templateValues) {
         templateValues.put("hasNextStep", hasNextStep());
-        currentRefactoringStep.describeStep(templateValues);
+        if (currentRefactoringStep != null) {
+            currentRefactoringStep.describeStep(templateValues);
+        }
     }
 
     @Override
@@ -66,6 +68,7 @@ public class TrainWreckExpressionRefactoringImpl extends Refactoring implements 
     @Override
     public void complete() {
         tracker.remove(this);
+        deleteObservers();
     }
 
     @Override
@@ -80,12 +83,17 @@ public class TrainWreckExpressionRefactoringImpl extends Refactoring implements 
 
         if (step instanceof ExtractMethodRefactoringStep) {
             extractMethodResult = (ExtractMethodRefactoringStep.Result) result;
-            currentRefactoringStep = new IntroduceParametersForMembersRefactoringImpl(extractMethodResult.getExtractedMethod(), tracker, project, file, this);
+            IntroduceParametersForMembersRefactoringImpl introduceParametersForMembersRefactoring = new IntroduceParametersForMembersRefactoringImpl(extractMethodResult.getExtractedMethod(), tracker, project, file, this);
+            if (introduceParametersForMembersRefactoring.hasNextStep()) {
+                currentRefactoringStep = introduceParametersForMembersRefactoring;
+            } else {
+                currentRefactoringStep = createMoveMethodRefactoringStep();
+            }
         } else if (step instanceof IntroduceParametersForMembersRefactoringImpl) {
-            currentRefactoringStep = new MoveMethodRefactoringStep(project, extractMethodResult.getExtractedMethod(), ApplicationManager.getApplication(), this);
+            currentRefactoringStep = createMoveMethodRefactoringStep();
         } else if (step instanceof MoveMethodRefactoringStep) {
             MoveMethodRefactoringStep.Result moveMethodResult = (MoveMethodRefactoringStep.Result) result;
-            currentRefactoringStep = new RenameMethodRefactoringStep(moveMethodResult.getNewMethod(), project);
+            currentRefactoringStep = new RenameMethodRefactoringStep(moveMethodResult.getNewMethod(), project, this, ApplicationManager.getApplication());
         } else if (step instanceof RenameMethodRefactoringStep) {
             currentRefactoringStep = null;
         }
@@ -95,5 +103,9 @@ public class TrainWreckExpressionRefactoringImpl extends Refactoring implements 
         }
         setChanged();
         notifyObservers();
+    }
+
+    private MoveMethodRefactoringStep createMoveMethodRefactoringStep() {
+        return new MoveMethodRefactoringStep(project, extractMethodResult.getExtractedMethod(), ApplicationManager.getApplication(), this);
     }
 }

@@ -10,7 +10,6 @@ import com.simonstuck.vignelli.refactoring.RefactoringTracker;
 import com.simonstuck.vignelli.refactoring.step.impl.InlineVariableRefactoringStep;
 import com.simonstuck.vignelli.util.IOUtil;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 
@@ -84,12 +83,7 @@ public class TrainWreckVariableRefactoringImpl extends Refactoring {
 
     @Override
     public String template() {
-        try {
-            return IOUtil.readFile("descriptionTemplates/trainWreckRefactoring.html");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return "";
+        return IOUtil.tryReadFile("descriptionTemplates/trainWreckRefactoring.html");
     }
 
     @Override

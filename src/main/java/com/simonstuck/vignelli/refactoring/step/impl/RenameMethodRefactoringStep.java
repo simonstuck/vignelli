@@ -1,20 +1,28 @@
 package com.simonstuck.vignelli.refactoring.step.impl;
 
+import com.intellij.openapi.application.Application;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.ActionCallback;
 import com.intellij.openapi.wm.IdeFocusManager;
+import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiMethod;
 import com.intellij.refactoring.rename.inplace.MemberInplaceRenameHandler;
+import com.intellij.util.messages.MessageBusConnection;
+import com.simonstuck.vignelli.inspection.RenameListener;
+import com.simonstuck.vignelli.inspection.VignelliRefactoringListener;
+import com.simonstuck.vignelli.psi.util.NavigationUtil;
 import com.simonstuck.vignelli.refactoring.step.RefactoringStep;
+import com.simonstuck.vignelli.refactoring.step.RefactoringStepDelegate;
+import com.simonstuck.vignelli.refactoring.step.RefactoringStepGoalChecker;
 import com.simonstuck.vignelli.refactoring.step.RefactoringStepResult;
 import com.simonstuck.vignelli.ui.description.HTMLFileTemplate;
 import com.simonstuck.vignelli.ui.description.Template;
 import com.simonstuck.vignelli.util.IOUtil;
-import com.simonstuck.vignelli.psi.util.NavigationUtil;
 
-import java.io.IOException;
+import org.jetbrains.annotations.NotNull;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -24,21 +32,31 @@ public class RenameMethodRefactoringStep implements RefactoringStep {
     private PsiMethod methodToRename;
     private Editor editor;
     private Project project;
+    private VignelliRefactoringListener renameListener;
+    private final RenameGoalChecker renameGoalChecker;
+    private final Application application;
+    private MessageBusConnection messageBusConnection;
 
-    public RenameMethodRefactoringStep(PsiMethod methodToRename, Project project) {
+    public RenameMethodRefactoringStep(PsiMethod methodToRename, Project project, RefactoringStepDelegate delegate, Application application) {
         this.methodToRename = methodToRename;
         this.project = project;
         editor = FileEditorManager.getInstance(project).getSelectedTextEditor();
+        renameGoalChecker = new RenameGoalChecker(this, delegate);
+        this.application = application;
+        messageBusConnection = project.getMessageBus().connect();
     }
 
     @Override
     public void start() {
         NavigationUtil.navigateToElement(methodToRename);
+        messageBusConnection.subscribe(VignelliRefactoringListener.RENAME_LISTENER_TOPIC, renameGoalChecker);
+        application.addApplicationListener(renameGoalChecker);
     }
 
     @Override
     public void end() {
-
+        application.removeApplicationListener(renameGoalChecker);
+        messageBusConnection.dispose();
     }
 
     /**
@@ -83,12 +101,7 @@ public class RenameMethodRefactoringStep implements RefactoringStep {
     }
 
     private String template() {
-        try {
-            return IOUtil.readFile("descriptionTemplates/renameMethodStepDescription.html");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return "";
+        return IOUtil.tryReadFile("descriptionTemplates/renameMethodStepDescription.html");
     }
 
     /**
@@ -108,6 +121,29 @@ public class RenameMethodRefactoringStep implements RefactoringStep {
         @Override
         public boolean isSuccess() {
             return true;
+        }
+    }
+
+    private class RenameGoalChecker extends RefactoringStepGoalChecker implements RenameListener {
+
+        private boolean renamed = false;
+
+        public RenameGoalChecker(@NotNull RefactoringStep refactoringStep, @NotNull RefactoringStepDelegate delegate) {
+            super(refactoringStep, delegate);
+        }
+
+        @Override
+        public RefactoringStepResult computeResult() {
+            if (renamed) {
+                return new Result(methodToRename);
+            } else {
+                return null;
+            }
+        }
+
+        @Override
+        public void consume(PsiElement element) {
+            renamed |= element == methodToRename;
         }
     }
 }

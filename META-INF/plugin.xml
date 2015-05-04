@@ -39,6 +39,8 @@
 
         <toolWindow id="Vignelli Analysis" icon="/vignelli_icon.png" anchor="bottom"
                     factoryClass="com.simonstuck.vignelli.ui.AnalysisToolWindowFactory"/>
+
+        <refactoring.elementListenerProvider implementation="com.simonstuck.vignelli.inspection.VignelliRefactoringListener" />
     </extensions>
 
     <application-components>
