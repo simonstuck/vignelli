@@ -68,14 +68,13 @@ public class IntroduceParameterRefactoringStep implements RefactoringStep {
     }
 
     @Override
-    public Result process() {
+    public void process() {
         moveCaretToElement();
 
         IntroduceParameterHandler handler = new IntroduceParameterHandler();
         handler.invoke(project, editor, file, null);
 
         focusOnEditorForTyping();
-        return new Result(true);
     }
 
     @Override

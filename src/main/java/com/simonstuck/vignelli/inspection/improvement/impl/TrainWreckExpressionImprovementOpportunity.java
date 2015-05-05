@@ -30,7 +30,7 @@ public class TrainWreckExpressionImprovementOpportunity implements ImprovementOp
         PsiStatement trainWreckStatement = PsiTreeUtil.getParentOfType(trainWreckElement, PsiStatement.class);
         Collection<PsiStatement> extractRegion = Collections.singletonList(trainWreckStatement);
 
-        Refactoring refactoring = new TrainWreckExpressionRefactoringImpl(extractRegion, tracker, project, file);
+        Refactoring refactoring = new TrainWreckExpressionRefactoringImpl(extractRegion, tracker, project, file, null);
         refactoring.begin();
     }
 }

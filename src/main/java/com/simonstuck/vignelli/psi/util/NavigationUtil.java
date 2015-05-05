@@ -19,8 +19,11 @@ public class NavigationUtil {
      * @param requestFocus Whether or not the editor should request focus.
      */
     public static void navigateToElement(PsiElement element, boolean requestFocus) {
+        if (element == null) {
+            return;
+        }
         PsiElement navigationElement = element.getNavigationElement();
-        if (navigationElement instanceof Navigatable && ((Navigatable) navigationElement).canNavigate()) {
+        if (navigationElement != null && navigationElement instanceof Navigatable && ((Navigatable) navigationElement).canNavigate()) {
             ((Navigatable) navigationElement).navigate(requestFocus);
         }
     }

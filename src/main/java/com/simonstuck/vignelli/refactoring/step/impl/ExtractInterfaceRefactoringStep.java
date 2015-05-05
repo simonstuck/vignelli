@@ -71,11 +71,10 @@ public class ExtractInterfaceRefactoringStep implements RefactoringStep {
     }
 
     @Override
-    public Result process() {
+    public void process() {
         ExtractInterfaceHandler handler = new ExtractInterfaceHandler();
         PsiElement[] elements = new PsiElement[] { clazz };
         handler.invoke(project, elements, null);
-        return new Result(true);
     }
 
     @Override

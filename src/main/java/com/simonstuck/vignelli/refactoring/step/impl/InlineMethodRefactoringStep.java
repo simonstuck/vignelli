@@ -50,11 +50,10 @@ public class InlineMethodRefactoringStep implements RefactoringStep {
     }
 
     @Override
-    public Result process() {
+    public void process() {
         Editor editor = FileEditorManager.getInstance(project).getSelectedTextEditor();
         InlineMethodDialog dialog = new InlineMethodDialog(project,method,null,editor,false);
         dialog.show();
-        return new Result(true);
     }
 
     @Override

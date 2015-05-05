@@ -66,7 +66,7 @@ public class DirectSingletonUseRefactoringImpl extends Refactoring implements Re
     }
 
     @Override
-    public void nextStep() throws NoSuchMethodException {
+    public void nextStep() {
         currentRefactoringStep.process();
     }
 

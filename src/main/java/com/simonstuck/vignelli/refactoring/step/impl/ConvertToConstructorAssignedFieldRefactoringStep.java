@@ -66,13 +66,11 @@ public class ConvertToConstructorAssignedFieldRefactoringStep implements Refacto
     }
 
     @Override
-    public Result process() {
+    public void process() {
         PsiElement[] elements = new PsiElement[] { expression };
 
         IntroduceFieldHandler handler = new IntroduceFieldHandler();
         handler.invoke(project, elements, null);
-
-        return new Result(null);
     }
 
     @Override

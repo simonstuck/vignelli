@@ -62,16 +62,14 @@ public class IntroduceParametersForMembersRefactoringImpl extends Refactoring im
     }
 
     @Override
-    public void nextStep() throws NoSuchMethodException {
+    public void nextStep() {
         process();
     }
 
     @Override
-    public RefactoringStepResult process() {
+    public void process() {
         if (introduceParameterStep != null) {
-            return introduceParameterStep.process();
-        } else {
-            return null;
+            introduceParameterStep.process();
         }
     }
 

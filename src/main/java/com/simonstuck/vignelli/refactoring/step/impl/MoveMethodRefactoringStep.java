@@ -68,12 +68,10 @@ public class MoveMethodRefactoringStep implements RefactoringStep {
     }
 
     @Override
-    public Result process() {
+    public void process() {
         MoveInstanceMethodHandlerDelegate moveInstanceMethodHandlerDelegate = new MoveInstanceMethodHandlerDelegate();
         final PsiElement[] elements = new PsiElement[] {methodToMove};
         moveInstanceMethodHandlerDelegate.doMove(project, elements, null, null);
-
-        return null;
     }
 
     public void describeStep(Map<String, Object> templateValues) {

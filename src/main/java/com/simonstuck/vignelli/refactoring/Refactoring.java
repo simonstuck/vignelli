@@ -23,7 +23,7 @@ public abstract class Refactoring extends Observable implements Templatable {
      * Performs the next step.
      * @throws NoSuchMethodException When no more step are required.
      */
-    public abstract void nextStep() throws NoSuchMethodException;
+    public abstract void nextStep();
 
     /**
      * Fills the given template value map with correct values that describe this refactoring to be shown in a UI.

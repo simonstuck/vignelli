@@ -14,6 +14,7 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.refactoring.extractMethod.ExtractMethodHandler;
 import com.intellij.refactoring.extractMethod.ExtractMethodProcessor;
 import com.intellij.util.Query;
+import com.simonstuck.vignelli.psi.util.NavigationUtil;
 import com.simonstuck.vignelli.refactoring.step.RefactoringStep;
 import com.simonstuck.vignelli.refactoring.step.RefactoringStepDelegate;
 import com.simonstuck.vignelli.refactoring.step.RefactoringStepGoalChecker;
@@ -21,7 +22,6 @@ import com.simonstuck.vignelli.refactoring.step.RefactoringStepResult;
 import com.simonstuck.vignelli.ui.description.HTMLFileTemplate;
 import com.simonstuck.vignelli.ui.description.Template;
 import com.simonstuck.vignelli.util.IOUtil;
-import com.simonstuck.vignelli.psi.util.NavigationUtil;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -80,13 +80,12 @@ public class ExtractMethodRefactoringStep implements RefactoringStep {
     }
 
     @Override
-    public Result process() {
+    public void process() {
         PsiElement[] theElements = elementsToExtract.toArray(new PsiElement[elementsToExtract.size()]);
         ExtractMethodProcessor processor = ExtractMethodHandler.getProcessor(project, theElements, file, false);
         assert processor != null;
 
         ExtractMethodHandler.invokeOnElements(project, processor, file, false);
-        return new Result(processor.getExtractedMethod(), true);
     }
 
     @Override
@@ -161,7 +160,7 @@ public class ExtractMethodRefactoringStep implements RefactoringStep {
         private void setUpOriginalCallerMethods() {
             for (PsiElement elementToExtract : elementsToExtract) {
                 PsiMethod method = PsiTreeUtil.getParentOfType(elementToExtract, PsiMethod.class);
-                if (method != null) {
+                if (isAnyNullOrInvalid(method)) {
                     originalCallerMethods.add(method);
                 }
             }
@@ -178,7 +177,7 @@ public class ExtractMethodRefactoringStep implements RefactoringStep {
 
         @Override
         public RefactoringStepResult computeResult() {
-            if (clazz == null) {
+            if (isAnyNullOrInvalid(clazz)) {
                 return null;
             }
             Set<PsiMethod> newMethods = getDefinedMethods(clazz);
@@ -194,7 +193,7 @@ public class ExtractMethodRefactoringStep implements RefactoringStep {
 
         private boolean containsElementsSimilarToThoseToExtract(PsiMethod newMethod) {
             PsiCodeBlock body = newMethod.getBody();
-            if (body == null) {
+            if (isAnyNullOrInvalid(body)) {
                 return false;
             }
 

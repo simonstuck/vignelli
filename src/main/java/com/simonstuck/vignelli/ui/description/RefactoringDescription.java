@@ -44,13 +44,9 @@ public class RefactoringDescription extends Description implements Observer {
     }
 
     private void performNextStep() {
-        try {
-            refactoring.nextStep();
-            setChanged();
-            notifyObservers(this);
-        } catch (NoSuchMethodException e) {
-            LOG.error(e.getMessage(), e);
-        }
+        refactoring.nextStep();
+        setChanged();
+        notifyObservers(this);
     }
 
     @Override

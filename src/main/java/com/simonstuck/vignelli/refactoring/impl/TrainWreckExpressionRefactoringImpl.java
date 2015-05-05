@@ -7,20 +7,21 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiStatement;
 import com.simonstuck.vignelli.refactoring.Refactoring;
 import com.simonstuck.vignelli.refactoring.RefactoringTracker;
-import com.simonstuck.vignelli.refactoring.step.impl.ExtractMethodRefactoringStep;
-import com.simonstuck.vignelli.refactoring.step.impl.MoveMethodRefactoringStep;
 import com.simonstuck.vignelli.refactoring.step.RefactoringStep;
 import com.simonstuck.vignelli.refactoring.step.RefactoringStepDelegate;
 import com.simonstuck.vignelli.refactoring.step.RefactoringStepResult;
+import com.simonstuck.vignelli.refactoring.step.impl.ExtractMethodRefactoringStep;
+import com.simonstuck.vignelli.refactoring.step.impl.MoveMethodRefactoringStep;
 import com.simonstuck.vignelli.refactoring.step.impl.RenameMethodRefactoringStep;
 import com.simonstuck.vignelli.util.IOUtil;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.Map;
 
-public class TrainWreckExpressionRefactoringImpl extends Refactoring implements RefactoringStepDelegate {
+public class TrainWreckExpressionRefactoringImpl extends Refactoring implements RefactoringStepDelegate, RefactoringStep {
 
     private static final Logger LOG = Logger.getInstance(TrainWreckExpressionRefactoringImpl.class.getName());
 
@@ -33,10 +34,14 @@ public class TrainWreckExpressionRefactoringImpl extends Refactoring implements 
 
     private ExtractMethodRefactoringStep.Result extractMethodResult;
 
-    public TrainWreckExpressionRefactoringImpl(@NotNull Collection<PsiStatement> extractRegion, RefactoringTracker tracker, Project project, PsiFile file) {
+    @Nullable
+    private RefactoringStepDelegate delegate;
+
+    public TrainWreckExpressionRefactoringImpl(@NotNull Collection<PsiStatement> extractRegion, RefactoringTracker tracker, Project project, PsiFile file, @Nullable RefactoringStepDelegate delegate) {
         this.tracker = tracker;
         this.project = project;
         this.file = file;
+        this.delegate = delegate;
 
         currentRefactoringStep = new ExtractMethodRefactoringStep(extractRegion, file, project, EXTRACT_METHOD_DESCRIPTION_PATH, ApplicationManager.getApplication(), this);
         currentRefactoringStep.start();
@@ -48,7 +53,7 @@ public class TrainWreckExpressionRefactoringImpl extends Refactoring implements 
     }
 
     @Override
-    public void nextStep() throws NoSuchMethodException {
+    public void nextStep() {
         currentRefactoringStep.process();
     }
 
@@ -96,6 +101,9 @@ public class TrainWreckExpressionRefactoringImpl extends Refactoring implements 
             currentRefactoringStep = new RenameMethodRefactoringStep(moveMethodResult.getNewMethod(), project, this, ApplicationManager.getApplication());
         } else if (step instanceof RenameMethodRefactoringStep) {
             currentRefactoringStep = null;
+            if (delegate != null) {
+                delegate.didFinishRefactoringStep(this, null);
+            }
         }
 
         if (currentRefactoringStep != null) {
@@ -107,5 +115,25 @@ public class TrainWreckExpressionRefactoringImpl extends Refactoring implements 
 
     private MoveMethodRefactoringStep createMoveMethodRefactoringStep() {
         return new MoveMethodRefactoringStep(project, extractMethodResult.getExtractedMethod(), ApplicationManager.getApplication(), this);
+    }
+
+    @Override
+    public void start() {
+    }
+
+    @Override
+    public void end() {
+    }
+
+    @Override
+    public void process() {
+        if (hasNextStep()) {
+            nextStep();
+        }
+    }
+
+    @Override
+    public void describeStep(Map<String, Object> templateValues) {
+        fillTemplateValues(templateValues);
     }
 }

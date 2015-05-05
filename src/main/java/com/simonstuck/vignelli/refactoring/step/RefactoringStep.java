@@ -38,7 +38,7 @@ public interface RefactoringStep {
      * Manually trigger the required refactoring procedures in IntelliJ.
      * @return The result of the procedure.
      */
-    RefactoringStepResult process();
+    void process();
 
     /**
      * Describe the step by adding descriptive key-value pairs to the template store.

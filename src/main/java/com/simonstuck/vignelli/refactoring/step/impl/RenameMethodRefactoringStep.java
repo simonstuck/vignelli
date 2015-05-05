@@ -63,12 +63,10 @@ public class RenameMethodRefactoringStep implements RefactoringStep {
      * Performs the refactoring step.
      * @return The result of the refactoring
      */
-    public Result process() {
+    public void process() {
         moveCaretToMethodToRename();
         launchInlineRename();
         focusOnEditorForTyping();
-
-        return new Result(methodToRename);
     }
 
     /**
