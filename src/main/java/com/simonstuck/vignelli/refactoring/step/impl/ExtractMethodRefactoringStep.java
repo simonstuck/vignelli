@@ -14,7 +14,7 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.refactoring.extractMethod.ExtractMethodHandler;
 import com.intellij.refactoring.extractMethod.ExtractMethodProcessor;
 import com.intellij.util.Query;
-import com.simonstuck.vignelli.psi.util.NavigationUtil;
+import com.simonstuck.vignelli.psi.util.EditorUtil;
 import com.simonstuck.vignelli.refactoring.step.RefactoringStep;
 import com.simonstuck.vignelli.refactoring.step.RefactoringStepDelegate;
 import com.simonstuck.vignelli.refactoring.step.RefactoringStepGoalChecker;
@@ -70,7 +70,7 @@ public class ExtractMethodRefactoringStep implements RefactoringStep {
         application.addApplicationListener(extractedMethodChecker);
         Iterator<? extends PsiElement> elementsToExtractIterator = elementsToExtract.iterator();
         if (elementsToExtractIterator.hasNext()) {
-            NavigationUtil.navigateToElement(elementsToExtractIterator.next());
+            EditorUtil.navigateToElement(elementsToExtractIterator.next());
         }
     }
 

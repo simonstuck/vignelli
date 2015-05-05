@@ -20,7 +20,7 @@ import com.simonstuck.vignelli.refactoring.step.RefactoringStepResult;
 import com.simonstuck.vignelli.ui.description.HTMLFileTemplate;
 import com.simonstuck.vignelli.ui.description.Template;
 import com.simonstuck.vignelli.util.IOUtil;
-import com.simonstuck.vignelli.psi.util.NavigationUtil;
+import com.simonstuck.vignelli.psi.util.EditorUtil;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -57,7 +57,7 @@ public class ConvertToConstructorAssignedFieldRefactoringStep implements Refacto
     @Override
     public void start() {
         application.addApplicationListener(refactoringStepGoalChecker);
-        NavigationUtil.navigateToElement(expression);
+        EditorUtil.navigateToElement(expression);
     }
 
     @Override

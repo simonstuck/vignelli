@@ -19,7 +19,7 @@ import com.simonstuck.vignelli.evaluation.datamodel.MethodEval;
 import com.simonstuck.vignelli.evaluation.datamodel.ProjectEval;
 import com.simonstuck.vignelli.psi.util.LineUtil;
 import com.simonstuck.vignelli.psi.util.MetricsUtil;
-import com.simonstuck.vignelli.psi.util.NavigationUtil;
+import com.simonstuck.vignelli.psi.util.EditorUtil;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -78,7 +78,7 @@ public class RateMethodsAnAction extends AnAction {
             int nestedBlockDepth = MetricsUtil.getNestedBlockDepth(method);
             String[] options = new String[] { "complex", "not complex", "cancel", "stop and save"};
 
-            NavigationUtil.navigateToElement(method);
+            EditorUtil.navigateToElement(method);
 
             int selection = Messages.showDialog(clazz.getQualifiedName() + ":" + method.getName(), "Is This Method Complex?", options, 1, 0, Messages.getQuestionIcon(), null);
 

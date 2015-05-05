@@ -21,7 +21,7 @@ import com.simonstuck.vignelli.refactoring.step.RefactoringStepResult;
 import com.simonstuck.vignelli.ui.description.HTMLFileTemplate;
 import com.simonstuck.vignelli.ui.description.Template;
 import com.simonstuck.vignelli.util.IOUtil;
-import com.simonstuck.vignelli.psi.util.NavigationUtil;
+import com.simonstuck.vignelli.psi.util.EditorUtil;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -62,7 +62,7 @@ public class ExtractInterfaceRefactoringStep implements RefactoringStep {
     @Override
     public void start() {
         application.addApplicationListener(goalChecker);
-        NavigationUtil.navigateToElement(clazz);
+        EditorUtil.navigateToElement(clazz);
     }
 
     @Override
