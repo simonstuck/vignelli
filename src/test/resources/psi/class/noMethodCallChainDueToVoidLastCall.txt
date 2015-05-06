@@ -11,5 +11,5 @@ class Bar {
 }
 
 class Baz {
-    int world() {}
+    void world() {}
 }

@@ -5,7 +5,7 @@ import com.intellij.psi.PsiElement;
 
 public class LineUtil {
     public static int countLines(PsiElement element) {
-        if (element instanceof PsiCompiledElement) {
+        if (element instanceof PsiCompiledElement || element == null || !element.isValid()) {
             return 0;
         }
         return countLinesOfCode(element.getText());

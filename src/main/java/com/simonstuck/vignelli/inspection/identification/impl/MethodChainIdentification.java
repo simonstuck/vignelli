@@ -94,7 +94,7 @@ public class MethodChainIdentification implements ProblemDescriptorProvider {
 
         while (currentExpression != null) {
             PsiType newType = currentExpression.getType();
-            if (currentType != null ? !currentType.equals(newType) : newType != null) {
+            if (newType != PsiType.VOID && (currentType != null ? !currentType.equals(newType) : newType != null)) {
                 typeDifference++;
             }
             currentType = newType;

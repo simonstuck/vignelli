@@ -45,6 +45,13 @@ public class MethodChainIdentificationEngineTest extends LightIdeaTestCase {
         assertEquals(1, engine.identifyMethodChains(method).size());
     }
 
+    public void testReturnsNoIdentificationsForChainWithVoidLastMethodCallOfTypeDifferenceOne() throws Exception {
+        String twoCallMethodClass = IOUtils.readFile("src/test/resources/psi/class/noMethodCallChainDueToVoidLastCall.txt");
+        PsiClass clazz = getJavaFacade().getElementFactory().createClassFromText(twoCallMethodClass, null);
+        PsiMethod method = clazz.getMethods()[0];
+        assertEquals(0, engine.identifyMethodChains(method).size());
+    }
+
     public void testDoesNotIdentifyBuilderCalls() throws Exception {
         String builderCallMethodClass = IOUtils.readFile("src/test/resources/psi/class/builderMethodCallChains.txt");
         PsiClass clazz = getJavaFacade().getElementFactory().createClassFromText(builderCallMethodClass, null);
