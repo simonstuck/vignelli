@@ -41,7 +41,6 @@ public class MoveMethodRefactoringStep implements RefactoringStep {
     private final PsiClass targetClass;
     private final MethodMovedToTargetGoalChecker methodMovedToTargetGoalChecker;
     private final Application application;
-    private final ClassFinder classFinder;
 
     public MoveMethodRefactoringStep(Project project, PsiMethod methodToMove, Application application, RefactoringStepDelegate delegate) {
         this.project = project;
@@ -56,8 +55,6 @@ public class MoveMethodRefactoringStep implements RefactoringStep {
         }
 
         methodMovedToTargetGoalChecker = new MethodMovedToTargetGoalChecker(this, delegate);
-
-        classFinder = new IntelliJClassFinder(project);
     }
 
     @Override
@@ -114,7 +111,7 @@ public class MoveMethodRefactoringStep implements RefactoringStep {
 
     @Nullable
     private PsiExpression getTargetExpression(PsiMethod methodToMove) {
-        MethodChainIdentificationEngine engine = new MethodChainIdentificationEngine(classFinder);
+        MethodChainIdentificationEngine engine = new MethodChainIdentificationEngine(new IntelliJClassFinder(project));
         Set<MethodChainIdentification> methodChainIdentifications = engine.identifyMethodChains(methodToMove);
         if (!methodChainIdentifications.isEmpty()) {
             MethodChainIdentification first = methodChainIdentifications.iterator().next();
