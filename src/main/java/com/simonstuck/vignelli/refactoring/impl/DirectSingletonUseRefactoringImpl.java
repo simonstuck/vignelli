@@ -102,6 +102,10 @@ public class DirectSingletonUseRefactoringImpl extends Refactoring implements Re
         LOG.info("didFinishRefactoringStep!");
         currentRefactoringStep.end();
 
+        if (!result.isSuccess()) {
+            complete();
+        }
+
         if (step instanceof ExtractMethodRefactoringStep) {
             extractMethodResult = (ExtractMethodRefactoringStep.Result) result;
             currentRefactoringStep = createCovertToConstructorAssignedFieldRefactoringStep();

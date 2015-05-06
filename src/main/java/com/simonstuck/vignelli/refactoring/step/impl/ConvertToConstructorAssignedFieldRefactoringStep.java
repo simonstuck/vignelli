@@ -104,7 +104,7 @@ public class ConvertToConstructorAssignedFieldRefactoringStep implements Refacto
 
         @Override
         public boolean isSuccess() {
-            return false;
+            return true;
         }
     }
 

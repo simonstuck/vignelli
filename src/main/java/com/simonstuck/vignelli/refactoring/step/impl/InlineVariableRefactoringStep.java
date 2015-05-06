@@ -110,7 +110,7 @@ public class InlineVariableRefactoringStep implements RefactoringStep {
 
         @Override
         public boolean isSuccess() {
-            return false;
+            return true;
         }
     }
 

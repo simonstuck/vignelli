@@ -103,6 +103,11 @@ public class IntroduceParametersForMembersRefactoringImpl extends Refactoring im
     @Override
     public void didFinishRefactoringStep(RefactoringStep step, RefactoringStepResult result) {
         step.end();
+
+        if (!result.isSuccess()) {
+            complete();
+        }
+
         prepareNextStep();
         if (introduceParameterStep == null && listening) {
             delegate.didFinishRefactoringStep(this, null);

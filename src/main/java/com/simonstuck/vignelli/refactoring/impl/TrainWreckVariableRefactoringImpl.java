@@ -75,7 +75,14 @@ public class TrainWreckVariableRefactoringImpl extends Refactoring implements Re
     @Override
     public void didFinishRefactoringStep(RefactoringStep step, RefactoringStepResult result) {
         step.end();
+
+        // If result == null, then the result comes from the expression refactoring and we should not automatically complete.
+        if (result != null && !result.isSuccess()) {
+            complete();
+        }
+
         if (step instanceof InlineVariableRefactoringStep) {
+            assert result != null;
             InlineVariableRefactoringStep.Result inlineVariableResult = (InlineVariableRefactoringStep.Result) result;
             Collection<PsiStatement> extractRegion = inlineVariableResult.getAffectedStatements();
             currentRefactoringStep = new TrainWreckExpressionRefactoringImpl(extractRegion, refactoringTracker, project, file, this);

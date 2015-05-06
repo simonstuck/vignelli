@@ -91,6 +91,10 @@ public class TrainWreckExpressionRefactoringImpl extends Refactoring implements 
         LOG.info("didFinishRefactoringStep!");
         currentRefactoringStep.end();
 
+        if (!result.isSuccess()) {
+            complete();
+        }
+
         if (step instanceof ExtractMethodRefactoringStep) {
             extractMethodResult = (ExtractMethodRefactoringStep.Result) result;
             IntroduceParametersForMembersRefactoringImpl introduceParametersForMembersRefactoring = new IntroduceParametersForMembersRefactoringImpl(extractMethodResult.getExtractedMethod(), tracker, project, file, this);
