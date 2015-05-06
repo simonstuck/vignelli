@@ -5,6 +5,7 @@ import com.intellij.psi.PsiMethod;
 import com.intellij.testFramework.LightIdeaTestCase;
 import com.simonstuck.vignelli.inspection.identification.engine.MethodChainIdentificationEngine;
 import com.simonstuck.vignelli.inspection.identification.impl.MethodChainIdentification;
+import com.simonstuck.vignelli.psi.MockClassFinder;
 import com.simonstuck.vignelli.testutils.IOUtils;
 
 import org.junit.Before;
@@ -19,7 +20,7 @@ public class MethodChainIdentificationEngineTest extends LightIdeaTestCase {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        engine = new MethodChainIdentificationEngine();
+        engine = new MethodChainIdentificationEngine(new MockClassFinder());
     }
 
     public void testIdentifyMethodChainsReturnsIdentificationsInstance() throws Exception {
@@ -79,4 +80,5 @@ public class MethodChainIdentificationEngineTest extends LightIdeaTestCase {
         String emptyMethod = IOUtils.readFile("src/test/resources/psi/method/emptyMethod.txt");
         return getJavaFacade().getElementFactory().createMethodFromText(emptyMethod, null);
     }
+
 }

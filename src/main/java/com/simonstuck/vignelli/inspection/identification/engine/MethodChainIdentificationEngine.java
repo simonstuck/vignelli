@@ -5,6 +5,9 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiMethodCallExpression;
 import com.simonstuck.vignelli.inspection.identification.impl.MethodChainIdentification;
 import com.simonstuck.vignelli.inspection.identification.predicate.MethodChainMultipleCallsPredicate;
+import com.simonstuck.vignelli.psi.ClassFinder;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -16,6 +19,12 @@ import java.util.Set;
 public class MethodChainIdentificationEngine {
 
     public static final int TYPE_DIFFERENCE_THRESHOLD = 1;
+    private final ClassFinder classFinder;
+
+
+    public MethodChainIdentificationEngine(@NotNull ClassFinder classFinder) {
+        this.classFinder = classFinder;
+    }
 
     /**
      * Identifies all method chains in the given {@link PsiElement}.
@@ -24,19 +33,17 @@ public class MethodChainIdentificationEngine {
      */
     public Set<MethodChainIdentification> identifyMethodChains(PsiElement element) {
         final Collection<MethodChainIdentification> candidates = computeIdentificationCandidates(element);
-        final Collection<MethodChainIdentification> toIgnore = allMethodChainQualifiers(candidates);
 
         Set<MethodChainIdentification> result = new HashSet<MethodChainIdentification>();
         for (MethodChainIdentification candidate : candidates) {
             Predicate<MethodChainIdentification> multipleCallsPredicate = new MethodChainMultipleCallsPredicate();
             int typeDifference = candidate.calculateTypeDifference();
-            if (!toIgnore.contains(candidate)
-                    && multipleCallsPredicate.apply(candidate)
-                    && typeDifference > TYPE_DIFFERENCE_THRESHOLD
-                ) {
+            boolean containsProjectExternalCalls = candidate.containsProjectExternalCalls();
+            if (!containsProjectExternalCalls && multipleCallsPredicate.apply(candidate) && typeDifference > TYPE_DIFFERENCE_THRESHOLD) {
                 result.add(candidate);
             }
         }
+        result.removeAll(allMethodChainQualifiers(result));
         return result;
     }
 
@@ -62,7 +69,7 @@ public class MethodChainIdentificationEngine {
         final Set<PsiMethodCallExpression> methodCalls = getMethodCalls(element);
         final List<MethodChainIdentification> result = new ArrayList<MethodChainIdentification>(methodCalls.size());
         for (PsiMethodCallExpression expression : methodCalls) {
-            result.add(MethodChainIdentification.createWithFinalCall(expression));
+            result.add(MethodChainIdentification.createWithFinalCall(expression, classFinder));
         }
         return result;
     }

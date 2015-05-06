@@ -1,7 +1,5 @@
 package com.simonstuck.vignelli.inspection.identification;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -11,38 +9,37 @@ import com.intellij.psi.PsiExpression;
 import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.PsiReferenceExpression;
 import com.intellij.psi.PsiType;
+import com.intellij.testFramework.LightIdeaTestCase;
 import com.simonstuck.vignelli.inspection.identification.impl.MethodChainIdentification;
+import com.simonstuck.vignelli.psi.ClassFinder;
+import com.simonstuck.vignelli.psi.IntelliJClassFinder;
 
-import org.junit.Before;
-import org.junit.Test;
-
-public class MethodChainIdentificationTest {
+public class MethodChainIdentificationTest extends LightIdeaTestCase {
 
     private PsiMethodCallExpression finalCallMock;
     private MethodChainIdentification id;
     private PsiReferenceExpression refExprMock;
+    private ClassFinder classFinder;
 
-    @Before
     public void setUp() throws Exception {
+        super.setUp();
         refExprMock = mock(PsiReferenceExpression.class);
+        classFinder = new IntelliJClassFinder(getProject());
 
         finalCallMock = mock(PsiMethodCallExpression.class);
         when(finalCallMock.getMethodExpression()).thenReturn(refExprMock);
-        id = MethodChainIdentification.createWithFinalCall(finalCallMock);
+        id = MethodChainIdentification.createWithFinalCall(finalCallMock, classFinder);
     }
 
-    @Test
-    public void shouldUseHashCodeOfFinalCall() throws Exception {
+    public void testShouldUseHashCodeOfFinalCall() throws Exception {
         assertEquals(finalCallMock.hashCode(), id.hashCode());
     }
 
-    @Test
-    public void shouldBeEqualToOtherMethodChainIdentificationWithSameFinalCall() throws Exception {
-        assertTrue(id.equals(MethodChainIdentification.createWithFinalCall(finalCallMock)));
+    public void testShouldBeEqualToOtherMethodChainIdentificationWithSameFinalCall() throws Exception {
+        assertTrue(id.equals(MethodChainIdentification.createWithFinalCall(finalCallMock, classFinder)));
     }
 
-    @Test
-    public void shouldReturnNoMethodCallQualifierForMethodCallWithNoQualifier() throws Exception {
+    public void testShouldReturnNoMethodCallQualifierForMethodCallWithNoQualifier() throws Exception {
         PsiExpression qualifierExprMock = mock(PsiExpression.class);
         when(refExprMock.getQualifierExpression()).thenReturn(qualifierExprMock);
 
@@ -51,31 +48,27 @@ public class MethodChainIdentificationTest {
         verify(finalCallMock).getMethodExpression();
     }
 
-    @Test
-    public void shouldReturnTypeOfFinalCallAsType() throws Exception {
+    public void testShouldReturnTypeOfFinalCallAsType() throws Exception {
         when(finalCallMock.getType()).thenReturn(PsiType.BOOLEAN);
         assertEquals(PsiType.BOOLEAN, id.getMethodCallType());
     }
 
-    @Test
-    public void shouldReturnImmediateQualifierForMethodCall() throws Exception {
+    public void testShouldReturnImmediateQualifierForMethodCall() throws Exception {
         PsiMethodCallExpression qualifierExprMock = mock(PsiMethodCallExpression.class);
         when(refExprMock.getQualifierExpression()).thenReturn(qualifierExprMock);
-        MethodChainIdentification qualifierIdentification = MethodChainIdentification.createWithFinalCall(qualifierExprMock);
+        MethodChainIdentification qualifierIdentification = MethodChainIdentification.createWithFinalCall(qualifierExprMock, classFinder);
 
         Optional<MethodChainIdentification> qualifier = id.getMethodCallQualifier();
         assertEquals(Optional.of(qualifierIdentification), qualifier);
     }
 
-    @Test
-    public void shouldReturnEmptySetForMethodCallWithoutQualifier() throws Exception {
+    public void testShouldReturnEmptySetForMethodCallWithoutQualifier() throws Exception {
         PsiExpression qualifierExprMock = mock(PsiExpression.class);
         when(refExprMock.getQualifierExpression()).thenReturn(qualifierExprMock);
         assertEquals(0, id.getAllMethodCallQualifiers().size());
     }
 
-    @Test
-    public void shouldReturnZeroTypeDifferenceForNoDifference() throws Exception {
+    public void testShouldReturnZeroTypeDifferenceForNoDifference() throws Exception {
         PsiReferenceExpression q1RefMock = mock(PsiReferenceExpression.class);
         PsiMethodCallExpression qualifier1ExprMock = mock(PsiMethodCallExpression.class);
         when(qualifier1ExprMock.getMethodExpression()).thenReturn(q1RefMock);
@@ -87,8 +80,7 @@ public class MethodChainIdentificationTest {
         assertEquals(0, id.calculateTypeDifference());
     }
 
-    @Test
-    public void shouldReturnOneTypeDifferenceForSimpleGetter() throws Exception {
+    public void testShouldReturnOneTypeDifferenceForSimpleGetter() throws Exception {
         PsiReferenceExpression q2RefMock = mock(PsiReferenceExpression.class);
         PsiMethodCallExpression qualifier2ExprMock = mock(PsiMethodCallExpression.class);
         when(qualifier2ExprMock.getMethodExpression()).thenReturn(q2RefMock);
@@ -105,8 +97,7 @@ public class MethodChainIdentificationTest {
         assertEquals(1, id.calculateTypeDifference());
     }
 
-    @Test
-    public void shouldReturnOneTypeDifferenceForBuilderBuildPattern() throws Exception {
+    public void testShouldReturnOneTypeDifferenceForBuilderBuildPattern() throws Exception {
         //ta().ta().ta().tB()
         PsiReferenceExpression q3RefMock = mock(PsiReferenceExpression.class);
         PsiMethodCallExpression qualifier3ExprMock = mock(PsiMethodCallExpression.class);

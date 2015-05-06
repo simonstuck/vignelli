@@ -12,6 +12,8 @@ import com.intellij.psi.util.PsiTypesUtil;
 import com.intellij.refactoring.move.moveInstanceMethod.MoveInstanceMethodHandlerDelegate;
 import com.simonstuck.vignelli.inspection.identification.impl.MethodChainIdentification;
 import com.simonstuck.vignelli.inspection.identification.engine.MethodChainIdentificationEngine;
+import com.simonstuck.vignelli.psi.ClassFinder;
+import com.simonstuck.vignelli.psi.IntelliJClassFinder;
 import com.simonstuck.vignelli.psi.PsiContainsChecker;
 import com.simonstuck.vignelli.refactoring.step.RefactoringStep;
 import com.simonstuck.vignelli.refactoring.step.RefactoringStepDelegate;
@@ -39,6 +41,7 @@ public class MoveMethodRefactoringStep implements RefactoringStep {
     private final PsiClass targetClass;
     private final MethodMovedToTargetGoalChecker methodMovedToTargetGoalChecker;
     private final Application application;
+    private final ClassFinder classFinder;
 
     public MoveMethodRefactoringStep(Project project, PsiMethod methodToMove, Application application, RefactoringStepDelegate delegate) {
         this.project = project;
@@ -54,6 +57,7 @@ public class MoveMethodRefactoringStep implements RefactoringStep {
 
         methodMovedToTargetGoalChecker = new MethodMovedToTargetGoalChecker(this, delegate);
 
+        classFinder = new IntelliJClassFinder(project);
     }
 
     @Override
@@ -110,7 +114,7 @@ public class MoveMethodRefactoringStep implements RefactoringStep {
 
     @Nullable
     private PsiExpression getTargetExpression(PsiMethod methodToMove) {
-        MethodChainIdentificationEngine engine = new MethodChainIdentificationEngine();
+        MethodChainIdentificationEngine engine = new MethodChainIdentificationEngine(classFinder);
         Set<MethodChainIdentification> methodChainIdentifications = engine.identifyMethodChains(methodToMove);
         if (!methodChainIdentifications.isEmpty()) {
             MethodChainIdentification first = methodChainIdentifications.iterator().next();
