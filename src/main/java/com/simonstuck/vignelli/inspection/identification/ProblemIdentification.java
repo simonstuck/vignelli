@@ -62,6 +62,8 @@ public abstract class ProblemIdentification implements com.simonstuck.vignelli.T
         ProblemDescriptor thatDescriptor = that.getProblemDescriptor();
 
         return that.name.equals(name)
+                && Objects.equals(that.element, element)
+                && Objects.equals(that.element.isValid(), element.isValid())
                 && Objects.equals(thatDescriptor.getStartElement(), problemDescriptor.getStartElement())
                 && Objects.equals(thatDescriptor.getStartElement(), problemDescriptor.getStartElement())
                 && Objects.equals(thatDescriptor.getEndElement(), problemDescriptor.getEndElement())
@@ -76,6 +78,8 @@ public abstract class ProblemIdentification implements com.simonstuck.vignelli.T
     public int hashCode() {
         return new HashCodeBuilder()
                 .append(name)
+                .append(element)
+                .append(element.isValid())
                 .append(problemDescriptor.getStartElement())
                 .append(problemDescriptor.getEndElement())
                 .append(problemDescriptor.getDescriptionTemplate())
