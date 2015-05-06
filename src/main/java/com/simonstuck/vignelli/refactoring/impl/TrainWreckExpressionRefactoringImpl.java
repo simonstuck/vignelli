@@ -79,6 +79,9 @@ public class TrainWreckExpressionRefactoringImpl extends Refactoring implements 
     public void complete() {
         tracker.remove(this);
         deleteObservers();
+        if (currentRefactoringStep != null) {
+            currentRefactoringStep.end();
+        }
     }
 
     @Override
@@ -132,6 +135,7 @@ public class TrainWreckExpressionRefactoringImpl extends Refactoring implements 
 
     @Override
     public void end() {
+        complete();
     }
 
     @Override

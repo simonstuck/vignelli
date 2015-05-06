@@ -6,6 +6,12 @@ import com.intellij.openapi.fileEditor.FileEditorManagerEvent;
 import com.intellij.openapi.fileEditor.FileEditorManagerListener;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiManager;
+import com.intellij.psi.PsiTreeChangeAdapter;
+import com.intellij.psi.PsiTreeChangeEvent;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.messages.MessageBus;
 import com.intellij.util.messages.Topic;
 import com.simonstuck.vignelli.inspection.identification.ProblemIdentification;
@@ -15,8 +21,10 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.Set;
 
 public class ProblemIdentificationCacheComponent implements ProjectComponent {
     /**
@@ -28,6 +36,7 @@ public class ProblemIdentificationCacheComponent implements ProjectComponent {
     private static final String COMPONENT_NAME = "Vignelli Problem Identification Cache";
 
     private final Map<VirtualFile, Map<Object, LinkedList<ProblemIdentification>>> problemIdentifications;
+
     private final ProblemFileSelectionListener problemFileSelectionListener;
     private final Project project;
 
@@ -95,8 +104,47 @@ public class ProblemIdentificationCacheComponent implements ProjectComponent {
         return result;
     }
 
+    private synchronized void prepareElementForRemoval(PsiElement elementToBeRemoved) {
+        PsiFile containingFile = elementToBeRemoved.getContainingFile();
+        if (containingFile != null) {
+            VirtualFile elementVirtualFile = containingFile.getVirtualFile();
+            Map<Object, LinkedList<ProblemIdentification>> problemOwnerIdentifications = problemIdentifications.get(elementVirtualFile);
+            if (problemOwnerIdentifications != null) {
+                // there are elements for this file
+                for (Map.Entry<Object, LinkedList<ProblemIdentification>> entry : problemOwnerIdentifications.entrySet()) {
+                    Object owner = entry.getKey();
+                    Set<ProblemIdentification> newProblemsForOwner = new HashSet<ProblemIdentification>();
+
+                    for (ProblemIdentification problemIdentification : entry.getValue()) {
+                        if (!PsiTreeUtil.isAncestor(elementToBeRemoved, problemIdentification.getElement(), false)) {
+                            newProblemsForOwner.add(problemIdentification);
+                        }
+                    }
+                    if (!newProblemsForOwner.containsAll(entry.getValue())) {
+                        updateFileProblems(elementVirtualFile, owner, newProblemsForOwner);
+                    }
+                }
+            }
+        }
+    }
+
     @Override
-    public void projectOpened() {}
+    public void projectOpened() {
+        PsiManager psiManager = PsiManager.getInstance(project);
+        psiManager.addPsiTreeChangeListener(new PsiTreeChangeAdapter() {
+            @Override
+            public void beforeChildRemoval(@NotNull PsiTreeChangeEvent event) {
+                super.beforeChildRemoval(event);
+                prepareElementForRemoval(event.getChild());
+            }
+
+            @Override
+            public void beforeChildReplacement(@NotNull PsiTreeChangeEvent event) {
+                super.beforeChildReplacement(event);
+                prepareElementForRemoval(event.getOldChild());
+            }
+        }, project);
+    }
 
     @Override
     public void projectClosed() {}

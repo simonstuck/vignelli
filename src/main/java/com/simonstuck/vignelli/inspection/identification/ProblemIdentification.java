@@ -93,4 +93,8 @@ public abstract class ProblemIdentification implements com.simonstuck.vignelli.T
     public String toString() {
         return name;
     }
+
+    public PsiElement getElement() {
+        return element;
+    }
 }

@@ -65,6 +65,9 @@ public class TrainWreckVariableRefactoringImpl extends Refactoring implements Re
     @Override
     public void complete() {
         refactoringTracker.remove(this);
+        if (currentRefactoringStep != null) {
+            currentRefactoringStep.end();
+        }
     }
 
     @Override
