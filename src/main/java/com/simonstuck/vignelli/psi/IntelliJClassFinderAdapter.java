@@ -5,7 +5,7 @@ import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.search.GlobalSearchScope;
 
-public class IntelliJClassFinder implements ClassFinder {
+public class IntelliJClassFinderAdapter implements ClassFinder {
     
     private final JavaPsiFacade javaPsiFacade;
 
@@ -13,7 +13,7 @@ public class IntelliJClassFinder implements ClassFinder {
      * Creates a default IntelliJ class finder, a wrapper around JavaPsiFacade
      * @param project The project for which to create the facade.
      */
-    public IntelliJClassFinder(Project project) {
+    public IntelliJClassFinderAdapter(Project project) {
         javaPsiFacade = JavaPsiFacade.getInstance(project);
     }
 

@@ -12,7 +12,7 @@ import com.intellij.psi.PsiType;
 import com.intellij.testFramework.LightIdeaTestCase;
 import com.simonstuck.vignelli.inspection.identification.impl.MethodChainIdentification;
 import com.simonstuck.vignelli.psi.ClassFinder;
-import com.simonstuck.vignelli.psi.IntelliJClassFinder;
+import com.simonstuck.vignelli.psi.IntelliJClassFinderAdapter;
 
 public class MethodChainIdentificationTest extends LightIdeaTestCase {
 
@@ -24,7 +24,7 @@ public class MethodChainIdentificationTest extends LightIdeaTestCase {
     public void setUp() throws Exception {
         super.setUp();
         refExprMock = mock(PsiReferenceExpression.class);
-        classFinder = new IntelliJClassFinder(getProject());
+        classFinder = new IntelliJClassFinderAdapter(getProject());
 
         finalCallMock = mock(PsiMethodCallExpression.class);
         when(finalCallMock.getMethodExpression()).thenReturn(refExprMock);

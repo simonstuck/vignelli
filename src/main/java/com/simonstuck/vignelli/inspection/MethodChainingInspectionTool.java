@@ -7,7 +7,7 @@ import com.simonstuck.vignelli.inspection.identification.ProblemDescriptorProvid
 import com.simonstuck.vignelli.inspection.identification.ProblemIdentification;
 import com.simonstuck.vignelli.inspection.identification.TrainWreckProblemIdentification;
 import com.simonstuck.vignelli.inspection.identification.engine.MethodChainIdentificationEngine;
-import com.simonstuck.vignelli.psi.IntelliJClassFinder;
+import com.simonstuck.vignelli.psi.IntelliJClassFinderAdapter;
 
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
@@ -20,7 +20,7 @@ public class MethodChainingInspectionTool extends ProblemReporterInspectionTool 
 
     private MethodChainIdentificationEngine getIdentificationEngine(Project project) {
         //TODO: Measure performance here, this could be a bottleneck!
-        return new MethodChainIdentificationEngine(new IntelliJClassFinder(project));
+        return new MethodChainIdentificationEngine(new IntelliJClassFinderAdapter(project));
     }
 
     @Override
