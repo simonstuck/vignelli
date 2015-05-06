@@ -26,8 +26,13 @@ public class TrainWreckExpressionRefactoringImpl extends Refactoring implements 
     private static final Logger LOG = Logger.getInstance(TrainWreckExpressionRefactoringImpl.class.getName());
 
     private static final String EXTRACT_METHOD_DESCRIPTION_PATH = "descriptionTemplates/extractMethodTrainWreckStepDescription.html";
+    public static final String DESCRIPTION_TEMPLATE_PATH = "descriptionTemplates/trainWreckRefactoring.html";
+
+    @NotNull
     private final RefactoringTracker tracker;
+    @NotNull
     private final Project project;
+    @NotNull
     private final PsiFile file;
 
     private RefactoringStep currentRefactoringStep;
@@ -37,7 +42,7 @@ public class TrainWreckExpressionRefactoringImpl extends Refactoring implements 
     @Nullable
     private RefactoringStepDelegate delegate;
 
-    public TrainWreckExpressionRefactoringImpl(@NotNull Collection<PsiStatement> extractRegion, RefactoringTracker tracker, Project project, PsiFile file, @Nullable RefactoringStepDelegate delegate) {
+    public TrainWreckExpressionRefactoringImpl(@NotNull Collection<PsiStatement> extractRegion, @NotNull RefactoringTracker tracker, @NotNull Project project, @NotNull PsiFile file, @Nullable RefactoringStepDelegate delegate) {
         this.tracker = tracker;
         this.project = project;
         this.file = file;
@@ -78,7 +83,7 @@ public class TrainWreckExpressionRefactoringImpl extends Refactoring implements 
 
     @Override
     public String template() {
-        return IOUtil.tryReadFile("descriptionTemplates/trainWreckRefactoring.html");
+        return IOUtil.tryReadFile(DESCRIPTION_TEMPLATE_PATH);
     }
 
     @Override

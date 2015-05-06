@@ -1,6 +1,5 @@
 package com.simonstuck.vignelli.evaluation.datamodel;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,9 +15,11 @@ public class ProjectEval {
         classEvals.put(classEval.getName(), classEval);
     }
 
-    public void addAllClassEval(Collection<? extends ClassEval> classEvals) {
-        for (ClassEval classEval : classEvals) {
-            addClassEval(classEval);
-        }
+    public String getName() {
+        return name;
+    }
+
+    public Map<String, ClassEval> getClassEvals() {
+        return new HashMap<String, ClassEval>(classEvals);
     }
 }

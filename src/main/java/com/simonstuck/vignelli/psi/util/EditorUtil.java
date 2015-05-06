@@ -58,7 +58,7 @@ public class EditorUtil {
      * @return The editor for that element
      */
     @NotNull
-    public static Editor getEditor(PsiElement element) {
+    public static Editor getEditor(@NotNull PsiElement element) {
         Project project = element.getProject();
         PsiDocumentManager documentManager = PsiDocumentManager.getInstance(project);
         Document document = documentManager.getDocument(element.getContainingFile());

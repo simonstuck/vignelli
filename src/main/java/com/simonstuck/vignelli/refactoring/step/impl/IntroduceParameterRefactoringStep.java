@@ -4,8 +4,6 @@ import com.intellij.openapi.application.Application;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.ActionCallback;
-import com.intellij.openapi.wm.IdeFocusManager;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
@@ -16,6 +14,7 @@ import com.intellij.psi.PsiReferenceExpression;
 import com.intellij.psi.PsiStatement;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.refactoring.introduceParameter.IntroduceParameterHandler;
+import com.simonstuck.vignelli.psi.util.EditorUtil;
 import com.simonstuck.vignelli.refactoring.step.RefactoringStep;
 import com.simonstuck.vignelli.refactoring.step.RefactoringStepDelegate;
 import com.simonstuck.vignelli.refactoring.step.RefactoringStepGoalChecker;
@@ -23,7 +22,6 @@ import com.simonstuck.vignelli.refactoring.step.RefactoringStepResult;
 import com.simonstuck.vignelli.ui.description.HTMLFileTemplate;
 import com.simonstuck.vignelli.ui.description.Template;
 import com.simonstuck.vignelli.util.IOUtil;
-import com.simonstuck.vignelli.psi.util.EditorUtil;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -51,7 +49,8 @@ public class IntroduceParameterRefactoringStep implements RefactoringStep {
         this.file = file;
         this.element = element;
         this.application = application;
-        editor = FileEditorManager.getInstance(project).getSelectedTextEditor();
+        FileEditorManager instance = FileEditorManager.getInstance(project);
+        editor = instance.getSelectedTextEditor();
         this.descriptionPath = descriptionPath;
         parameterIntroducedListener = new ParameterIntroducedChecker(this,delegate);
     }
@@ -69,12 +68,10 @@ public class IntroduceParameterRefactoringStep implements RefactoringStep {
 
     @Override
     public void process() {
-        moveCaretToElement();
-
+        EditorUtil.navigateToElement(element);
         IntroduceParameterHandler handler = new IntroduceParameterHandler();
         handler.invoke(project, editor, file, null);
-
-        focusOnEditorForTyping();
+        EditorUtil.focusOnEditorForTyping(EditorUtil.getEditor(element));
     }
 
     @Override
@@ -90,27 +87,10 @@ public class IntroduceParameterRefactoringStep implements RefactoringStep {
 
         PsiClass clazz = PsiTreeUtil.getParentOfType(element, PsiClass.class);
         if (clazz != null) {
-            contentMap.put("currentClass", clazz.getText());
+            contentMap.put("currentClass", clazz.getName());
         }
 
         return template.render(contentMap);
-    }
-
-
-    /**
-     * Focuses the user on the editor to enable direct typing without having to click on the editor.
-     *
-     * @return An action callback that runs when the focus has been performed
-     */
-    private ActionCallback focusOnEditorForTyping() {
-        return IdeFocusManager.getInstance(project).requestFocus(editor.getContentComponent(), true);
-    }
-
-    /**
-     * Moves the caret to the method to rename.
-     */
-    private void moveCaretToElement() {
-        editor.getCaretModel().moveToOffset(element.getTextOffset());
     }
 
     public static final class Result implements RefactoringStepResult {

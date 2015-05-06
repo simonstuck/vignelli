@@ -5,6 +5,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiMethod;
 import com.intellij.refactoring.rename.inplace.MemberInplaceRenameHandler;
+import com.intellij.util.messages.MessageBus;
 import com.intellij.util.messages.MessageBusConnection;
 import com.simonstuck.vignelli.inspection.RenameListener;
 import com.simonstuck.vignelli.inspection.VignelliRefactoringListener;
@@ -25,19 +26,24 @@ import java.util.Map;
 public class RenameMethodRefactoringStep implements RefactoringStep {
 
     private static final String RENAME_METHOD_STEP_NAME = "Rename Method";
+    public static final String DESCRIPTION_TEMPLATE_PATH = "descriptionTemplates/renameMethodStepDescription.html";
+
+    @NotNull
     private PsiMethod methodToRename;
+    @NotNull
     private final RenameGoalChecker renameGoalChecker;
+    @NotNull
     private final Application application;
+    @NotNull
     private MessageBusConnection messageBusConnection;
 
-    public RenameMethodRefactoringStep(PsiMethod methodToRename, Project project, RefactoringStepDelegate delegate, Application application) {
+    public RenameMethodRefactoringStep(@NotNull PsiMethod methodToRename, @NotNull Project project, @NotNull RefactoringStepDelegate delegate, @NotNull Application application) {
         this.methodToRename = methodToRename;
         renameGoalChecker = new RenameGoalChecker(this, delegate);
         this.application = application;
-        messageBusConnection = project.getMessageBus().connect();
+        MessageBus messageBus = project.getMessageBus();
+        messageBusConnection = messageBus.connect();
     }
-
-
 
     @Override
     public void start() {
@@ -78,13 +84,9 @@ public class RenameMethodRefactoringStep implements RefactoringStep {
     }
 
     public void describeStep(Map<String, Object> templateValues) {
-        Template template = new HTMLFileTemplate(template());
-        templateValues.put("nextStepDescription", template.render(new HashMap<String, Object>()));
-        templateValues.put("nextStepName", RENAME_METHOD_STEP_NAME);
-    }
-
-    private String template() {
-        return IOUtil.tryReadFile("descriptionTemplates/renameMethodStepDescription.html");
+        Template template = new HTMLFileTemplate(IOUtil.tryReadFile(DESCRIPTION_TEMPLATE_PATH));
+        templateValues.put(STEP_DESCRIPTION_TEMPLATE_KEY, template.render(new HashMap<String, Object>()));
+        templateValues.put(STEP_NAME_TEMPLATE_KEY, RENAME_METHOD_STEP_NAME);
     }
 
     /**
