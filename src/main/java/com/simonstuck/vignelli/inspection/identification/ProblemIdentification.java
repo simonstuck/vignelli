@@ -63,15 +63,7 @@ public abstract class ProblemIdentification implements com.simonstuck.vignelli.T
 
         return that.name.equals(name)
                 && Objects.equals(that.element, element)
-                && Objects.equals(that.element.isValid(), element.isValid())
-                && Objects.equals(thatDescriptor.getStartElement(), problemDescriptor.getStartElement())
-                && Objects.equals(thatDescriptor.getStartElement(), problemDescriptor.getStartElement())
-                && Objects.equals(thatDescriptor.getEndElement(), problemDescriptor.getEndElement())
-                && Objects.equals(thatDescriptor.getDescriptionTemplate(), problemDescriptor.getDescriptionTemplate())
-                && thatDescriptor.getLineNumber() == problemDescriptor.getLineNumber()
-                && thatDescriptor.isAfterEndOfLine() == problemDescriptor.isAfterEndOfLine()
-                && thatDescriptor.getHighlightType() == problemDescriptor.getHighlightType()
-                && thatDescriptor.getPsiElement() == problemDescriptor.getPsiElement();
+                && Objects.equals(thatDescriptor, problemDescriptor);
     }
 
     @Override
@@ -79,14 +71,7 @@ public abstract class ProblemIdentification implements com.simonstuck.vignelli.T
         return new HashCodeBuilder()
                 .append(name)
                 .append(element)
-                .append(element.isValid())
-                .append(problemDescriptor.getStartElement())
-                .append(problemDescriptor.getEndElement())
-                .append(problemDescriptor.getDescriptionTemplate())
-                .append(problemDescriptor.getLineNumber())
-                .append(problemDescriptor.isAfterEndOfLine())
-                .append(problemDescriptor.getHighlightType())
-                .append(problemDescriptor.getPsiElement()).toHashCode();
+                .append(problemDescriptor).toHashCode();
     }
 
     @Override

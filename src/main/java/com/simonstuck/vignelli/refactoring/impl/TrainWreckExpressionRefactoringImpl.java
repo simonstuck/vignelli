@@ -94,12 +94,13 @@ public class TrainWreckExpressionRefactoringImpl extends Refactoring implements 
         LOG.info("didFinishRefactoringStep!");
         currentRefactoringStep.end();
 
-        if (!result.isSuccess()) {
+        if (result != null && !result.isSuccess()) {
             complete();
         }
 
         if (step instanceof ExtractMethodRefactoringStep) {
             extractMethodResult = (ExtractMethodRefactoringStep.Result) result;
+            assert extractMethodResult != null;
             IntroduceParametersForMembersRefactoringImpl introduceParametersForMembersRefactoring = new IntroduceParametersForMembersRefactoringImpl(extractMethodResult.getExtractedMethod(), tracker, project, file, this);
             if (introduceParametersForMembersRefactoring.hasNextStep()) {
                 currentRefactoringStep = introduceParametersForMembersRefactoring;
@@ -110,6 +111,7 @@ public class TrainWreckExpressionRefactoringImpl extends Refactoring implements 
             currentRefactoringStep = createMoveMethodRefactoringStep();
         } else if (step instanceof MoveMethodRefactoringStep) {
             MoveMethodRefactoringStep.Result moveMethodResult = (MoveMethodRefactoringStep.Result) result;
+            assert moveMethodResult != null;
             currentRefactoringStep = new RenameMethodRefactoringStep(moveMethodResult.getNewMethod(), project, this, ApplicationManager.getApplication());
         } else if (step instanceof RenameMethodRefactoringStep) {
             currentRefactoringStep = null;
