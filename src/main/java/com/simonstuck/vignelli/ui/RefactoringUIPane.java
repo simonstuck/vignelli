@@ -13,23 +13,27 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
-public class RefactoringUIPane extends JPanel {
+public class RefactoringUIPane extends JPanel implements DescriptionPane.Delegate {
 
+    public static final String PANE_TITLE = "Refactoring";
+    
     private final RefactoringDescription refactoringDescription;
+    private final JBScrollPane scrollPane;
 
     public RefactoringUIPane(Refactoring refactoring) {
         setLayout(new BorderLayout(5,5));
 
-        JLabel label = new JLabel("Refactoring");
+        JLabel label = new JLabel(PANE_TITLE);
         label.setBorder(new EmptyBorder(2,2,0,0));
         Map<TextAttribute, Object> fontAttributes = new HashMap<TextAttribute, Object>();
         fontAttributes.put(TextAttribute.WEIGHT, TextAttribute.WEIGHT_BOLD);
         label.setFont(Font.getFont(fontAttributes));
         add(label, BorderLayout.NORTH);
 
-        DescriptionPane descriptionPane = new DescriptionPane();
+        DescriptionPane descriptionPane = new DescriptionPane(this);
 
-        add(new JBScrollPane(descriptionPane));
+        scrollPane = new JBScrollPane(descriptionPane);
+        add(scrollPane);
         refactoringDescription = new RefactoringDescription(refactoring);
         descriptionPane.showDescription(refactoringDescription);
         validate();
@@ -38,5 +42,18 @@ public class RefactoringUIPane extends JPanel {
 
     public void tearDown() {
         refactoringDescription.tearDown();
+    }
+
+    /**
+     * Scrolls to the top of the scroll pane
+     */
+    private void scrollToTop() {
+        scrollPane.getVerticalScrollBar().setValue(0);
+        scrollPane.getHorizontalScrollBar().setValue(0);
+    }
+
+    @Override
+    public void didUpdateDescriptionPane(DescriptionPane descriptionPane) {
+        scrollToTop();
     }
 }

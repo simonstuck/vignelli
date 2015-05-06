@@ -1,5 +1,6 @@
 package com.simonstuck.vignelli.ui;
 
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.simonstuck.vignelli.ui.description.Description;
 import com.simonstuck.vignelli.ui.description.HTMLFileTemplate;
@@ -7,6 +8,7 @@ import com.simonstuck.vignelli.ui.description.Template;
 import com.simonstuck.vignelli.util.IOUtil;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.awt.BorderLayout;
 import java.awt.Desktop;
@@ -28,7 +30,22 @@ class DescriptionPane extends JEditorPane implements Observer {
 
     private Description description;
 
+    @Nullable
+    private Delegate delegate;
+
+    /**
+     * Creates a new {@link com.simonstuck.vignelli.ui.DescriptionPane} without a delegate
+     */
     public DescriptionPane() {
+        this(null);
+    }
+
+    /**
+     * Creates a new {@link com.simonstuck.vignelli.ui.DescriptionPane} with the given {@link com.simonstuck.vignelli.ui.DescriptionPane.Delegate}
+     * @param delegate The delegate to notify
+     */
+    public DescriptionPane(@Nullable Delegate delegate) {
+        this.delegate = delegate;
         setLayout(new BorderLayout());
         setOpaque(false);
 
@@ -104,7 +121,15 @@ class DescriptionPane extends JEditorPane implements Observer {
     @Override
     public void update(Observable o, Object arg) {
         // Updated
-        render();
+        ApplicationManager.getApplication().invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                render();
+                if (delegate != null) {
+                    delegate.didUpdateDescriptionPane(DescriptionPane.this);
+                }
+            }
+        });
     }
 
     private static class DefaultDescription extends Description {
@@ -123,4 +148,16 @@ class DescriptionPane extends JEditorPane implements Observer {
         @Override
         public void handleVignelliLinkEvent(HyperlinkEvent event) {}
     }
+
+    /**
+     * Delegates of the description pane can get notified when the description pane is updated.
+     */
+    public interface Delegate {
+        /**
+         * Notifies delegates that the description pane has been updated.
+         * @param descriptionPane The description pane that was updated.
+         */
+        public void didUpdateDescriptionPane(DescriptionPane descriptionPane);
+    }
+
 }
