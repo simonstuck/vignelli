@@ -8,6 +8,7 @@ import com.intellij.ui.table.JBTable;
 import com.simonstuck.vignelli.inspection.ProblemIdentificationCacheComponent;
 import com.simonstuck.vignelli.inspection.ProblemIdentificationCollectionListener;
 import com.simonstuck.vignelli.inspection.identification.ProblemIdentification;
+import com.simonstuck.vignelli.psi.util.EditorUtil;
 import com.simonstuck.vignelli.ui.description.ProblemIdentificationDescription;
 
 import java.awt.BorderLayout;
@@ -97,6 +98,7 @@ class ProblemListPane extends JPanel {
         int index = tablePane.getSelectedRow();
         if (index > -1) {
             currentIdentification = model.getProblemDataAt(index);
+            currentIdentification.navigateToElement();
             delegate.showDescription(new ProblemIdentificationDescription(currentIdentification));
         }
     }

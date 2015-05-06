@@ -5,6 +5,7 @@ import com.intellij.codeInspection.ProblemDescriptor;
 import com.intellij.psi.PsiElement;
 import com.jgoodies.common.base.Objects;
 import com.simonstuck.vignelli.inspection.improvement.ImprovementOpportunity;
+import com.simonstuck.vignelli.psi.util.EditorUtil;
 
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.jetbrains.annotations.NotNull;
@@ -41,6 +42,13 @@ public abstract class ProblemIdentification implements com.simonstuck.vignelli.T
         return Optional.absent();
     }
 
+    /**
+     * Navigates the current editor to the start element associated with this problem identification.
+     */
+    public void navigateToElement() {
+        EditorUtil.navigateToElement(problemDescriptor.getPsiElement());
+    }
+
     @Override
     public boolean equals(Object other) {
         if (this == other) {
@@ -57,7 +65,7 @@ public abstract class ProblemIdentification implements com.simonstuck.vignelli.T
                 && Objects.equals(thatDescriptor.getStartElement(), problemDescriptor.getStartElement())
                 && Objects.equals(thatDescriptor.getStartElement(), problemDescriptor.getStartElement())
                 && Objects.equals(thatDescriptor.getEndElement(), problemDescriptor.getEndElement())
-                && thatDescriptor.getDescriptionTemplate().equals(problemDescriptor.getDescriptionTemplate())
+                && Objects.equals(thatDescriptor.getDescriptionTemplate(), problemDescriptor.getDescriptionTemplate())
                 && thatDescriptor.getLineNumber() == problemDescriptor.getLineNumber()
                 && thatDescriptor.isAfterEndOfLine() == problemDescriptor.isAfterEndOfLine()
                 && thatDescriptor.getHighlightType() == problemDescriptor.getHighlightType()
@@ -81,5 +89,4 @@ public abstract class ProblemIdentification implements com.simonstuck.vignelli.T
     public String toString() {
         return name;
     }
-
 }
