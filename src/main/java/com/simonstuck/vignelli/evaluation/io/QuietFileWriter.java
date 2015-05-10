@@ -40,6 +40,7 @@ public class QuietFileWriter implements Closeable {
 
         try {
             writer.write(contents);
+            writer.flush();
         } catch (IOException e) {
             LOG.info(e);
         }
