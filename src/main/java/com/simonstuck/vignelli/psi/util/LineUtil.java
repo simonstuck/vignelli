@@ -12,7 +12,7 @@ public class LineUtil {
     }
 
     public static int countCommentLines(PsiElement element) {
-        if (element instanceof PsiCompiledElement) {
+        if (element instanceof PsiCompiledElement || element == null || !element.isValid()) {
             return 0;
         }
         return countCommentLines(element.getText());
