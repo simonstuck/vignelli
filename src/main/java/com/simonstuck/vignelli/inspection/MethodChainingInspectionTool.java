@@ -7,7 +7,7 @@ import com.simonstuck.vignelli.inspection.identification.ProblemDescriptorProvid
 import com.simonstuck.vignelli.inspection.identification.ProblemIdentification;
 import com.simonstuck.vignelli.inspection.identification.TrainWreckProblemIdentification;
 import com.simonstuck.vignelli.inspection.identification.engine.MethodChainIdentificationEngine;
-import com.simonstuck.vignelli.psi.IntelliJClassFinderAdapter;
+import com.simonstuck.vignelli.psi.impl.IntelliJClassFinderAdapter;
 
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;

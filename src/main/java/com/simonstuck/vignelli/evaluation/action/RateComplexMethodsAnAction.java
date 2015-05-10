@@ -14,11 +14,11 @@ import com.intellij.psi.PsiClass;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.PsiShortNamesCache;
 import com.simonstuck.vignelli.evaluation.PsiElementEvaluator;
-import com.simonstuck.vignelli.evaluation.datamodel.ClassMetrics;
-import com.simonstuck.vignelli.evaluation.datamodel.ProjectMetrics;
-import com.simonstuck.vignelli.evaluation.impl.ClassMetricsCollector;
+import com.simonstuck.vignelli.evaluation.datamodel.ClassMethodClassifications;
+import com.simonstuck.vignelli.evaluation.datamodel.ProjectMethodClassifications;
+import com.simonstuck.vignelli.evaluation.impl.ClassMethodClassifier;
+import com.simonstuck.vignelli.evaluation.impl.IntelliJManualUserMethodClassifier;
 import com.simonstuck.vignelli.evaluation.io.QuietFileWriter;
-import com.simonstuck.vignelli.psi.impl.IntelliJPsiElementCollectorAdapter;
 import com.simonstuck.vignelli.util.IOUtil;
 
 import org.jetbrains.annotations.NotNull;
@@ -27,12 +27,12 @@ import org.jetbrains.annotations.Nullable;
 import java.io.File;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Set;
+import java.util.Iterator;
 
-public class CollectMetricsAnAction extends AnAction  {
+public class RateComplexMethodsAnAction extends AnAction  {
 
-    private static final Logger LOG = Logger.getInstance(CollectMetricsAnAction.class.getName());
-    private static final String RESULTS_FILE_BASENAME = "metrics";
+    private static final Logger LOG = Logger.getInstance(RateComplexMethodsAnAction.class.getName());
+    private static final String RESULTS_FILE_BASENAME = "complex_method_ratings";
     private static final String JSON_EXTENSION = ".json";
 
     @Override
@@ -52,21 +52,27 @@ public class CollectMetricsAnAction extends AnAction  {
             String[] classNames = cache.getAllClassNames();
             Collection<PsiClass> classes = getClasses(project, cache, classNames);
 
-            ProjectMetrics projectMetrics = new ProjectMetrics(project.getName());
+            ProjectMethodClassifications projectMethodClassifications = new ProjectMethodClassifications(project.getName());
 
-            for (PsiClass clazz : classes) {
-                ClassMetricsCollector classMetricsCollector = new ClassMetricsCollector(clazz);
-                PsiElementEvaluator.EvaluationResult<ClassMetrics> evaluationResult = classMetricsCollector.invoke();
+            Iterator<PsiClass> classIterator = classes.iterator();
+            PsiElementEvaluator.EvaluationResult.Outcome currentOutcome = PsiElementEvaluator.EvaluationResult.Outcome.COMPLETED;
+
+            while (currentOutcome == PsiElementEvaluator.EvaluationResult.Outcome.COMPLETED && classIterator.hasNext()) {
+                PsiClass clazz = classIterator.next();
+
+                ClassMethodClassifier classMethodClassifier = new ClassMethodClassifier(clazz, new IntelliJManualUserMethodClassifier());
+                PsiElementEvaluator.EvaluationResult<ClassMethodClassifications> evaluationResult = classMethodClassifier.invoke();
 
                 if (evaluationResult.getOutcome() == PsiElementEvaluator.EvaluationResult.Outcome.COMPLETED) {
-                    projectMetrics.addClassMetrics(evaluationResult.getEvaluation());
+                    projectMethodClassifications.addClassMethodClassification(evaluationResult.getEvaluation());
                 }
+
+                String jsonResults = gson.toJson(projectMethodClassifications);
+                LOG.info(jsonResults);
+                resultsWriter.write(jsonResults);
+
+                currentOutcome = evaluationResult.getOutcome();
             }
-
-
-            String jsonResults = gson.toJson(projectMetrics);
-            LOG.info(jsonResults);
-            resultsWriter.write(jsonResults);
             Messages.showDialog(project,"Method Rating finished","Method Rating",new String[] {"OK"},0,Messages.getInformationIcon());
         } finally {
             if (resultsWriter != null) {
@@ -92,18 +98,12 @@ public class CollectMetricsAnAction extends AnAction  {
         Collection<PsiClass> classes = new HashSet<PsiClass>();
         for (String className : classNames) {
             PsiClass[] theClasses = cache.getClassesByName(className, GlobalSearchScope.projectScope(project));
-            classes.addAll(getNonInterfaceClasses(theClasses));
-        }
-        return classes;
-    }
-
-    private Collection<PsiClass> getNonInterfaceClasses(@NotNull PsiClass[] classes) {
-        Set<PsiClass> result = new HashSet<PsiClass>();
-        for (PsiClass clazz : classes) {
-            if (!clazz.isInterface()) {
-                result.add(clazz);
+            for (PsiClass clazz : theClasses) {
+                if (!clazz.isInterface()) {
+                    classes.add(clazz);
+                }
             }
         }
-        return result;
+        return classes;
     }
 }

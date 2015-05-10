@@ -6,8 +6,4 @@ public class MethodClassification {
     public MethodClassification(boolean isComplex) {
         this.isComplex = isComplex;
     }
-
-    public boolean isComplex() {
-        return isComplex;
-    }
 }

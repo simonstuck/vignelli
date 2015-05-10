@@ -12,7 +12,7 @@ import com.intellij.psi.PsiType;
 import com.intellij.testFramework.LightIdeaTestCase;
 import com.simonstuck.vignelli.inspection.identification.impl.MethodChainIdentification;
 import com.simonstuck.vignelli.psi.ClassFinder;
-import com.simonstuck.vignelli.psi.IntelliJClassFinderAdapter;
+import com.simonstuck.vignelli.psi.impl.IntelliJClassFinderAdapter;
 
 public class MethodChainIdentificationTest extends LightIdeaTestCase {
 

@@ -12,7 +12,7 @@ import com.intellij.psi.util.PsiTypesUtil;
 import com.intellij.refactoring.move.moveInstanceMethod.MoveInstanceMethodHandlerDelegate;
 import com.simonstuck.vignelli.inspection.identification.impl.MethodChainIdentification;
 import com.simonstuck.vignelli.inspection.identification.engine.MethodChainIdentificationEngine;
-import com.simonstuck.vignelli.psi.IntelliJClassFinderAdapter;
+import com.simonstuck.vignelli.psi.impl.IntelliJClassFinderAdapter;
 import com.simonstuck.vignelli.psi.PsiContainsChecker;
 import com.simonstuck.vignelli.refactoring.step.RefactoringStep;
 import com.simonstuck.vignelli.refactoring.step.RefactoringStepDelegate;

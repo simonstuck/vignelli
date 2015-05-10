@@ -9,7 +9,7 @@ import com.simonstuck.vignelli.psi.util.EditorUtil;
 
 import org.jetbrains.annotations.NotNull;
 
-public class IntelliJMethodClassifier implements PsiElementEvaluator<MethodClassification> {
+public class IntelliJManualUserMethodClassifier implements PsiElementEvaluator<MethodClassification> {
 
     public static final String[] DIALOG_OPTIONS = new String[]{"complex", "not complex", "cancel", "stop and save"};
 

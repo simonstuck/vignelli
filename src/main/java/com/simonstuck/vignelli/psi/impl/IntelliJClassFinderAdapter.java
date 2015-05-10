@@ -1,9 +1,10 @@
-package com.simonstuck.vignelli.psi;
+package com.simonstuck.vignelli.psi.impl;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.search.GlobalSearchScope;
+import com.simonstuck.vignelli.psi.ClassFinder;
 
 public class IntelliJClassFinderAdapter implements ClassFinder {
     
