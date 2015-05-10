@@ -28,7 +28,7 @@
     <actions>
         <group id="Vignelli.EvaluationMenu" text="Vignelli" description="Vignelli Evaluation Menu">
             <add-to-group group-id="MainMenu" anchor="last"  />
-            <action id="Vignelli.RateMethods" class="com.simonstuck.vignelli.evaluation.RateMethodsAnAction" text="Rate Methods" description="Rate methods" />
+            <action id="Vignelli.RateMethods" class="com.simonstuck.vignelli.evaluation.action.RateMethodsAnAction" text="Rate Methods" description="Rate methods" />
         </group>
 
     </actions>

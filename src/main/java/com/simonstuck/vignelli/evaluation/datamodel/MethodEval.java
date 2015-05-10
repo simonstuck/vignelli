@@ -1,49 +1,27 @@
 package com.simonstuck.vignelli.evaluation.datamodel;
 
+import org.jetbrains.annotations.NotNull;
+
 public class MethodEval {
     private final String name;
-    private final int linesOfCode;
-    private final int cyclomaticComplexity;
-    private final int numParameters;
-    private final int nestedBlockDepth;
-    private final int linesOfComments;
-    private final boolean isComplex;
+    private final MethodMetrics metrics;
+    private final MethodClassification classification;
 
-    public MethodEval(String name, int linesOfCode, int cyclomaticComplexity, int numParameters, int nestedBlockDepth, int linesOfComments, boolean isComplex) {
+    public MethodEval(String name, @NotNull MethodMetrics metrics, @NotNull MethodClassification classification) {
         this.name = name;
-        this.linesOfCode = linesOfCode;
-        this.cyclomaticComplexity = cyclomaticComplexity;
-        this.numParameters = numParameters;
-        this.nestedBlockDepth = nestedBlockDepth;
-        this.linesOfComments = linesOfComments;
-        this.isComplex = isComplex;
+        this.metrics = metrics;
+        this.classification = classification;
     }
 
     public String getName() {
         return name;
     }
 
-    public int getLinesOfCode() {
-        return linesOfCode;
+    public MethodMetrics getMetrics() {
+        return metrics;
     }
 
-    public int getCyclomaticComplexity() {
-        return cyclomaticComplexity;
-    }
-
-    public int getNumParameters() {
-        return numParameters;
-    }
-
-    public int getNestedBlockDepth() {
-        return nestedBlockDepth;
-    }
-
-    public int getLinesOfComments() {
-        return linesOfComments;
-    }
-
-    public boolean isComplex() {
-        return isComplex;
+    public MethodClassification getClassification() {
+        return classification;
     }
 }

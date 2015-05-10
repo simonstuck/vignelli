@@ -60,4 +60,22 @@ public final class IOUtil {
         Scanner s = new Scanner(in, Charsets.UTF_8.displayName()).useDelimiter("\\A");
         return s.hasNext() ? s.next() : "";
     }
+
+    /**
+     * Finds the first available file with the given base name.
+     * Attaches integer numbers as long as necessary until a file does not exit.
+     * @param directory The base directory
+     * @param basename The basename of the file.
+     * @param s
+     * @return The final file.
+     */
+    public static File getFirstAvailableFile(File directory, String basename, String extension) {
+        File resultFile = new File(directory, basename + extension);
+        int i = 1;
+        while(resultFile.exists()) {
+            resultFile = new File(directory, basename + "_" + i + extension);
+            i++;
+        }
+        return resultFile;
+    }
 }
