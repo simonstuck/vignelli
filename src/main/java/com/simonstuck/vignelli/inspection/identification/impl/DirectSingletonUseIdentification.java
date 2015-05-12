@@ -8,10 +8,15 @@ import com.simonstuck.vignelli.inspection.identification.ProblemDescriptorProvid
 
 public class DirectSingletonUseIdentification implements ProblemDescriptorProvider {
     private static final String SHORT_DESCRIPTION = "Direct Use of Singleton";
+
     private final PsiMethodCallExpression methodCall;
 
     public DirectSingletonUseIdentification(PsiMethodCallExpression methodCall) {
         this.methodCall = methodCall;
+    }
+
+    public PsiMethodCallExpression getMethodCall() {
+        return methodCall;
     }
 
     @Override

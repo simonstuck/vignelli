@@ -30,6 +30,7 @@
             <add-to-group group-id="MainMenu" anchor="last"  />
             <action id="Vignelli.CollectMetrics" class="com.simonstuck.vignelli.evaluation.action.CollectMetricsAnAction" text="Collect Code Metrics" description="Collect code metrics" />
             <action id="Vignelli.RateComplexMethods" class="com.simonstuck.vignelli.evaluation.action.RateComplexMethodsAnAction" text="Rate Methods (complex/non-complex)" description="Decide whether your methods are complex or not" />
+            <action id="Vignelli.StaticCallsSingletonAnalysis" class="com.simonstuck.vignelli.evaluation.action.StaticCallsSingletonAnalysisAnAction" text="Classify Singletons" description="Decide whether Classes are singletons or not" />
         </group>
 
     </actions>
