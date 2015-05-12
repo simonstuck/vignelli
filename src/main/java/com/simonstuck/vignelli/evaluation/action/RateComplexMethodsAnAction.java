@@ -18,13 +18,14 @@ import com.simonstuck.vignelli.evaluation.datamodel.ClassMethodClassifications;
 import com.simonstuck.vignelli.evaluation.datamodel.ProjectMethodClassifications;
 import com.simonstuck.vignelli.evaluation.impl.ClassMethodClassifier;
 import com.simonstuck.vignelli.evaluation.impl.IntelliJManualUserMethodClassifier;
-import com.simonstuck.vignelli.evaluation.io.QuietFileWriter;
+import com.simonstuck.vignelli.evaluation.io.AtomicallyReplacingFileWriter;
 import com.simonstuck.vignelli.util.IOUtil;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -43,42 +44,39 @@ public class RateComplexMethodsAnAction extends AnAction  {
 
         File directory = chooseDirectory(project);
         File resultsFile = IOUtil.getFirstAvailableFile(directory, RESULTS_FILE_BASENAME, JSON_EXTENSION);
-        QuietFileWriter resultsWriter = null;
-        try {
-            resultsWriter = new QuietFileWriter(resultsFile);
-            Gson gson = new Gson();
+        AtomicallyReplacingFileWriter resultsWriter = new AtomicallyReplacingFileWriter(resultsFile);
+        Gson gson = new Gson();
 
-            PsiShortNamesCache cache = PsiShortNamesCache.getInstance(project);
-            String[] classNames = cache.getAllClassNames();
-            Collection<PsiClass> classes = getClasses(project, cache, classNames);
+        PsiShortNamesCache cache = PsiShortNamesCache.getInstance(project);
+        String[] classNames = cache.getAllClassNames();
+        Collection<PsiClass> classes = getClasses(project, cache, classNames);
 
-            ProjectMethodClassifications projectMethodClassifications = new ProjectMethodClassifications(project.getName());
+        ProjectMethodClassifications projectMethodClassifications = new ProjectMethodClassifications(project.getName());
 
-            Iterator<PsiClass> classIterator = classes.iterator();
-            PsiElementEvaluator.EvaluationResult.Outcome currentOutcome = PsiElementEvaluator.EvaluationResult.Outcome.COMPLETED;
+        Iterator<PsiClass> classIterator = classes.iterator();
+        PsiElementEvaluator.EvaluationResult.Outcome currentOutcome = PsiElementEvaluator.EvaluationResult.Outcome.COMPLETED;
 
-            while (currentOutcome == PsiElementEvaluator.EvaluationResult.Outcome.COMPLETED && classIterator.hasNext()) {
-                PsiClass clazz = classIterator.next();
+        while (currentOutcome == PsiElementEvaluator.EvaluationResult.Outcome.COMPLETED && classIterator.hasNext()) {
+            PsiClass clazz = classIterator.next();
 
-                ClassMethodClassifier classMethodClassifier = new ClassMethodClassifier(clazz, new IntelliJManualUserMethodClassifier());
-                PsiElementEvaluator.EvaluationResult<ClassMethodClassifications> evaluationResult = classMethodClassifier.invoke();
+            ClassMethodClassifier classMethodClassifier = new ClassMethodClassifier(clazz, new IntelliJManualUserMethodClassifier());
+            PsiElementEvaluator.EvaluationResult<ClassMethodClassifications> evaluationResult = classMethodClassifier.invoke();
 
-                if (evaluationResult.getOutcome() == PsiElementEvaluator.EvaluationResult.Outcome.COMPLETED) {
-                    projectMethodClassifications.addClassMethodClassification(evaluationResult.getEvaluation());
-                }
-
-                String jsonResults = gson.toJson(projectMethodClassifications);
-                LOG.info(jsonResults);
-                resultsWriter.write(jsonResults);
-
-                currentOutcome = evaluationResult.getOutcome();
+            if (evaluationResult.getOutcome() == PsiElementEvaluator.EvaluationResult.Outcome.COMPLETED) {
+                projectMethodClassifications.addClassMethodClassification(evaluationResult.getEvaluation());
             }
-            Messages.showDialog(project,"Method Rating finished","Method Rating",new String[] {"OK"},0,Messages.getInformationIcon());
-        } finally {
-            if (resultsWriter != null) {
-                resultsWriter.close();
+
+            String jsonResults = gson.toJson(projectMethodClassifications);
+            LOG.info(jsonResults);
+            try {
+                resultsWriter.replaceWith(jsonResults);
+            } catch (IOException e) {
+                LOG.info("Could not replace contents", e);
             }
+
+            currentOutcome = evaluationResult.getOutcome();
         }
+        Messages.showDialog(project,"Method Rating finished","Method Rating",new String[] {"OK"},0,Messages.getInformationIcon());
     }
 
 

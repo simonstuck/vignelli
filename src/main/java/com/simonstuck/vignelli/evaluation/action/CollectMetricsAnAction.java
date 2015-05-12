@@ -18,7 +18,6 @@ import com.simonstuck.vignelli.evaluation.datamodel.ClassMetrics;
 import com.simonstuck.vignelli.evaluation.datamodel.ProjectMetrics;
 import com.simonstuck.vignelli.evaluation.impl.ClassMetricsCollector;
 import com.simonstuck.vignelli.evaluation.io.QuietFileWriter;
-import com.simonstuck.vignelli.psi.impl.IntelliJPsiElementCollectorAdapter;
 import com.simonstuck.vignelli.util.IOUtil;
 
 import org.jetbrains.annotations.NotNull;
