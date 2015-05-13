@@ -38,7 +38,7 @@ public class ClassSingletonUseClassifier implements PsiElementEvaluator<ClassSin
     public EvaluationResult<ClassSingletonUseClassification> evaluate(@NotNull PsiElement element) {
         PsiClass clazz = (PsiClass) element;
 
-        Collection<PsiMember> allStaticMembers = ClassUtil.getAllNonPrivateStaticMethods(clazz);
+        Collection<PsiMember> allStaticMembers = ClassUtil.getAllNonPrivateStaticMembers(clazz);
         if (allStaticMembers.isEmpty()) {
             // definitely not a singleton, move on
             ClassSingletonUseClassification classification = new ClassSingletonUseClassification(clazz.getQualifiedName(), new SingletonClassClassification(false));
