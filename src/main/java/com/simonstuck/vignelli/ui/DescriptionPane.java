@@ -2,6 +2,7 @@ package com.simonstuck.vignelli.ui;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.ui.components.JBScrollPane;
 import com.simonstuck.vignelli.ui.description.Description;
 import com.simonstuck.vignelli.ui.description.HTMLFileTemplate;
 import com.simonstuck.vignelli.ui.description.Template;
@@ -18,12 +19,14 @@ import java.util.HashMap;
 import java.util.Observable;
 import java.util.Observer;
 import javax.swing.JEditorPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import javax.swing.text.Document;
 import javax.swing.text.html.HTMLEditorKit;
 
-class DescriptionPane extends JEditorPane implements Observer {
+class DescriptionPane extends JEditorPane implements Observer, InformationPane {
     private static final Logger LOG = Logger.getInstance(DescriptionPane.class.getName());
     public static final String VIGNELLI_SCHEME = "vignelli";
     private static Description DEFAULT_DESCRIPTION = new DefaultDescription();
@@ -84,9 +87,9 @@ class DescriptionPane extends JEditorPane implements Observer {
                             Desktop.getDesktop().browse(event.getURL().toURI());
                         }
                     } catch (IOException e1) {
-                        e1.printStackTrace();
+                        LOG.info(e1);
                     } catch (URISyntaxException e1) {
-                        e1.printStackTrace();
+                        LOG.info(e1);
                     }
                 }
             }
@@ -133,11 +136,14 @@ class DescriptionPane extends JEditorPane implements Observer {
     }
 
     private static class DefaultDescription extends Description {
+
+        private static final String DEFAULT_DESCRIPTION_PATH = "descriptionTemplates/emptyDescription.html";
+
         @Override
         public String render() {
             String strTemplate = null;
             try {
-                strTemplate = IOUtil.readFile("descriptionTemplates/emptyDescription.html");
+                strTemplate = IOUtil.readFile(DEFAULT_DESCRIPTION_PATH);
             } catch (IOException e) {
                 LOG.error(e.getMessage(), e);
             }

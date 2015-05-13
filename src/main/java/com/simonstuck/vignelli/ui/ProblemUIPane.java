@@ -15,7 +15,7 @@ public class ProblemUIPane extends JPanel {
 
     private final Project project;
 
-    private DescriptionPane descriptionPane;
+    private ProblemInformationPane problemInformationPane;
 
     public ProblemUIPane(Project project) {
         super();
@@ -30,27 +30,22 @@ public class ProblemUIPane extends JPanel {
     }
 
     private JSplitPane createSplitPane() {
-        descriptionPane = createProblemDescriptionPane();
-        JScrollPane scrollDescriptionPane = new JBScrollPane(descriptionPane);
+        problemInformationPane = new ProblemInformationPane(new DescriptionPane());
         ProblemListPane problemListPane = new ProblemListPane(project, this);
 
-        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, problemListPane, scrollDescriptionPane);
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, problemListPane, problemInformationPane);
         splitPane.setSize(getSize());
         splitPane.setResizeWeight(RESIZE_WEIGHT);
 
         return splitPane;
     }
 
-    private DescriptionPane createProblemDescriptionPane() {
-        return new DescriptionPane();
-    }
-
 
     public void showDescription(Description description) {
         if (description == null) {
-            descriptionPane.showDefault();
+            problemInformationPane.showDefault();
         } else {
-            descriptionPane.showDescription(description);
+            problemInformationPane.showDescription(description);
         }
     }
 }

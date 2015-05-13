@@ -67,9 +67,6 @@ class ProblemListPane extends JPanel {
                     public void run() {
                         if (!event.getValueIsAdjusting()) {
                             ProblemListPane.this.showSelectedProblemDescription(delegate);
-                            if (currentIdentification != null) {
-                                currentIdentification.navigateToElement();
-                            }
                         }
                     }
                 });
