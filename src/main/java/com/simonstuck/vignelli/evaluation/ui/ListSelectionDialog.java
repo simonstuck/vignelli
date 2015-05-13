@@ -8,6 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.awt.BorderLayout;
+import java.util.Arrays;
 import javax.swing.DefaultListModel;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -41,7 +42,7 @@ public class ListSelectionDialog extends DialogWrapper {
 
     @NotNull
     public String[] getSelectedValues() {
-        return (String[]) jbList.getSelectedValues();
+        return Arrays.copyOf(jbList.getSelectedValues(), jbList.getSelectedValues().length, String[].class);
     }
 
 }
