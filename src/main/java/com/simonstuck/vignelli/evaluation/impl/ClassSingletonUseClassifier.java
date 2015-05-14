@@ -3,11 +3,14 @@ package com.simonstuck.vignelli.evaluation.impl;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiMember;
+import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiReference;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.searches.ReferencesSearch;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.psi.util.PsiTypesUtil;
 import com.simonstuck.vignelli.evaluation.PsiElementEvaluator;
 import com.simonstuck.vignelli.evaluation.datamodel.ClassSingletonUseClassification;
 import com.simonstuck.vignelli.evaluation.datamodel.SingletonClassClassification;
@@ -19,6 +22,7 @@ import com.simonstuck.vignelli.psi.util.ClassUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 
 public class ClassSingletonUseClassifier implements PsiElementEvaluator<ClassSingletonUseClassification> {
@@ -38,8 +42,18 @@ public class ClassSingletonUseClassifier implements PsiElementEvaluator<ClassSin
     public EvaluationResult<ClassSingletonUseClassification> evaluate(@NotNull PsiElement element) {
         PsiClass clazz = (PsiClass) element;
 
-        Collection<PsiMember> allStaticMembers = ClassUtil.getAllNonPrivateStaticMembers(clazz);
-        if (allStaticMembers.isEmpty()) {
+        Collection<PsiMember> allStaticMembers = ClassUtil.getNonPrivateStaticMembers(clazz);
+        Collection<PsiMember> staticMembersWithSameClassReturnType = new HashSet<PsiMember>();
+        for (PsiMember member : allStaticMembers) {
+            if (member instanceof PsiField && PsiTypesUtil.getPsiClass(((PsiField) member).getType()) == clazz
+                    || member instanceof PsiMethod && PsiTypesUtil.getPsiClass(((PsiMethod) member).getReturnType()) == clazz
+                    || !(member instanceof PsiField) && !(member instanceof PsiMethod)) {
+                staticMembersWithSameClassReturnType.add(member);
+
+            }
+        }
+
+        if (staticMembersWithSameClassReturnType.isEmpty()) {
             // definitely not a singleton, move on
             ClassSingletonUseClassification classification = new ClassSingletonUseClassification(clazz.getQualifiedName(), new SingletonClassClassification(false));
             return new PsiElementEvaluator.EvaluationResult.Default<ClassSingletonUseClassification>(PsiElementEvaluator.EvaluationResult.Outcome.COMPLETED, classification);

@@ -43,7 +43,7 @@ public class IntelliJManualUserSingletonClassifier implements PsiElementEvaluato
     }
 
     private String[] getInstanceRetrievalCandidates(PsiClass clazz) {
-        Collection<PsiMember> allNonPrivateStaticMethods = ClassUtil.getAllNonPrivateStaticMembers(clazz);
+        Collection<PsiMember> allNonPrivateStaticMethods = ClassUtil.getNonPrivateStaticMembers(clazz);
         List<String> instanceRetrievalCandidateMembers = new ArrayList<String>(allNonPrivateStaticMethods.size());
         for (PsiMember member : allNonPrivateStaticMethods) {
             instanceRetrievalCandidateMembers.add(member.getName());
