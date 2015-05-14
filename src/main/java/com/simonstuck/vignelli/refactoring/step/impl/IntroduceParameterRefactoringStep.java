@@ -160,14 +160,13 @@ public class IntroduceParameterRefactoringStep implements RefactoringStep {
 
         @Override
         public RefactoringStepResult computeResult() {
-            if (isAnyNullOrInvalid(method, elementParent)) {
+            if (method == null) {
                 return new Result(false);
             }
-            assert method != null;
 
             // The element to introduce as a parameter will be invalid once it has been removed from the method.
             // Therefore, if it is still valid, we cannot be done yet.
-            if (element.isValid()) {
+            if (element.isValid() || !method.isValid()) {
                 return null;
             }
 
