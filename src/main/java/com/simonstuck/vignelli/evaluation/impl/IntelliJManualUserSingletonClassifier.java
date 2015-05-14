@@ -49,7 +49,7 @@ public class IntelliJManualUserSingletonClassifier implements PsiElementEvaluato
         for (PsiMember member : allNonPrivateStaticMethods) {
             if (member instanceof PsiMethod) {
                 PsiMethod theMethod = (PsiMethod) member;
-                instanceRetrievalCandidateMembers.add(member.getName() + theMethod.getParameterList());
+                instanceRetrievalCandidateMembers.add(member.getName() + theMethod.getParameterList().getText());
             } else {
                 instanceRetrievalCandidateMembers.add(member.getName());
             }
