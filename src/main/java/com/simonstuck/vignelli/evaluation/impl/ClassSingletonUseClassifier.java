@@ -37,7 +37,6 @@ public class ClassSingletonUseClassifier implements PsiElementEvaluator<ClassSin
         this.classIsSingletonClassifier = classIsSingletonClassifier;
     }
 
-
     @Override
     public EvaluationResult<ClassSingletonUseClassification> evaluate(@NotNull PsiElement element) {
         PsiClass clazz = (PsiClass) element;
@@ -45,11 +44,18 @@ public class ClassSingletonUseClassifier implements PsiElementEvaluator<ClassSin
         Collection<PsiMember> allStaticMembers = ClassUtil.getNonPrivateStaticMembers(clazz);
         Collection<PsiMember> staticMembersWithSameClassReturnType = new HashSet<PsiMember>();
         for (PsiMember member : allStaticMembers) {
-            if (member instanceof PsiField && PsiTypesUtil.getPsiClass(((PsiField) member).getType()) == clazz
-                    || member instanceof PsiMethod && PsiTypesUtil.getPsiClass(((PsiMethod) member).getReturnType()) == clazz
-                    || !(member instanceof PsiField) && !(member instanceof PsiMethod)) {
+            if (member instanceof  PsiField) {
+                PsiClass memberClass = PsiTypesUtil.getPsiClass(((PsiField) member).getType());
+                if (memberClass != null && PsiTreeUtil.isAncestor(memberClass, clazz, false)) {
+                    staticMembersWithSameClassReturnType.add(member);
+                }
+            } else if (member instanceof  PsiMethod) {
+                PsiClass memberClass = PsiTypesUtil.getPsiClass(((PsiMethod) member).getReturnType());
+                if (memberClass != null && PsiTreeUtil.isAncestor(memberClass, clazz, false)) {
+                    staticMembersWithSameClassReturnType.add(member);
+                }
+            } else {
                 staticMembersWithSameClassReturnType.add(member);
-
             }
         }
 
