@@ -3,6 +3,7 @@ package com.simonstuck.vignelli.evaluation.impl;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiMember;
+import com.intellij.psi.PsiMethod;
 import com.simonstuck.vignelli.evaluation.PsiElementEvaluator;
 import com.simonstuck.vignelli.evaluation.datamodel.SingletonClassClassification;
 import com.simonstuck.vignelli.evaluation.ui.ListSelectionDialog;
@@ -46,7 +47,12 @@ public class IntelliJManualUserSingletonClassifier implements PsiElementEvaluato
         Collection<PsiMember> allNonPrivateStaticMethods = ClassUtil.getNonPrivateStaticMembers(clazz);
         List<String> instanceRetrievalCandidateMembers = new ArrayList<String>(allNonPrivateStaticMethods.size());
         for (PsiMember member : allNonPrivateStaticMethods) {
-            instanceRetrievalCandidateMembers.add(member.getName());
+            if (member instanceof PsiMethod) {
+                PsiMethod theMethod = (PsiMethod) member;
+                instanceRetrievalCandidateMembers.add(member.getName() + theMethod.getParameterList());
+            } else {
+                instanceRetrievalCandidateMembers.add(member.getName());
+            }
         }
         return instanceRetrievalCandidateMembers.toArray(new String[instanceRetrievalCandidateMembers.size()]);
     }
