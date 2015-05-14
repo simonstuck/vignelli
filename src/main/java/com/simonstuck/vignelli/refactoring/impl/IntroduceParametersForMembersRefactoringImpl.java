@@ -42,17 +42,7 @@ public class IntroduceParametersForMembersRefactoringImpl extends Refactoring im
         this.file = file;
         this.delegate = delegate;
 
-        @SuppressWarnings("unchecked") Collection<PsiReferenceExpression> referenceExpressions = PsiTreeUtil.collectElementsOfType(method, PsiReferenceExpression.class);
-
-        PsiClass clazz = method.getContainingClass();
-
-        Collection<PsiReferenceExpression> memberReferences = new HashSet<PsiReferenceExpression>();
-        for (PsiReferenceExpression expression : referenceExpressions) {
-            PsiElement resolvedElement = expression.resolve();
-            if (isMemberField(clazz, resolvedElement) || isMemberMethod(clazz, resolvedElement)) {
-                memberReferences.add(expression);
-            }
-        }
+        Collection<PsiReferenceExpression> memberReferences = getMemberReferences(method);
         memberIterator = memberReferences.iterator();
         prepareNextStep();
     }
@@ -107,6 +97,7 @@ public class IntroduceParametersForMembersRefactoringImpl extends Refactoring im
 
         if (!result.isSuccess()) {
             complete();
+            //TODO: notify the delegate of the failed result here.
         }
 
         prepareNextStep();
@@ -141,6 +132,21 @@ public class IntroduceParametersForMembersRefactoringImpl extends Refactoring im
     @Override
     public void end() {
         listening = false;
+    }
+
+    private Collection<PsiReferenceExpression> getMemberReferences(PsiMethod method) {
+        @SuppressWarnings("unchecked") Collection<PsiReferenceExpression> referenceExpressions = PsiTreeUtil.collectElementsOfType(method, PsiReferenceExpression.class);
+
+        PsiClass clazz = method.getContainingClass();
+
+        Collection<PsiReferenceExpression> memberReferences = new HashSet<PsiReferenceExpression>();
+        for (PsiReferenceExpression expression : referenceExpressions) {
+            PsiElement resolvedElement = expression.resolve();
+            if (isMemberField(clazz, resolvedElement) || isMemberMethod(clazz, resolvedElement)) {
+                memberReferences.add(expression);
+            }
+        }
+        return memberReferences;
     }
 
     private boolean isMemberField(PsiClass clazz, PsiElement resolved) {
