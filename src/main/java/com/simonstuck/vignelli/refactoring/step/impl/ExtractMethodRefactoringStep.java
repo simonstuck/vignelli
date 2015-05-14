@@ -57,12 +57,54 @@ public class ExtractMethodRefactoringStep implements RefactoringStep {
             @NotNull RefactoringStepDelegate delegate
     ) {
         this.templateDescriptionPath = templateDescriptionPath;
-        this.elementsToExtract = elementsToExtract;
+        this.elementsToExtract = findExtractableElementsInCommonContext(elementsToExtract);
+
         this.file = file;
         this.project = project;
         this.application = application;
         this.delegate = delegate;
         extractedMethodChecker = new ExtractedMethodChecker();
+    }
+
+    private Collection<? extends PsiElement> findExtractableElementsInCommonContext(Collection<? extends PsiElement> elementsToExtract) {
+        if (elementsToExtract.isEmpty()) {
+            return new ArrayList<PsiElement>(elementsToExtract);
+        }
+
+
+        PsiElement commonContext = elementsToExtract.iterator().next();
+
+        boolean sameContext = false;
+        while (!sameContext) {
+            sameContext = true;
+            List<PsiElement> newToExtract = new ArrayList<PsiElement>();
+
+            Iterator<? extends PsiElement> elementIterator = elementsToExtract.iterator();
+            while (elementIterator.hasNext()) {
+                PsiElement element = elementIterator.next();
+
+                if (element.getContext() == commonContext) {
+                    newToExtract.add(element);
+                } else {
+                    sameContext = false;
+                    // different context
+                    //TODO: What to do if context is null?
+                    if (PsiTreeUtil.isAncestor(commonContext,element.getContext(),true)) {
+                        newToExtract.add(element.getParent());
+                    } else {
+                        commonContext = element.getContext();
+                        // start over!
+                        break;
+                    }
+                }
+            }
+
+            // if we are done though, the common context is fine and we have found
+            if (!elementIterator.hasNext()) {
+                elementsToExtract = newToExtract;
+            }
+        }
+        return elementsToExtract;
     }
 
     @Override
@@ -184,7 +226,7 @@ public class ExtractMethodRefactoringStep implements RefactoringStep {
             newMethods.removeAll(originalMethods);
 
             for (PsiMethod newMethod : newMethods) {
-                if (containsElementsSimilarToThoseToExtract(newMethod) && callsHaveReplacedElementsToExtract(newMethod)) {
+                if (newMethod.isValid() && containsElementsSimilarToThoseToExtract(newMethod) && callsHaveReplacedElementsToExtract(newMethod)) {
                     return new Result(newMethod, true);
                 }
             }
