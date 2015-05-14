@@ -6,14 +6,19 @@ import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiExpression;
+import com.intellij.psi.PsiExpressionList;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiMethod;
+import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.PsiParameter;
 import com.intellij.psi.PsiParameterList;
-import com.intellij.psi.PsiReferenceExpression;
+import com.intellij.psi.PsiReference;
 import com.intellij.psi.PsiStatement;
+import com.intellij.psi.search.searches.ReferencesSearch;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.refactoring.introduceParameter.IntroduceParameterHandler;
+import com.simonstuck.vignelli.psi.PsiContainsChecker;
 import com.simonstuck.vignelli.psi.util.EditorUtil;
 import com.simonstuck.vignelli.refactoring.step.RefactoringStep;
 import com.simonstuck.vignelli.refactoring.step.RefactoringStepDelegate;
@@ -118,8 +123,8 @@ public class IntroduceParameterRefactoringStep implements RefactoringStep {
      *         <span>For every change:</span>
      *         <ol>
      *             <li>Get the new parameters (current - original)</li>
-     *             <li>For any new parameter, check all of its references in the method body</li>
-     *             <li>If any of the reference's ancestors contains the original element's parent we have succeeded.</li>
+     *             <li>For any new parameter, check if the original expression to be introduced is given as the parameter in all calls to the method.</li>
+     *             <li>If so, then the parameter has been introduced.</li>
      *         </ol>
      *     </li>
      * </ol>
@@ -158,21 +163,70 @@ public class IntroduceParameterRefactoringStep implements RefactoringStep {
             if (isAnyNullOrInvalid(method, elementParent)) {
                 return new Result(false);
             }
+            assert method != null;
+
+            // The element to introduce as a parameter will be invalid once it has been removed from the method.
+            // Therefore, if it is still valid, we cannot be done yet.
+            if (element.isValid()) {
+                return null;
+            }
 
             Set<PsiParameter> newParameters = getParameters(method);
             newParameters.removeAll(originalParameters);
 
             for (PsiParameter newParameter : newParameters) {
-                @SuppressWarnings("unchecked")
-                Collection<PsiReferenceExpression> allReferences = PsiTreeUtil.collectElementsOfType(method, PsiReferenceExpression.class);
-                for (PsiReferenceExpression referenceExpression : allReferences) {
-                    if (referenceExpression.getType() != null && referenceExpression.resolve() == newParameter && PsiTreeUtil.isAncestor(elementParent, referenceExpression, false)) {
-                        return new Result(true);
-                    }
+                if (hasOriginalExpressionPropagatedAsArgumentToParameterInAllCalls(newParameter)) {
+                    return new Result(true);
                 }
             }
 
             return null;
+        }
+
+        /**
+         * Checks if the original expression to introduce as a parameter is now passed as an argument to all calls of the method as the given parameter.
+         * @param newParameter The parameter to check.
+         * @return True iff it is passed, false otherwise.
+         */
+        private boolean hasOriginalExpressionPropagatedAsArgumentToParameterInAllCalls(PsiParameter newParameter) {
+            assert method != null;
+
+            Collection<PsiReference> allMethodUsages = ReferencesSearch.search(method, method.getUseScope()).findAll();
+
+            for (PsiReference methodUsageRef : allMethodUsages) {
+                PsiElement methodUsageElem = methodUsageRef.getElement();
+                if (methodUsageElem.getParent() instanceof PsiMethodCallExpression) {
+                    PsiMethodCallExpression methodCall = (PsiMethodCallExpression) methodUsageElem.getParent();
+                    if (!hasOriginalExpressionBeenPassedAsParameter(methodCall, newParameter)) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        /**
+         * Checks whether the original expression to introduce as a parameter is passed to the given method call.
+         * @param methodCall The method call to search.
+         * @param parameter The parameter for which to look for the expresion.
+         * @return True iff the expression is passed, false otherwise.
+         */
+        private boolean hasOriginalExpressionBeenPassedAsParameter(PsiMethodCallExpression methodCall, PsiParameter parameter) {
+            assert method != null;
+
+            int newParameterIndex = method.getParameterList().getParameterIndex(parameter);
+            PsiExpressionList argumentList = methodCall.getArgumentList();
+            PsiExpression[] argumentExpressions = argumentList.getExpressions();
+
+            // While the call/method are being edited the parameter and argument counts can be unequal.
+            if (argumentExpressions.length != method.getParameterList().getParametersCount()) {
+                return false;
+            }
+
+            PsiExpression injectedExpression = argumentExpressions[newParameterIndex];
+
+            // check if injected expression is the one that we removed
+            return new PsiContainsChecker().findEquivalent(injectedExpression, element) != null;
         }
     }
 }

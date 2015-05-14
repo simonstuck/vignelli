@@ -4,24 +4,25 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiReferenceExpression;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.simonstuck.vignelli.refactoring.Refactoring;
 import com.simonstuck.vignelli.refactoring.RefactoringTracker;
-import com.simonstuck.vignelli.refactoring.step.impl.IntroduceParameterRefactoringStep;
 import com.simonstuck.vignelli.refactoring.step.RefactoringStep;
 import com.simonstuck.vignelli.refactoring.step.RefactoringStepDelegate;
 import com.simonstuck.vignelli.refactoring.step.RefactoringStepResult;
+import com.simonstuck.vignelli.refactoring.step.impl.IntroduceParameterRefactoringStep;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 public class IntroduceParametersForMembersRefactoringImpl extends Refactoring implements RefactoringStepDelegate, RefactoringStep {
 
@@ -48,7 +49,7 @@ public class IntroduceParametersForMembersRefactoringImpl extends Refactoring im
         Collection<PsiReferenceExpression> memberReferences = new HashSet<PsiReferenceExpression>();
         for (PsiReferenceExpression expression : referenceExpressions) {
             PsiElement resolvedElement = expression.resolve();
-            if (isMemberField(resolvedElement) || isMemberMethod(clazz, resolvedElement)) {
+            if (isMemberField(clazz, resolvedElement) || isMemberMethod(clazz, resolvedElement)) {
                 memberReferences.add(expression);
             }
         }
@@ -142,11 +143,13 @@ public class IntroduceParametersForMembersRefactoringImpl extends Refactoring im
         listening = false;
     }
 
-    private boolean isMemberField(PsiElement resolved) {
-        return resolved instanceof PsiField;
+    private boolean isMemberField(PsiClass clazz, PsiElement resolved) {
+        Set<PsiElement> allFields = new HashSet<PsiElement>(Arrays.asList(clazz.getAllFields()));
+        return allFields.contains(resolved);
     }
 
     private boolean isMemberMethod(PsiClass clazz, PsiElement resolved) {
-        return (resolved instanceof PsiMethod && clazz.equals(((PsiMethod) resolved).getContainingClass()));
+        Set<PsiElement> allMethods = new HashSet<PsiElement>(Arrays.asList(clazz.getAllMethods()));
+        return allMethods.contains(resolved);
     }
 }
