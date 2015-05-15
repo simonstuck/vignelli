@@ -8,7 +8,8 @@ public class VignelliInspectionToolProvider implements InspectionToolProvider {
         return new Class[] {
             LongMethodInspectionTool.class,
             MethodChainingInspectionTool.class,
-            DirectSingletonUseInspectionTool.class
+            DirectSingletonUseInspectionTool.class,
+            InternalGetterUseInspectionTool.class
         };
     }
 }
