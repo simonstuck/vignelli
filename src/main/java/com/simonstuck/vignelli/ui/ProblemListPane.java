@@ -14,6 +14,9 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Point;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.font.TextAttribute;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -67,6 +70,23 @@ class ProblemListPane extends JPanel {
                     public void run() {
                         if (!event.getValueIsAdjusting()) {
                             ProblemListPane.this.showSelectedProblemDescription(delegate);
+                        }
+                    }
+                });
+            }
+        });
+
+        tablePane.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(final MouseEvent mouseEvent) {
+                ApplicationManager.getApplication().invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        Point p = mouseEvent.getPoint();
+                        int selectedRowIndex = tablePane.rowAtPoint(p);
+                        if (selectedRowIndex != -1) {
+                            ProblemIdentification problemData = model.getProblemDataAt(selectedRowIndex);
+                            problemData.navigateToElement();
                         }
                     }
                 });
