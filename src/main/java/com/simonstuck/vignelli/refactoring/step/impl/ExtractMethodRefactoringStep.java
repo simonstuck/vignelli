@@ -14,6 +14,7 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.refactoring.extractMethod.ExtractMethodHandler;
 import com.intellij.refactoring.extractMethod.ExtractMethodProcessor;
 import com.intellij.util.Query;
+import com.simonstuck.vignelli.psi.PsiElementLiftToCommonContext;
 import com.simonstuck.vignelli.psi.util.EditorUtil;
 import com.simonstuck.vignelli.refactoring.step.RefactoringStep;
 import com.simonstuck.vignelli.refactoring.step.RefactoringStepDelegate;
@@ -57,53 +58,13 @@ public class ExtractMethodRefactoringStep implements RefactoringStep {
             @NotNull RefactoringStepDelegate delegate
     ) {
         this.templateDescriptionPath = templateDescriptionPath;
-        this.elementsToExtract = findExtractableElementsInCommonContext(elementsToExtract);
+        this.elementsToExtract = new PsiElementLiftToCommonContext(elementsToExtract).invoke();
 
         this.file = file;
         this.project = project;
         this.application = application;
         this.delegate = delegate;
         extractedMethodChecker = new ExtractedMethodChecker();
-    }
-
-    private Collection<? extends PsiElement> findExtractableElementsInCommonContext(Collection<? extends PsiElement> elementsToExtract) {
-        if (elementsToExtract.isEmpty()) {
-            return new ArrayList<PsiElement>(elementsToExtract);
-        }
-
-        PsiElement commonContext = elementsToExtract.iterator().next().getContext();
-
-        boolean sameContext = false;
-        while (!sameContext) {
-            sameContext = true;
-            List<PsiElement> newToExtract = new ArrayList<PsiElement>();
-
-            Iterator<? extends PsiElement> elementIterator = elementsToExtract.iterator();
-            while (elementIterator.hasNext()) {
-                PsiElement element = elementIterator.next();
-
-                if (element.getContext() == commonContext) {
-                    newToExtract.add(element);
-                } else {
-                    sameContext = false;
-                    // different context
-                    //TODO: What to do if context is null?
-                    if (PsiTreeUtil.isAncestor(commonContext,element.getContext(),true)) {
-                        newToExtract.add(element.getParent());
-                    } else {
-                        commonContext = element.getContext();
-                        // start over!
-                        break;
-                    }
-                }
-            }
-
-            // if we are done though, the common context is fine and we have found
-            if (!elementIterator.hasNext()) {
-                elementsToExtract = newToExtract;
-            }
-        }
-        return elementsToExtract;
     }
 
     @Override
@@ -275,4 +236,5 @@ public class ExtractMethodRefactoringStep implements RefactoringStep {
             return callerCandidatesForBodyChange.isEmpty();
         }
     }
+
 }
