@@ -20,13 +20,10 @@ public class InternalGetterUseRefactoringImpl extends Refactoring implements Ref
     private static final String DESCRIPTION_TEMPLATE = "descriptionTemplates/internalGetterUseRefactoring.html";
 
     @NotNull
-    private final PsiMethodCallExpression getterCall;
-    @NotNull
     private final RefactoringTracker tracker;
     private RefactoringStep inlineGetterCallStep;
 
     public InternalGetterUseRefactoringImpl(@NotNull PsiMethodCallExpression getterCall, @NotNull RefactoringTracker tracker, @NotNull Project project) {
-        this.getterCall = getterCall;
         this.tracker = tracker;
 
         inlineGetterCallStep = new InlineMethodCallRefactoringStep(project, getterCall, this, ApplicationManager.getApplication());
@@ -78,5 +75,6 @@ public class InternalGetterUseRefactoringImpl extends Refactoring implements Ref
         inlineGetterCallStep = null;
         setChanged();
         notifyObservers();
+        complete();
     }
 }
