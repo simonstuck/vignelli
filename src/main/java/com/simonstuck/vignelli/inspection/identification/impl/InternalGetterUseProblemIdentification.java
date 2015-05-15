@@ -6,6 +6,7 @@ import com.intellij.psi.PsiMethodCallExpression;
 import com.simonstuck.vignelli.inspection.identification.ProblemIdentification;
 import com.simonstuck.vignelli.inspection.improvement.ImprovementOpportunity;
 import com.simonstuck.vignelli.inspection.improvement.impl.DirectSingletonUseImprovementOpportunity;
+import com.simonstuck.vignelli.inspection.improvement.impl.InternalGetterUseImprovementOpportunity;
 import com.simonstuck.vignelli.util.IOUtil;
 
 import org.jetbrains.annotations.NotNull;
@@ -26,7 +27,8 @@ public class InternalGetterUseProblemIdentification extends ProblemIdentificatio
 
     @Override
     public Optional<? extends ImprovementOpportunity> improvementOpportunity() {
-        return Optional.absent();
+        PsiMethodCallExpression getterCall = (PsiMethodCallExpression) problemDescriptor.getPsiElement();
+        return Optional.of(new InternalGetterUseImprovementOpportunity(getterCall));
     }
 
     @Override
