@@ -13,6 +13,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.awt.BorderLayout;
 import java.awt.Desktop;
+import java.awt.GridBagLayout;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.HashMap;
@@ -49,9 +50,6 @@ class DescriptionPane extends JEditorPane implements Observer, InformationPane {
      */
     public DescriptionPane(@Nullable Delegate delegate) {
         this.delegate = delegate;
-        setLayout(new BorderLayout());
-        setOpaque(false);
-
         HTMLEditorKit kit = new HTMLEditorKit();
         Document doc = kit.createDefaultDocument();
 
