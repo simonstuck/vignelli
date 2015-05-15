@@ -135,7 +135,7 @@ public class MethodChainIdentification implements ProblemDescriptorProvider {
             PsiClass classForCurrentType = PsiTypesUtil.getPsiClass(newType);
             if (classForCurrentType != null) {
                 String qualifiedName = classForCurrentType.getQualifiedName();
-                if (qualifiedName != null && !qualifiedName.startsWith("java.") && classFinder.findClass(searchScope, qualifiedName) == null) {
+                if (qualifiedName != null && classFinder.findClass(searchScope, qualifiedName) == null) {
                     return true;
                 }
             }
