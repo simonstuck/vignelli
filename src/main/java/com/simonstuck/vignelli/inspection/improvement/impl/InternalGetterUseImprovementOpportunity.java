@@ -22,7 +22,7 @@ public class InternalGetterUseImprovementOpportunity implements ImprovementOppor
     public void beginRefactoring() {
         Project project = getterCall.getProject();
         RefactoringTracker tracker = project.getComponent(RefactoringEngineComponent.class);
-        Refactoring refactoring = new InternalGetterUseRefactoringImpl(getterCall, tracker);
+        Refactoring refactoring = new InternalGetterUseRefactoringImpl(getterCall, tracker, project);
         refactoring.begin();
     }
 

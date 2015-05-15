@@ -1,6 +1,7 @@
 package com.simonstuck.vignelli.refactoring.impl;
 
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiMethodCallExpression;
 import com.simonstuck.vignelli.refactoring.Refactoring;
 import com.simonstuck.vignelli.refactoring.RefactoringTracker;
@@ -24,11 +25,11 @@ public class InternalGetterUseRefactoringImpl extends Refactoring implements Ref
     private final RefactoringTracker tracker;
     private RefactoringStep inlineGetterCallStep;
 
-    public InternalGetterUseRefactoringImpl(@NotNull PsiMethodCallExpression getterCall, @NotNull RefactoringTracker tracker) {
+    public InternalGetterUseRefactoringImpl(@NotNull PsiMethodCallExpression getterCall, @NotNull RefactoringTracker tracker, @NotNull Project project) {
         this.getterCall = getterCall;
         this.tracker = tracker;
 
-        inlineGetterCallStep = new InlineMethodCallRefactoringStep(getterCall, this, ApplicationManager.getApplication());
+        inlineGetterCallStep = new InlineMethodCallRefactoringStep(project, getterCall, this, ApplicationManager.getApplication());
         inlineGetterCallStep.start();
     }
 
@@ -46,6 +47,7 @@ public class InternalGetterUseRefactoringImpl extends Refactoring implements Ref
 
     @Override
     public void fillTemplateValues(Map<String, Object> templateValues) {
+        templateValues.put(HAS_NEXT_STEP_TEMPLATE_KEY, hasNextStep());
         if (hasNextStep()) {
             inlineGetterCallStep.describeStep(templateValues);
         }
@@ -74,5 +76,7 @@ public class InternalGetterUseRefactoringImpl extends Refactoring implements Ref
     public synchronized void didFinishRefactoringStep(RefactoringStep step, RefactoringStepResult result) {
         inlineGetterCallStep.end();
         inlineGetterCallStep = null;
+        setChanged();
+        notifyObservers();
     }
 }
