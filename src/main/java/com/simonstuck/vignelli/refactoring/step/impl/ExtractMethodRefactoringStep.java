@@ -71,8 +71,7 @@ public class ExtractMethodRefactoringStep implements RefactoringStep {
             return new ArrayList<PsiElement>(elementsToExtract);
         }
 
-
-        PsiElement commonContext = elementsToExtract.iterator().next();
+        PsiElement commonContext = elementsToExtract.iterator().next().getContext();
 
         boolean sameContext = false;
         while (!sameContext) {
