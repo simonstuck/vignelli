@@ -20,14 +20,15 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
 public class IntroduceParametersForMembersRefactoringImpl extends Refactoring implements RefactoringStepDelegate, RefactoringStep {
 
     private static final String STEP_DESCRIPTION_PATH = "descriptionTemplates/introduceParameterStepDescription.html";
-    private final Iterator<PsiReferenceExpression> memberIterator;
+
+    @NotNull
+    private final PsiMethod method;
     private final RefactoringTracker tracker;
     private Project project;
     private PsiFile file;
@@ -36,20 +37,19 @@ public class IntroduceParametersForMembersRefactoringImpl extends Refactoring im
     @NotNull
     private final RefactoringStepDelegate delegate;
 
-    public IntroduceParametersForMembersRefactoringImpl(PsiMethod method, RefactoringTracker tracker, Project project, PsiFile file, @NotNull RefactoringStepDelegate delegate) {
+    public IntroduceParametersForMembersRefactoringImpl(@NotNull PsiMethod method, RefactoringTracker tracker, Project project, PsiFile file, @NotNull RefactoringStepDelegate delegate) {
+        this.method = method;
         this.tracker = tracker;
         this.project = project;
         this.file = file;
         this.delegate = delegate;
 
-        Collection<PsiReferenceExpression> memberReferences = getMemberReferences(method);
-        memberIterator = memberReferences.iterator();
         prepareNextStep();
     }
 
     @Override
     public boolean hasNextStep() {
-        return introduceParameterStep != null;
+        return !getMemberReferences(method).isEmpty();
     }
 
     @Override
@@ -107,21 +107,14 @@ public class IntroduceParametersForMembersRefactoringImpl extends Refactoring im
     }
 
     private void prepareNextStep() {
-        PsiElement next = getNextParameterCandidate();
-        if (next != null) {
+        Collection<PsiReferenceExpression> memberReferences = getMemberReferences(method);
+        if (!memberReferences.isEmpty()) {
+            PsiElement next = memberReferences.iterator().next();
             introduceParameterStep = new IntroduceParameterRefactoringStep(project, file, next, STEP_DESCRIPTION_PATH, ApplicationManager.getApplication(), this);
             introduceParameterStep.start();
         } else {
             introduceParameterStep = null;
         }
-    }
-
-    private PsiElement getNextParameterCandidate() {
-        PsiElement next = null;
-        while ((next == null || !next.isValid()) && memberIterator.hasNext()) {
-            next = memberIterator.next();
-        }
-        return next;
     }
 
     @Override
