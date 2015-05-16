@@ -118,7 +118,7 @@ public class InlineMethodCallRefactoringStep implements RefactoringStep {
 
         @Override
         public RefactoringStepResult computeResult() {
-            if (getterCall.isValid()) {
+            if (getterCall.isValid() || !method.isValid()) {
                 return null;
             }
 
