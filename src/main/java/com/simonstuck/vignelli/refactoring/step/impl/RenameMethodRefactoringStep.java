@@ -93,9 +93,11 @@ public class RenameMethodRefactoringStep implements RefactoringStep {
      * Represents a result of a rename refactoring step.
      */
     public static final class Result implements RefactoringStepResult {
+        private final boolean success;
         final PsiMethod method;
 
-        private Result(PsiMethod method) {
+        private Result(boolean success, PsiMethod method) {
+            this.success = success;
             this.method = method;
         }
 
@@ -105,7 +107,7 @@ public class RenameMethodRefactoringStep implements RefactoringStep {
 
         @Override
         public boolean isSuccess() {
-            return true;
+            return success;
         }
     }
 
@@ -119,8 +121,11 @@ public class RenameMethodRefactoringStep implements RefactoringStep {
 
         @Override
         public RefactoringStepResult computeResult() {
+            if (!methodToRename.isValid()) {
+                return new Result(false, methodToRename);
+            }
             if (renamed) {
-                return new Result(methodToRename);
+                return new Result(true, methodToRename);
             } else {
                 return null;
             }
