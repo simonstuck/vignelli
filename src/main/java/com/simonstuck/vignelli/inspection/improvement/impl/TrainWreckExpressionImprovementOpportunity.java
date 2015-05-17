@@ -26,7 +26,6 @@ public class TrainWreckExpressionImprovementOpportunity implements ImprovementOp
     public void beginRefactoring() {
         PsiElement trainWreckElement = trainWreckIdentification.getFinalCall();
 
-        PsiElement criticalTrainWreckElement = trainWreckIdentification.criticalCall();
         RefactoringTracker tracker = trainWreckElement.getProject().getComponent(RefactoringEngineComponent.class);
         Project project = trainWreckElement.getProject();
         PsiFile file = trainWreckElement.getContainingFile();
@@ -34,12 +33,9 @@ public class TrainWreckExpressionImprovementOpportunity implements ImprovementOp
         PsiStatement trainWreckStatement = PsiTreeUtil.getParentOfType(trainWreckElement, PsiStatement.class);
         Collection<PsiStatement> extractRegion = Collections.singletonList(trainWreckStatement);
 
-        int typeDifference = trainWreckIdentification.calculateTypeDifference();
-        boolean criticalCallNecessary = (typeDifference > TrainWreckIdentification.TRAIN_WRECK_TYPE_DIFFERENCE_THRESHOLD
-                && !(typeDifference >= TrainWreckIdentification.TRAIN_WRECK_TYPE_DIFFERENCE_THRESHOLD && trainWreckIdentification.getLength() <= 3));
-
-        if (!criticalCallNecessary) {
-            criticalTrainWreckElement = null;
+        PsiElement criticalTrainWreckElement = null;
+        if (TrainWreckExpressionRefactoringImpl.shouldCriticalCallRemain(trainWreckIdentification)) {
+            criticalTrainWreckElement = trainWreckIdentification.criticalCall();
         }
 
         Refactoring refactoring = new TrainWreckExpressionRefactoringImpl(extractRegion, criticalTrainWreckElement, tracker, project, file, null);

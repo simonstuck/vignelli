@@ -69,6 +69,16 @@ public class TrainWreckExpressionRefactoringImpl extends Refactoring implements 
         currentRefactoringStep.start();
     }
 
+    /**
+     * Checks if the critical call should remain where it is, i.e. should not move with the rest of the train wreck.
+     * @param identification The identification to check.
+     * @return True iff the critical chain should remain at its current location.
+     */
+    public static boolean shouldCriticalCallRemain(@NotNull TrainWreckIdentification identification) {
+        return TrainWreckIdentificationEngine.isFullTrainWreck(identification.calculateTypeDifference())
+                && !TrainWreckIdentificationEngine.isShortTrainWreck(identification.calculateTypeDifference(), identification.getLength());
+    }
+
     @Override
     public boolean hasNextStep() {
         return currentRefactoringStep != null;
