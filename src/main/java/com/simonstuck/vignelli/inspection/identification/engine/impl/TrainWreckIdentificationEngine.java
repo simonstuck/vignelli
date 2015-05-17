@@ -1,8 +1,10 @@
-package com.simonstuck.vignelli.inspection.identification.engine;
+package com.simonstuck.vignelli.inspection.identification.engine.impl;
 
 import com.google.common.base.Predicate;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiMethodCallExpression;
+import com.simonstuck.vignelli.inspection.identification.engine.IdentificationEngine;
+import com.simonstuck.vignelli.inspection.identification.engine.impl.MethodCallCollectorElementVisitor;
 import com.simonstuck.vignelli.inspection.identification.impl.MethodChain;
 import com.simonstuck.vignelli.inspection.identification.impl.TrainWreckIdentification;
 import com.simonstuck.vignelli.inspection.identification.predicate.MethodChainMultipleCallsPredicate;
@@ -17,7 +19,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-public class TrainWreckIdentificationEngine {
+public class TrainWreckIdentificationEngine implements IdentificationEngine {
 
     private final ClassFinder classFinder;
 
@@ -26,11 +28,7 @@ public class TrainWreckIdentificationEngine {
         this.classFinder = classFinder;
     }
 
-    /**
-     * Identifies all method chains in the given {@link PsiElement}.
-     * @param element The element in which to search for train wrecks.
-     * @return A new set of train wreck identifications in the element
-     */
+    @Override
     public Set<TrainWreckIdentification> process(PsiElement element) {
         final Collection<MethodChain> candidates = computeIdentificationCandidates(element);
 

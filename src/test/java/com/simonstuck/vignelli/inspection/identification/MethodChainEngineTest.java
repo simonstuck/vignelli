@@ -3,7 +3,7 @@ package com.simonstuck.vignelli.inspection.identification;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiMethod;
 import com.intellij.testFramework.LightIdeaTestCase;
-import com.simonstuck.vignelli.inspection.identification.engine.TrainWreckIdentificationEngine;
+import com.simonstuck.vignelli.inspection.identification.engine.impl.TrainWreckIdentificationEngine;
 import com.simonstuck.vignelli.inspection.identification.impl.TrainWreckIdentification;
 import com.simonstuck.vignelli.psi.MockClassFinder;
 import com.simonstuck.vignelli.testutils.IOUtils;

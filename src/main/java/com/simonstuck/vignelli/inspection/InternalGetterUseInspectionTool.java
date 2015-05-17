@@ -3,7 +3,7 @@ package com.simonstuck.vignelli.inspection;
 import com.intellij.codeInspection.ProblemDescriptor;
 import com.intellij.psi.PsiMethod;
 import com.simonstuck.vignelli.inspection.identification.ProblemIdentification;
-import com.simonstuck.vignelli.inspection.identification.engine.InternalGetterUseIdentificationEngine;
+import com.simonstuck.vignelli.inspection.identification.engine.impl.InternalGetterUseIdentificationEngine;
 import com.simonstuck.vignelli.inspection.identification.impl.InternalGetterUseIdentification;
 import com.simonstuck.vignelli.inspection.identification.impl.InternalGetterUseProblemIdentification;
 

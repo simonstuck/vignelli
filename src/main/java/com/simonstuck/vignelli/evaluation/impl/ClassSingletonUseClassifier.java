@@ -15,7 +15,7 @@ import com.simonstuck.vignelli.evaluation.PsiElementEvaluator;
 import com.simonstuck.vignelli.evaluation.datamodel.ClassSingletonUseClassification;
 import com.simonstuck.vignelli.evaluation.datamodel.SingletonClassClassification;
 import com.simonstuck.vignelli.evaluation.datamodel.SingletonMethodCallPrediction;
-import com.simonstuck.vignelli.inspection.identification.engine.DirectSingletonUseIdentificationEngine;
+import com.simonstuck.vignelli.inspection.identification.engine.impl.DirectSingletonUseIdentificationEngine;
 import com.simonstuck.vignelli.inspection.identification.impl.DirectSingletonUseIdentification;
 import com.simonstuck.vignelli.psi.util.ClassUtil;
 

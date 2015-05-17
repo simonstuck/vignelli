@@ -3,7 +3,7 @@ package com.simonstuck.vignelli.inspection;
 import com.intellij.codeInspection.ProblemDescriptor;
 import com.intellij.psi.PsiMethod;
 import com.simonstuck.vignelli.inspection.identification.ProblemIdentification;
-import com.simonstuck.vignelli.inspection.identification.engine.LongMethodIdentificationEngine;
+import com.simonstuck.vignelli.inspection.identification.engine.impl.LongMethodIdentificationEngine;
 import com.simonstuck.vignelli.inspection.identification.impl.LongMethodIdentification;
 import com.simonstuck.vignelli.inspection.identification.impl.LongMethodProblemIdentification;
 
@@ -27,7 +27,7 @@ public class LongMethodInspectionTool extends ProblemReporterInspectionTool<Long
 
     @Override
     protected Set<LongMethodIdentification> processMethodElement(PsiMethod method) {
-        return engine.identifyLongMethods(method);
+        return engine.process(method);
     }
 
     @Override

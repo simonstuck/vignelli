@@ -1,9 +1,10 @@
-package com.simonstuck.vignelli.inspection.identification.engine;
+package com.simonstuck.vignelli.inspection.identification.engine.impl;
 
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.PsiModifier;
+import com.simonstuck.vignelli.inspection.identification.engine.IdentificationEngine;
 import com.simonstuck.vignelli.inspection.identification.impl.DirectSingletonUseIdentification;
 
 import org.jetbrains.annotations.Contract;
@@ -11,10 +12,11 @@ import org.jetbrains.annotations.Contract;
 import java.util.HashSet;
 import java.util.Set;
 
-public class DirectSingletonUseIdentificationEngine {
+public class DirectSingletonUseIdentificationEngine implements IdentificationEngine<DirectSingletonUseIdentification> {
 
     public static final String GET_INSTANCE_NAME = "getInstance";
 
+    @Override
     public Set<DirectSingletonUseIdentification> process(PsiElement element) {
         final Set<PsiMethodCallExpression> methodCallExpressions = getMethodCalls(element);
         Set<PsiMethodCallExpression> staticCalls = getStaticMethodCalls(methodCallExpressions);

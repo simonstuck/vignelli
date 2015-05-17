@@ -1,4 +1,4 @@
-package com.simonstuck.vignelli.inspection.identification.engine;
+package com.simonstuck.vignelli.inspection.identification.engine.impl;
 
 import com.intellij.psi.JavaRecursiveElementVisitor;
 import com.intellij.psi.PsiMethodCallExpression;

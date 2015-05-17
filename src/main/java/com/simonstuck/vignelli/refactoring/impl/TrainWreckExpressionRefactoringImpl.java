@@ -13,7 +13,7 @@ import com.intellij.psi.PsiReferenceExpression;
 import com.intellij.psi.PsiStatement;
 import com.intellij.psi.search.LocalSearchScope;
 import com.intellij.psi.search.searches.ReferencesSearch;
-import com.simonstuck.vignelli.inspection.identification.engine.TrainWreckIdentificationEngine;
+import com.simonstuck.vignelli.inspection.identification.engine.impl.TrainWreckIdentificationEngine;
 import com.simonstuck.vignelli.inspection.identification.impl.TrainWreckIdentification;
 import com.simonstuck.vignelli.psi.impl.IntelliJClassFinderAdapter;
 import com.simonstuck.vignelli.refactoring.Refactoring;
