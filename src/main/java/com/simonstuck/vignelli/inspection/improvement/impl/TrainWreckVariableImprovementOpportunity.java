@@ -6,6 +6,7 @@ import com.simonstuck.vignelli.inspection.identification.impl.TrainWreckIdentifi
 import com.simonstuck.vignelli.inspection.improvement.ImprovementOpportunity;
 import com.simonstuck.vignelli.refactoring.RefactoringEngineComponent;
 import com.simonstuck.vignelli.refactoring.RefactoringTracker;
+import com.simonstuck.vignelli.refactoring.impl.TrainWreckExpressionRefactoringImpl;
 import com.simonstuck.vignelli.refactoring.impl.TrainWreckVariableRefactoringImpl;
 
 public class TrainWreckVariableImprovementOpportunity implements ImprovementOpportunity {
@@ -22,7 +23,13 @@ public class TrainWreckVariableImprovementOpportunity implements ImprovementOppo
     public void beginRefactoring() {
         PsiElement trainWreckElement = trainWreckIdentification.getFinalCall();
         RefactoringTracker tracker = trainWreckElement.getProject().getComponent(RefactoringEngineComponent.class);
-        TrainWreckVariableRefactoringImpl refactoring = new TrainWreckVariableRefactoringImpl(trainWreckElement, variable, tracker);
+
+        PsiElement criticalTrainWreckElement = null;
+        if (TrainWreckExpressionRefactoringImpl.shouldCriticalCallRemain(trainWreckIdentification)) {
+            criticalTrainWreckElement = trainWreckIdentification.criticalCall();
+        }
+
+        TrainWreckVariableRefactoringImpl refactoring = new TrainWreckVariableRefactoringImpl(trainWreckElement, criticalTrainWreckElement, variable, tracker);
         refactoring.begin();
     }
 }

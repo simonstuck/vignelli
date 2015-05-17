@@ -14,6 +14,9 @@ import com.simonstuck.vignelli.refactoring.step.RefactoringStepResult;
 import com.simonstuck.vignelli.refactoring.step.impl.InlineVariableRefactoringStep;
 import com.simonstuck.vignelli.util.IOUtil;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.util.Collection;
 import java.util.Map;
 
@@ -21,12 +24,15 @@ public class TrainWreckVariableRefactoringImpl extends Refactoring implements Re
 
     public static final String TRAIN_WRECK_REFACTORING_DESCRIPTION = "Train Wreck Refactoring";
     public static final String REFACTORING_DESCRIPTION_PATH = "descriptionTemplates/trainWreckRefactoring.html";
+    @Nullable
+    private final PsiElement criticalTrainWreckElement;
     private final RefactoringTracker refactoringTracker;
     private final Project project;
     private final PsiFile file;
     private RefactoringStep currentRefactoringStep;
 
-    public TrainWreckVariableRefactoringImpl(PsiElement trainWreckElement, PsiLocalVariable variable, RefactoringTracker refactoringTracker) {
+    public TrainWreckVariableRefactoringImpl(@NotNull PsiElement trainWreckElement, @Nullable PsiElement criticalTrainWreckElement, @NotNull PsiLocalVariable variable, @NotNull RefactoringTracker refactoringTracker) {
+        this.criticalTrainWreckElement = criticalTrainWreckElement;
         this.refactoringTracker = refactoringTracker;
         this.project = trainWreckElement.getProject();
         this.file = trainWreckElement.getContainingFile();
@@ -88,7 +94,7 @@ public class TrainWreckVariableRefactoringImpl extends Refactoring implements Re
             assert result != null;
             InlineVariableRefactoringStep.Result inlineVariableResult = (InlineVariableRefactoringStep.Result) result;
             Collection<PsiStatement> extractRegion = inlineVariableResult.getAffectedStatements();
-            currentRefactoringStep = new TrainWreckExpressionRefactoringImpl(extractRegion, file, refactoringTracker, project, file, this);
+            currentRefactoringStep = new TrainWreckExpressionRefactoringImpl(extractRegion, criticalTrainWreckElement, refactoringTracker, project, file, this);
         } else if (step instanceof TrainWreckExpressionRefactoringImpl) {
             currentRefactoringStep = null;
         }
