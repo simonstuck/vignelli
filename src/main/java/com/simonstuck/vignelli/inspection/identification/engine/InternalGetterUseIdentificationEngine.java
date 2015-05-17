@@ -16,8 +16,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class InternalGetterUseIdentificationEngine {
-    public Set<? extends ProblemDescriptorProvider> process(@NotNull PsiMethod method) {
-        Set<ProblemDescriptorProvider> results = new HashSet<ProblemDescriptorProvider>();
+    public Set<InternalGetterUseIdentification> process(@NotNull PsiMethod method) {
+        Set<InternalGetterUseIdentification> results = new HashSet<InternalGetterUseIdentification>();
 
         @SuppressWarnings("unchecked")
         Collection<PsiMethodCallExpression> psiMethodCallExpressions = PsiTreeUtil.collectElementsOfType(method, PsiMethodCallExpression.class);

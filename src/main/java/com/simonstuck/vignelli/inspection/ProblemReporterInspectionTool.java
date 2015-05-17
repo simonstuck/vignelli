@@ -3,6 +3,7 @@ package com.simonstuck.vignelli.inspection;
 import com.intellij.codeInspection.BaseJavaLocalInspectionTool;
 import com.intellij.codeInspection.InspectionManager;
 import com.intellij.codeInspection.ProblemDescriptor;
+import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.JavaRecursiveElementVisitor;
 import com.intellij.psi.PsiFile;
@@ -22,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-abstract class ProblemReporterInspectionTool extends BaseJavaLocalInspectionTool {
+abstract class ProblemReporterInspectionTool<T extends ProblemDescriptorProvider> extends BaseJavaLocalInspectionTool {
     private final Map<PsiMethod, Collection<ProblemIdentification>> methodProblemsMap = new HashMap<PsiMethod, Collection<ProblemIdentification>>();
 
     @Nullable
@@ -43,12 +44,23 @@ abstract class ProblemReporterInspectionTool extends BaseJavaLocalInspectionTool
     public ProblemDescriptor[] checkMethod(final @NotNull PsiMethod method, @NotNull InspectionManager manager, boolean isOnTheFly) {
         cleanMethodProblems(method.getContainingFile());
 
-        Set<? extends ProblemDescriptorProvider> uses = processMethodElement(method);
-        List<ProblemDescriptor> problemDescriptors = constructProblemDescriptors(manager,uses);
-        Collection<ProblemIdentification> identifications = buildProblemIdentifications(problemDescriptors);
+        Set<T> uses = processMethodElement(method);
+        List<Pair<T, ProblemDescriptor>> candidatesWithProblemDescriptors = createProblemDescriptors(manager, uses);
+        Collection<ProblemIdentification> identifications = buildProblemIdentifications(candidatesWithProblemDescriptors);
         methodProblemsMap.put(method, identifications);
         notifyProblemCacheIfNecessary(method.getContainingFile().getVirtualFile(), manager);
+
+        List<ProblemDescriptor> problemDescriptors = getProblemDescriptors(candidatesWithProblemDescriptors);
+
         return problemDescriptors.toArray(new ProblemDescriptor[problemDescriptors.size()]);
+    }
+
+    private List<ProblemDescriptor> getProblemDescriptors(List<Pair<T, ProblemDescriptor>> candidatesWithProblemDescriptors) {
+        List<ProblemDescriptor> problemDescriptors = new LinkedList<ProblemDescriptor>();
+        for (Pair<T, ProblemDescriptor> candidate : candidatesWithProblemDescriptors) {
+            problemDescriptors.add(candidate.getSecond());
+        }
+        return problemDescriptors;
     }
 
     @Override
@@ -62,23 +74,23 @@ abstract class ProblemReporterInspectionTool extends BaseJavaLocalInspectionTool
      * @param problems The collection of problems
      * @return A new list of problem descriptors
      */
-    private List<ProblemDescriptor> constructProblemDescriptors(InspectionManager manager, Set<? extends ProblemDescriptorProvider> problems) {
-        List<ProblemDescriptor> descriptors = new LinkedList<ProblemDescriptor>();
-        for (ProblemDescriptorProvider id : problems) {
-            descriptors.add(id.problemDescriptor(manager));
+    private List<Pair<T, ProblemDescriptor>> createProblemDescriptors(InspectionManager manager, Set<T> problems) {
+        List<Pair<T, ProblemDescriptor>> result = new LinkedList<Pair<T, ProblemDescriptor>>();
+        for (T id : problems) {
+            result.add(Pair.create(id, id.problemDescriptor(manager)));
         }
-        return descriptors;
+        return result;
     }
 
     /**
      * Builds problem identifications using for the given problem {@link com.intellij.codeInspection.ProblemDescriptor} instances.
-     * @param problemDescriptors The problem descriptors from which to construct the identifications
+     * @param candidates The problem candidates from which to construct the problem identifications
      * @return A new collection of problem identifications
      */
-    private Collection<ProblemIdentification> buildProblemIdentifications(Collection<ProblemDescriptor> problemDescriptors) {
+    private Collection<ProblemIdentification> buildProblemIdentifications(List<Pair<T, ProblemDescriptor>> candidates) {
         List<ProblemIdentification> result = new ArrayList<ProblemIdentification>();
-        for (ProblemDescriptor descriptor : problemDescriptors) {
-            result.add(buildProblemIdentification(descriptor));
+        for (Pair<T, ProblemDescriptor> candidate : candidates) {
+            result.add(buildProblemIdentification(candidate.getFirst(), candidate.getSecond()));
         }
         return result;
     }
@@ -111,14 +123,15 @@ abstract class ProblemReporterInspectionTool extends BaseJavaLocalInspectionTool
      * @param method The method to process.
      * @return A set of {@link com.simonstuck.vignelli.inspection.identification.ProblemDescriptorProvider}.
      */
-    protected abstract Set<? extends ProblemDescriptorProvider> processMethodElement(PsiMethod method);
+    protected abstract Set<T> processMethodElement(PsiMethod method);
 
     /**
      * Builds a single {@link com.simonstuck.vignelli.inspection.identification.ProblemIdentification}.
      * @param descriptor The descriptor for the problem given by the inspection tool.
+     * @param problemDescriptor The problem descriptor for this candidate
      * @return The new problem identification.
      */
-    protected abstract ProblemIdentification buildProblemIdentification(ProblemDescriptor descriptor);
+    protected abstract ProblemIdentification buildProblemIdentification(T descriptor, ProblemDescriptor problemDescriptor);
 
     /**
      * Computes the set of methods that are defined in a file.

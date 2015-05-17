@@ -3,13 +3,13 @@ package com.simonstuck.vignelli.inspection.identification.predicate;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.intellij.psi.PsiType;
-import com.simonstuck.vignelli.inspection.identification.impl.MethodChainIdentification;
+import com.simonstuck.vignelli.inspection.identification.impl.MethodChain;
 
-public class MethodChainDifferentAdjacentTypesPredicate implements Predicate<MethodChainIdentification> {
+public class MethodChainDifferentAdjacentTypesPredicate implements Predicate<MethodChain> {
     @Override
-    public boolean apply(MethodChainIdentification methodChainIdentification) {
-        PsiType finalCallType = methodChainIdentification.getMethodCallType();
-        Optional<MethodChainIdentification> qualifier = methodChainIdentification.getMethodCallQualifier();
+    public boolean apply(MethodChain methodChain) {
+        PsiType finalCallType = methodChain.getMethodCallType();
+        Optional<MethodChain> qualifier = methodChain.getMethodCallQualifier();
         return !qualifier.isPresent() || !qualifier.get().getMethodCallType().equals(finalCallType);
     }
 }

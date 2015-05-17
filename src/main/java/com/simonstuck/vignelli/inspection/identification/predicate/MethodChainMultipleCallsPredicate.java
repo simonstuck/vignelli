@@ -1,11 +1,11 @@
 package com.simonstuck.vignelli.inspection.identification.predicate;
 
 import com.google.common.base.Predicate;
-import com.simonstuck.vignelli.inspection.identification.impl.MethodChainIdentification;
+import com.simonstuck.vignelli.inspection.identification.impl.MethodChain;
 
-public class MethodChainMultipleCallsPredicate implements Predicate<MethodChainIdentification> {
+public class MethodChainMultipleCallsPredicate implements Predicate<MethodChain> {
     @Override
-    public boolean apply(MethodChainIdentification methodChainIdentification) {
-        return methodChainIdentification.getMethodCallQualifier().isPresent();
+    public boolean apply(MethodChain methodChain) {
+        return methodChain.getMethodCallQualifier().isPresent();
     }
 }

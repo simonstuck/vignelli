@@ -8,7 +8,7 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.base.Optional;
 import com.intellij.psi.PsiType;
-import com.simonstuck.vignelli.inspection.identification.impl.MethodChainIdentification;
+import com.simonstuck.vignelli.inspection.identification.impl.MethodChain;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -16,19 +16,19 @@ import org.junit.Test;
 
 public class MethodChainDifferentAdjacentTypesPredicateTest {
 
-    private MethodChainIdentification identification;
+    private MethodChain identification;
     private MethodChainDifferentAdjacentTypesPredicate predicate;
 
     @Before
     public void setUp() throws Exception {
-        identification = mock(MethodChainIdentification.class);
+        identification = mock(MethodChain.class);
         predicate = new MethodChainDifferentAdjacentTypesPredicate();
     }
 
     @Test
     public void shouldReturnTrueWhenNoQualifierIsPresent() throws Exception {
         when(identification.getMethodCallType()).thenReturn(PsiType.BOOLEAN);
-        when(identification.getMethodCallQualifier()).thenReturn(Optional.<MethodChainIdentification>absent());
+        when(identification.getMethodCallQualifier()).thenReturn(Optional.<MethodChain>absent());
 
         assertTrue(predicate.apply(identification));
         verify(identification).getMethodCallType();
@@ -37,7 +37,7 @@ public class MethodChainDifferentAdjacentTypesPredicateTest {
 
     @Test
     public void shouldReturnFalseWhenSameTypes() throws Exception {
-        MethodChainIdentification qualifierMock = mock(MethodChainIdentification.class);
+        MethodChain qualifierMock = mock(MethodChain.class);
         when(qualifierMock.getMethodCallType()).thenReturn(PsiType.BOOLEAN);
 
         when(identification.getMethodCallType()).thenReturn(PsiType.BOOLEAN);
@@ -51,7 +51,7 @@ public class MethodChainDifferentAdjacentTypesPredicateTest {
 
     @Test
     public void shouldReturnTrueWhenTwoAdjacentCallsHaveDifferentTypes() throws Exception {
-        MethodChainIdentification qualifierMock = mock(MethodChainIdentification.class);
+        MethodChain qualifierMock = mock(MethodChain.class);
         when(qualifierMock.getMethodCallType()).thenReturn(PsiType.BOOLEAN);
 
         when(identification.getMethodCallType()).thenReturn(PsiType.INT);

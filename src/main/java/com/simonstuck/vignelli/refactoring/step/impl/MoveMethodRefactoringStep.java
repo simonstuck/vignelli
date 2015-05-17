@@ -10,10 +10,11 @@ import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.PsiReferenceExpression;
 import com.intellij.psi.util.PsiTypesUtil;
 import com.intellij.refactoring.move.moveInstanceMethod.MoveInstanceMethodHandlerDelegate;
-import com.simonstuck.vignelli.inspection.identification.impl.MethodChainIdentification;
-import com.simonstuck.vignelli.inspection.identification.engine.MethodChainIdentificationEngine;
-import com.simonstuck.vignelli.psi.impl.IntelliJClassFinderAdapter;
+import com.simonstuck.vignelli.inspection.identification.engine.TrainWreckIdentificationEngine;
+import com.simonstuck.vignelli.inspection.identification.impl.TrainWreckIdentification;
 import com.simonstuck.vignelli.psi.PsiContainsChecker;
+import com.simonstuck.vignelli.psi.impl.IntelliJClassFinderAdapter;
+import com.simonstuck.vignelli.psi.util.EditorUtil;
 import com.simonstuck.vignelli.refactoring.step.RefactoringStep;
 import com.simonstuck.vignelli.refactoring.step.RefactoringStepDelegate;
 import com.simonstuck.vignelli.refactoring.step.RefactoringStepGoalChecker;
@@ -21,7 +22,6 @@ import com.simonstuck.vignelli.refactoring.step.RefactoringStepResult;
 import com.simonstuck.vignelli.ui.description.HTMLFileTemplate;
 import com.simonstuck.vignelli.ui.description.Template;
 import com.simonstuck.vignelli.util.IOUtil;
-import com.simonstuck.vignelli.psi.util.EditorUtil;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -110,10 +110,10 @@ public class MoveMethodRefactoringStep implements RefactoringStep {
 
     @Nullable
     private PsiExpression getTargetExpression(PsiMethod methodToMove) {
-        MethodChainIdentificationEngine engine = new MethodChainIdentificationEngine(new IntelliJClassFinderAdapter(project));
-        Set<MethodChainIdentification> methodChainIdentifications = engine.identifyMethodChains(methodToMove);
-        if (!methodChainIdentifications.isEmpty()) {
-            MethodChainIdentification first = methodChainIdentifications.iterator().next();
+        TrainWreckIdentificationEngine engine = new TrainWreckIdentificationEngine(new IntelliJClassFinderAdapter(project));
+        Set<TrainWreckIdentification> methodChains = engine.process(methodToMove);
+        if (!methodChains.isEmpty()) {
+            TrainWreckIdentification first = methodChains.iterator().next();
             return getFinalQualifier(first.getFinalCall());
         } else {
             return null;

@@ -3,7 +3,8 @@ package com.simonstuck.vignelli.inspection.identification.engine;
 import com.google.common.base.Predicate;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiMethodCallExpression;
-import com.simonstuck.vignelli.inspection.identification.impl.MethodChainIdentification;
+import com.simonstuck.vignelli.inspection.identification.impl.MethodChain;
+import com.simonstuck.vignelli.inspection.identification.impl.TrainWreckIdentification;
 import com.simonstuck.vignelli.inspection.identification.predicate.MethodChainMultipleCallsPredicate;
 import com.simonstuck.vignelli.psi.ClassFinder;
 
@@ -16,35 +17,40 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-public class MethodChainIdentificationEngine {
+public class TrainWreckIdentificationEngine {
 
     public static final int TYPE_DIFFERENCE_THRESHOLD = 1;
     private final ClassFinder classFinder;
 
 
-    public MethodChainIdentificationEngine(@NotNull ClassFinder classFinder) {
+    public TrainWreckIdentificationEngine(@NotNull ClassFinder classFinder) {
         this.classFinder = classFinder;
     }
 
     /**
      * Identifies all method chains in the given {@link PsiElement}.
-     * @param element The element in which to search for method chains.
-     * @return A new
+     * @param element The element in which to search for train wrecks.
+     * @return A new set of train wreck identifications in the element
      */
-    public Set<MethodChainIdentification> identifyMethodChains(PsiElement element) {
-        final Collection<MethodChainIdentification> candidates = computeIdentificationCandidates(element);
+    public Set<TrainWreckIdentification> process(PsiElement element) {
+        final Collection<MethodChain> candidates = computeIdentificationCandidates(element);
 
-        Set<MethodChainIdentification> result = new HashSet<MethodChainIdentification>();
-        for (MethodChainIdentification candidate : candidates) {
-            Predicate<MethodChainIdentification> multipleCallsPredicate = new MethodChainMultipleCallsPredicate();
+        Set<MethodChain> resultChains = new HashSet<MethodChain>();
+        for (MethodChain candidate : candidates) {
+            Predicate<MethodChain> multipleCallsPredicate = new MethodChainMultipleCallsPredicate();
             int typeDifference = candidate.calculateTypeDifference();
             boolean containsProjectExternalCalls = candidate.containsProjectExternalCalls();
             if (!containsProjectExternalCalls && multipleCallsPredicate.apply(candidate) && typeDifference > TYPE_DIFFERENCE_THRESHOLD) {
-                result.add(candidate);
+                resultChains.add(candidate);
             }
         }
-        result.removeAll(allMethodChainQualifiers(result));
-        return result;
+        resultChains.removeAll(allMethodChainQualifiers(resultChains));
+
+        Set<TrainWreckIdentification> trainWreckIdentifications = new HashSet<TrainWreckIdentification>();
+        for (MethodChain chain : resultChains) {
+            trainWreckIdentifications.add(new TrainWreckIdentification(chain.getFinalCall()));
+        }
+        return trainWreckIdentifications;
     }
 
     /**
@@ -52,9 +58,9 @@ public class MethodChainIdentificationEngine {
      * @param ids The identifications for which to find the qualifiers
      * @return A collection of qualifiers
      */
-    private Collection<MethodChainIdentification> allMethodChainQualifiers(Collection<MethodChainIdentification> ids) {
-        Collection<MethodChainIdentification> result = new LinkedList<MethodChainIdentification>();
-        for (MethodChainIdentification id : ids) {
+    private Collection<MethodChain> allMethodChainQualifiers(Collection<MethodChain> ids) {
+        Collection<MethodChain> result = new LinkedList<MethodChain>();
+        for (MethodChain id : ids) {
             result.addAll(id.getAllMethodCallQualifiers());
         }
         return result;
@@ -65,11 +71,11 @@ public class MethodChainIdentificationEngine {
      * @param element The element in which to search for possible identifications
      * @return A new collection with all method chain identification candidates
      */
-    private Collection<MethodChainIdentification> computeIdentificationCandidates(PsiElement element) {
+    private Collection<MethodChain> computeIdentificationCandidates(PsiElement element) {
         final Set<PsiMethodCallExpression> methodCalls = getMethodCalls(element);
-        final List<MethodChainIdentification> result = new ArrayList<MethodChainIdentification>(methodCalls.size());
+        final List<MethodChain> result = new ArrayList<MethodChain>(methodCalls.size());
         for (PsiMethodCallExpression expression : methodCalls) {
-            result.add(MethodChainIdentification.createWithFinalCall(expression, classFinder));
+            result.add(new MethodChain(expression, classFinder));
         }
         return result;
     }

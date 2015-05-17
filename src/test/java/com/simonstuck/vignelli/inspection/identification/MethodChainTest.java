@@ -10,14 +10,14 @@ import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.PsiReferenceExpression;
 import com.intellij.psi.PsiType;
 import com.intellij.testFramework.LightIdeaTestCase;
-import com.simonstuck.vignelli.inspection.identification.impl.MethodChainIdentification;
+import com.simonstuck.vignelli.inspection.identification.impl.MethodChain;
 import com.simonstuck.vignelli.psi.ClassFinder;
 import com.simonstuck.vignelli.psi.impl.IntelliJClassFinderAdapter;
 
-public class MethodChainIdentificationTest extends LightIdeaTestCase {
+public class MethodChainTest extends LightIdeaTestCase {
 
     private PsiMethodCallExpression finalCallMock;
-    private MethodChainIdentification id;
+    private MethodChain id;
     private PsiReferenceExpression refExprMock;
     private ClassFinder classFinder;
 
@@ -28,7 +28,7 @@ public class MethodChainIdentificationTest extends LightIdeaTestCase {
 
         finalCallMock = mock(PsiMethodCallExpression.class);
         when(finalCallMock.getMethodExpression()).thenReturn(refExprMock);
-        id = MethodChainIdentification.createWithFinalCall(finalCallMock, classFinder);
+        id = new MethodChain(finalCallMock, classFinder);
     }
 
     public void testShouldUseHashCodeOfFinalCall() throws Exception {
@@ -36,15 +36,15 @@ public class MethodChainIdentificationTest extends LightIdeaTestCase {
     }
 
     public void testShouldBeEqualToOtherMethodChainIdentificationWithSameFinalCall() throws Exception {
-        assertTrue(id.equals(MethodChainIdentification.createWithFinalCall(finalCallMock, classFinder)));
+        assertTrue(id.equals(new MethodChain(finalCallMock, classFinder)));
     }
 
     public void testShouldReturnNoMethodCallQualifierForMethodCallWithNoQualifier() throws Exception {
         PsiExpression qualifierExprMock = mock(PsiExpression.class);
         when(refExprMock.getQualifierExpression()).thenReturn(qualifierExprMock);
 
-        Optional<MethodChainIdentification> qualifier = id.getMethodCallQualifier();
-        assertEquals(Optional.<MethodChainIdentification>absent(), qualifier);
+        Optional<MethodChain> qualifier = id.getMethodCallQualifier();
+        assertEquals(Optional.<MethodChain>absent(), qualifier);
         verify(finalCallMock).getMethodExpression();
     }
 
@@ -56,9 +56,9 @@ public class MethodChainIdentificationTest extends LightIdeaTestCase {
     public void testShouldReturnImmediateQualifierForMethodCall() throws Exception {
         PsiMethodCallExpression qualifierExprMock = mock(PsiMethodCallExpression.class);
         when(refExprMock.getQualifierExpression()).thenReturn(qualifierExprMock);
-        MethodChainIdentification qualifierIdentification = MethodChainIdentification.createWithFinalCall(qualifierExprMock, classFinder);
+        MethodChain qualifierIdentification = new MethodChain(qualifierExprMock, classFinder);
 
-        Optional<MethodChainIdentification> qualifier = id.getMethodCallQualifier();
+        Optional<MethodChain> qualifier = id.getMethodCallQualifier();
         assertEquals(Optional.of(qualifierIdentification), qualifier);
     }
 

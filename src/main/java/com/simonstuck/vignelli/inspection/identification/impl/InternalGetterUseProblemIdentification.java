@@ -5,7 +5,6 @@ import com.intellij.codeInspection.ProblemDescriptor;
 import com.intellij.psi.PsiMethodCallExpression;
 import com.simonstuck.vignelli.inspection.identification.ProblemIdentification;
 import com.simonstuck.vignelli.inspection.improvement.ImprovementOpportunity;
-import com.simonstuck.vignelli.inspection.improvement.impl.DirectSingletonUseImprovementOpportunity;
 import com.simonstuck.vignelli.inspection.improvement.impl.InternalGetterUseImprovementOpportunity;
 import com.simonstuck.vignelli.util.IOUtil;
 
