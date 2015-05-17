@@ -19,7 +19,6 @@ import java.util.Set;
 
 public class TrainWreckIdentificationEngine {
 
-    public static final int TYPE_DIFFERENCE_THRESHOLD = 1;
     private final ClassFinder classFinder;
 
 
@@ -40,7 +39,9 @@ public class TrainWreckIdentificationEngine {
             Predicate<MethodChain> multipleCallsPredicate = new MethodChainMultipleCallsPredicate();
             int typeDifference = candidate.calculateTypeDifference();
             boolean containsProjectExternalCalls = candidate.containsProjectExternalCalls();
-            if (!containsProjectExternalCalls && multipleCallsPredicate.apply(candidate) && typeDifference > TYPE_DIFFERENCE_THRESHOLD) {
+            if (!containsProjectExternalCalls && multipleCallsPredicate.apply(candidate)
+                    && (typeDifference > TrainWreckIdentification.TRAIN_WRECK_TYPE_DIFFERENCE_THRESHOLD
+                    || (typeDifference >= TrainWreckIdentification.TRAIN_WRECK_TYPE_DIFFERENCE_THRESHOLD && candidate.getLength() <= 3))) {
                 resultChains.add(candidate);
             }
         }

@@ -45,7 +45,6 @@ public class MethodChainTest extends LightIdeaTestCase {
 
         Optional<MethodChain> qualifier = id.getMethodCallQualifier();
         assertEquals(Optional.<MethodChain>absent(), qualifier);
-        verify(finalCallMock).getMethodExpression();
     }
 
     public void testShouldReturnTypeOfFinalCallAsType() throws Exception {
@@ -54,7 +53,9 @@ public class MethodChainTest extends LightIdeaTestCase {
     }
 
     public void testShouldReturnImmediateQualifierForMethodCall() throws Exception {
+        PsiReferenceExpression referenceExprMock = mock(PsiReferenceExpression.class);
         PsiMethodCallExpression qualifierExprMock = mock(PsiMethodCallExpression.class);
+        when(qualifierExprMock.getMethodExpression()).thenReturn(referenceExprMock);
         when(refExprMock.getQualifierExpression()).thenReturn(qualifierExprMock);
         MethodChain qualifierIdentification = new MethodChain(qualifierExprMock, classFinder);
 

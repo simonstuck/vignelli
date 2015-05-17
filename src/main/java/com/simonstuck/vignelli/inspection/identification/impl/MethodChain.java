@@ -9,6 +9,7 @@ import com.intellij.psi.PsiType;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.PsiTypesUtil;
 import com.simonstuck.vignelli.psi.ClassFinder;
+import com.simonstuck.vignelli.psi.util.MethodCallUtil;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -18,10 +19,29 @@ import java.util.Set;
 public class MethodChain {
     private final PsiMethodCallExpression finalCall;
     private final ClassFinder classFinder;
+    private int length;
 
     public MethodChain(@NotNull PsiMethodCallExpression finalCall, @NotNull ClassFinder classFinder) {
         this.finalCall = finalCall;
         this.classFinder = classFinder;
+        this.length = calculateLength(finalCall);
+    }
+
+    private int calculateLength(PsiMethodCallExpression finalCall) {
+        int currentLength = 0;
+        PsiExpression currentExpression = finalCall;
+        while (currentExpression != null) {
+
+            currentLength++;
+
+            if (currentExpression instanceof PsiMethodCallExpression) {
+                PsiReferenceExpression methodExpression = ((PsiMethodCallExpression) currentExpression).getMethodExpression();
+                currentExpression = methodExpression.getQualifierExpression();
+            } else {
+                currentExpression = null;
+            }
+        }
+        return currentLength;
     }
 
     /**
@@ -80,26 +100,7 @@ public class MethodChain {
      * @return The number of times the type in the method call chain changes.
      */
     public int calculateTypeDifference() {
-        int typeDifference = -1;
-        PsiType currentType = null;
-
-        PsiExpression currentExpression = finalCall;
-
-        while (currentExpression != null) {
-            PsiType newType = currentExpression.getType();
-            if (newType != PsiType.VOID && (currentType != null ? !currentType.equals(newType) : newType != null)) {
-                typeDifference++;
-            }
-            currentType = newType;
-
-            if (currentExpression instanceof PsiMethodCallExpression) {
-                PsiReferenceExpression methodExpression = ((PsiMethodCallExpression) currentExpression).getMethodExpression();
-                currentExpression = methodExpression.getQualifierExpression();
-            } else {
-                currentExpression = null;
-            }
-        }
-        return typeDifference;
+        return MethodCallUtil.calculateTypeDifference(finalCall);
     }
 
     /**
@@ -133,5 +134,9 @@ public class MethodChain {
 
     public PsiMethodCallExpression getFinalCall() {
         return finalCall;
+    }
+
+    public int getLength() {
+        return length;
     }
 }
