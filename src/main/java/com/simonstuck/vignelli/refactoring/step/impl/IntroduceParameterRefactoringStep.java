@@ -14,7 +14,6 @@ import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.PsiParameter;
 import com.intellij.psi.PsiParameterList;
 import com.intellij.psi.PsiReference;
-import com.intellij.psi.PsiStatement;
 import com.intellij.psi.search.searches.ReferencesSearch;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.refactoring.introduceParameter.IntroduceParameterHandler;
@@ -100,14 +99,20 @@ public class IntroduceParameterRefactoringStep implements RefactoringStep {
 
     public static final class Result implements RefactoringStepResult {
         private final boolean success;
+        private final PsiParameter newParameter;
 
-        public Result(boolean success) {
+        public Result(boolean success, PsiParameter newParameter) {
             this.success = success;
+            this.newParameter = newParameter;
         }
 
         @Override
         public boolean isSuccess() {
             return success;
+        }
+
+        public PsiParameter getNewParameter() {
+            return newParameter;
         }
     }
 
@@ -134,12 +139,10 @@ public class IntroduceParameterRefactoringStep implements RefactoringStep {
         @Nullable
         private final PsiMethod method;
         private final Set<PsiParameter> originalParameters = new HashSet<PsiParameter>();
-        private final PsiElement elementParent;
 
         public ParameterIntroducedChecker(@NotNull RefactoringStep refactoringStep, @NotNull RefactoringStepDelegate delegate) {
             super(refactoringStep, delegate);
             method = PsiTreeUtil.getParentOfType(element, PsiMethod.class);
-            elementParent = PsiTreeUtil.getParentOfType(element, PsiStatement.class);
 
             originalParameters.addAll(getParameters(method));
         }
@@ -161,7 +164,7 @@ public class IntroduceParameterRefactoringStep implements RefactoringStep {
         @Override
         public RefactoringStepResult computeResult() {
             if (method == null) {
-                return new Result(false);
+                return new Result(false, null);
             }
 
             // The element to introduce as a parameter will be invalid once it has been removed from the method.
@@ -175,7 +178,7 @@ public class IntroduceParameterRefactoringStep implements RefactoringStep {
 
             for (PsiParameter newParameter : newParameters) {
                 if (hasOriginalExpressionPropagatedAsArgumentToParameterInAllCalls(newParameter)) {
-                    return new Result(true);
+                    return new Result(true, newParameter);
                 }
             }
 

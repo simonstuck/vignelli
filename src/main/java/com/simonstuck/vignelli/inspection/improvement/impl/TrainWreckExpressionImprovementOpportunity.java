@@ -34,7 +34,15 @@ public class TrainWreckExpressionImprovementOpportunity implements ImprovementOp
         PsiStatement trainWreckStatement = PsiTreeUtil.getParentOfType(trainWreckElement, PsiStatement.class);
         Collection<PsiStatement> extractRegion = Collections.singletonList(trainWreckStatement);
 
-        Refactoring refactoring = new TrainWreckExpressionRefactoringImpl(extractRegion, tracker, project, file, null);
+        int typeDifference = trainWreckIdentification.calculateTypeDifference();
+        boolean criticalCallNecessary = (typeDifference > TrainWreckIdentification.TRAIN_WRECK_TYPE_DIFFERENCE_THRESHOLD
+                && !(typeDifference >= TrainWreckIdentification.TRAIN_WRECK_TYPE_DIFFERENCE_THRESHOLD && trainWreckIdentification.getLength() <= 3));
+
+        if (!criticalCallNecessary) {
+            criticalTrainWreckElement = null;
+        }
+
+        Refactoring refactoring = new TrainWreckExpressionRefactoringImpl(extractRegion, criticalTrainWreckElement, tracker, project, file, null);
         refactoring.begin();
     }
 }

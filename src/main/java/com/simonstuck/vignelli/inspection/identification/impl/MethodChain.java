@@ -24,24 +24,7 @@ public class MethodChain {
     public MethodChain(@NotNull PsiMethodCallExpression finalCall, @NotNull ClassFinder classFinder) {
         this.finalCall = finalCall;
         this.classFinder = classFinder;
-        this.length = calculateLength(finalCall);
-    }
-
-    private int calculateLength(PsiMethodCallExpression finalCall) {
-        int currentLength = 0;
-        PsiExpression currentExpression = finalCall;
-        while (currentExpression != null) {
-
-            currentLength++;
-
-            if (currentExpression instanceof PsiMethodCallExpression) {
-                PsiReferenceExpression methodExpression = ((PsiMethodCallExpression) currentExpression).getMethodExpression();
-                currentExpression = methodExpression.getQualifierExpression();
-            } else {
-                currentExpression = null;
-            }
-        }
-        return currentLength;
+        this.length = MethodCallUtil.getLength(finalCall);
     }
 
     /**

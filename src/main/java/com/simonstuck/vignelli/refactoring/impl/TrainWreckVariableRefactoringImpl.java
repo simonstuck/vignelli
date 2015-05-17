@@ -88,7 +88,7 @@ public class TrainWreckVariableRefactoringImpl extends Refactoring implements Re
             assert result != null;
             InlineVariableRefactoringStep.Result inlineVariableResult = (InlineVariableRefactoringStep.Result) result;
             Collection<PsiStatement> extractRegion = inlineVariableResult.getAffectedStatements();
-            currentRefactoringStep = new TrainWreckExpressionRefactoringImpl(extractRegion, refactoringTracker, project, file, this);
+            currentRefactoringStep = new TrainWreckExpressionRefactoringImpl(extractRegion, file, refactoringTracker, project, file, this);
         } else if (step instanceof TrainWreckExpressionRefactoringImpl) {
             currentRefactoringStep = null;
         }

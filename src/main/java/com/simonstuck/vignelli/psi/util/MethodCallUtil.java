@@ -39,4 +39,26 @@ public class MethodCallUtil {
         }
         return typeDifference;
     }
+
+    /**
+     * Calculates the length of a given method call chain.
+     * @param finalCall The last call of the chain to be sized.
+     * @return The number of elements in the method call chain.
+     */
+    public static int getLength(PsiMethodCallExpression finalCall) {
+        int currentLength = 0;
+        PsiExpression currentExpression = finalCall;
+        while (currentExpression != null) {
+
+            currentLength++;
+
+            if (currentExpression instanceof PsiMethodCallExpression) {
+                PsiReferenceExpression methodExpression = ((PsiMethodCallExpression) currentExpression).getMethodExpression();
+                currentExpression = methodExpression.getQualifierExpression();
+            } else {
+                currentExpression = null;
+            }
+        }
+        return currentLength;
+    }
 }

@@ -20,10 +20,12 @@ public class TrainWreckIdentification implements ProblemDescriptorProvider {
     private final PsiMethodCallExpression finalCall;
 
     private final PsiMethodCallExpression criticalCall;
+    private int length;
 
     public TrainWreckIdentification(@NotNull PsiMethodCallExpression finalCall) {
         this.finalCall = finalCall;
         criticalCall = getCriticalCall(finalCall);
+        length = MethodCallUtil.getLength(finalCall);
     }
 
     private PsiMethodCallExpression getCriticalCall(PsiMethodCallExpression finalCall) {
@@ -82,5 +84,13 @@ public class TrainWreckIdentification implements ProblemDescriptorProvider {
 
     public PsiMethodCallExpression criticalCall() {
         return criticalCall;
+    }
+
+    public int calculateTypeDifference() {
+        return MethodCallUtil.calculateTypeDifference(finalCall);
+    }
+
+    public int getLength() {
+        return length;
     }
 }

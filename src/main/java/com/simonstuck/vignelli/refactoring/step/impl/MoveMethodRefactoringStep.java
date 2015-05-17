@@ -41,17 +41,14 @@ public class MoveMethodRefactoringStep implements RefactoringStep {
     private final MethodMovedToTargetGoalChecker methodMovedToTargetGoalChecker;
     private final Application application;
 
-    public MoveMethodRefactoringStep(Project project, PsiMethod methodToMove, Application application, RefactoringStepDelegate delegate) {
+    public MoveMethodRefactoringStep(Project project, PsiMethod methodToMove, PsiExpression targetExpression, Application application, RefactoringStepDelegate delegate) {
         this.project = project;
         this.methodToMove = methodToMove;
         this.application = application;
 
-        targetExpression = getTargetExpression(methodToMove);
-        if (targetExpression != null) {
-            targetClass = PsiTypesUtil.getPsiClass(targetExpression.getType());
-        } else {
-            targetClass = null;
-        }
+        this.targetExpression = targetExpression;
+//        targetExpression = getTargetExpression(methodToMove);
+        targetClass = PsiTypesUtil.getPsiClass(targetExpression.getType());
 
         methodMovedToTargetGoalChecker = new MethodMovedToTargetGoalChecker(this, delegate);
     }
@@ -94,30 +91,8 @@ public class MoveMethodRefactoringStep implements RefactoringStep {
         return template.render(contentMap);
     }
 
-    public PsiExpression getFinalQualifier(PsiExpression element) {
-        if (element instanceof PsiMethodCallExpression) {
-            PsiMethodCallExpression expression = (PsiMethodCallExpression) element;
-            PsiReferenceExpression methodRefExpression = expression.getMethodExpression();
-            return getFinalQualifier(methodRefExpression.getQualifierExpression());
-        } else {
-            return element;
-        }
-    }
-
     private String template() {
         return IOUtil.tryReadFile("descriptionTemplates/moveMethodStepDescription.html");
-    }
-
-    @Nullable
-    private PsiExpression getTargetExpression(PsiMethod methodToMove) {
-        TrainWreckIdentificationEngine engine = new TrainWreckIdentificationEngine(new IntelliJClassFinderAdapter(project));
-        Set<TrainWreckIdentification> methodChains = engine.process(methodToMove);
-        if (!methodChains.isEmpty()) {
-            TrainWreckIdentification first = methodChains.iterator().next();
-            return getFinalQualifier(first.getFinalCall());
-        } else {
-            return null;
-        }
     }
 
 
