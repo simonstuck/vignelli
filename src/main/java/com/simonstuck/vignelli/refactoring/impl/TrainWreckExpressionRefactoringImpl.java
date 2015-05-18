@@ -26,6 +26,8 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Observable;
+import java.util.Observer;
 
 public class TrainWreckExpressionRefactoringImpl extends Refactoring implements RefactoringStepDelegate, RefactoringStep {
 
@@ -173,7 +175,7 @@ public class TrainWreckExpressionRefactoringImpl extends Refactoring implements 
         refactoringStepVisitor.visitElement(this);
     }
 
-    private class RefactoringStepCompletionHandler extends RefactoringStepVisitorAdapter {
+    private class RefactoringStepCompletionHandler extends RefactoringStepVisitorAdapter implements Observer {
         private final RefactoringStepResult result;
         private boolean success = false;
 
@@ -194,6 +196,7 @@ public class TrainWreckExpressionRefactoringImpl extends Refactoring implements 
                     IntroduceParametersForMembersRefactoringImpl introduceParametersForMembersRefactoring = new IntroduceParametersForMembersRefactoringImpl(extractMethodResult.getExtractedMethod(), tracker, project, file, TrainWreckExpressionRefactoringImpl.this);
                     if (introduceParametersForMembersRefactoring.hasNextStep()) {
                         currentRefactoringStep = introduceParametersForMembersRefactoring;
+                        introduceParametersForMembersRefactoring.addObserver(this);
                     } else {
                         initMoveMethodStep();
                     }
@@ -216,6 +219,7 @@ public class TrainWreckExpressionRefactoringImpl extends Refactoring implements 
             IntroduceParametersForMembersRefactoringImpl introduceParametersForMembersRefactoring = new IntroduceParametersForMembersRefactoringImpl(extractMethodResult.getExtractedMethod(), tracker, project, file, TrainWreckExpressionRefactoringImpl.this);
             if (introduceParametersForMembersRefactoring.hasNextStep()) {
                 currentRefactoringStep = introduceParametersForMembersRefactoring;
+                introduceParametersForMembersRefactoring.addObserver(this);
             } else {
                 initMoveMethodStep();
             }
@@ -225,6 +229,7 @@ public class TrainWreckExpressionRefactoringImpl extends Refactoring implements 
         @Override
         public void visitElement(IntroduceParametersForMembersRefactoringImpl introduceParametersForMembersRefactoring) {
             super.visitElement(introduceParametersForMembersRefactoring);
+            introduceParametersForMembersRefactoring.deleteObserver(this);
             initMoveMethodStep();
             success = true;
         }
@@ -266,6 +271,12 @@ public class TrainWreckExpressionRefactoringImpl extends Refactoring implements 
 
         private void initRenameMethodStep(MoveMethodRefactoringStep.Result moveMethodResult) {
             currentRefactoringStep = new RenameMethodRefactoringStep(moveMethodResult.getNewMethod(), project, TrainWreckExpressionRefactoringImpl.this, ApplicationManager.getApplication());
+        }
+
+        @Override
+        public void update(Observable observable, Object o) {
+            setChanged();
+            notifyObservers();
         }
     }
 }

@@ -110,6 +110,9 @@ public class IntroduceParametersForMembersRefactoringImpl extends Refactoring im
         if (introduceParameterStep == null && listening) {
             delegate.didFinishRefactoringStep(this, null);
         }
+
+        setChanged();
+        notifyObservers();
     }
 
     private void prepareNextStep() {
