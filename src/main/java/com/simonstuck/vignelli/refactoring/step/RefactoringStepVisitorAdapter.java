@@ -12,15 +12,13 @@ import com.simonstuck.vignelli.refactoring.step.impl.InlineVariableRefactoringSt
 import com.simonstuck.vignelli.refactoring.step.impl.IntroduceParameterRefactoringStep;
 import com.simonstuck.vignelli.refactoring.step.impl.MoveMethodRefactoringStep;
 import com.simonstuck.vignelli.refactoring.step.impl.RenameMethodRefactoringStep;
+import com.simonstuck.vignelli.refactoring.step.impl.TypeMigrationRefactoringStep;
 
 /**
  * This adapter contains empty default implementations for all visit methods.
  * For practical use, override the necessary methods only.
  */
 public class RefactoringStepVisitorAdapter implements RefactoringStepVisitor {
-    @Override
-    public void visitElement(RefactoringStep refactoringStep) {}
-
     @Override
     public void visitElement(ExtractMethodRefactoringStep extractMethodRefactoringStep) {}
 
@@ -56,4 +54,7 @@ public class RefactoringStepVisitorAdapter implements RefactoringStepVisitor {
 
     @Override
     public void visitElement(InlineMethodRefactoringStep inlineMethodRefactoringStep) {}
+
+    @Override
+    public void visitElement(TypeMigrationRefactoringStep typeMigrationRefactoringStep) {}
 }

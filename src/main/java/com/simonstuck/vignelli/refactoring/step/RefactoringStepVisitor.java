@@ -12,14 +12,9 @@ import com.simonstuck.vignelli.refactoring.step.impl.InlineVariableRefactoringSt
 import com.simonstuck.vignelli.refactoring.step.impl.IntroduceParameterRefactoringStep;
 import com.simonstuck.vignelli.refactoring.step.impl.MoveMethodRefactoringStep;
 import com.simonstuck.vignelli.refactoring.step.impl.RenameMethodRefactoringStep;
+import com.simonstuck.vignelli.refactoring.step.impl.TypeMigrationRefactoringStep;
 
 public interface RefactoringStepVisitor {
-    /**
-     * Visit the generic refactoring step.
-     * @param refactoringStep The refactoring step to visit.
-     */
-    void visitElement(RefactoringStep refactoringStep);
-
     void visitElement(ExtractMethodRefactoringStep extractMethodRefactoringStep);
 
     void visitElement(TrainWreckExpressionRefactoringImpl trainWreckExpressionRefactoring);
@@ -30,14 +25,11 @@ public interface RefactoringStepVisitor {
 
     void visitElement(IntroduceParametersForCriticalCallsImpl introduceParametersForCriticalCalls);
 
-
     void visitElement(MoveMethodRefactoringStep moveMethodRefactoringStep);
 
     void visitElement(InlineMethodCallRefactoringStep inlineMethodCallRefactoringStep);
 
-
     void visitElement(ExtractInterfaceRefactoringStep extractInterfaceRefactoringStep);
-
 
     void visitElement(ConvertToConstructorAssignedFieldRefactoringStep convertToConstructorAssignedFieldRefactoringStep);
 
@@ -46,4 +38,6 @@ public interface RefactoringStepVisitor {
     void visitElement(InlineVariableRefactoringStep inlineVariableRefactoringStep);
 
     void visitElement(InlineMethodRefactoringStep inlineMethodRefactoringStep);
+
+    void visitElement(TypeMigrationRefactoringStep typeMigrationRefactoringStep);
 }
