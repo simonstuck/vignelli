@@ -9,13 +9,13 @@ import com.simonstuck.vignelli.inspection.identification.ProblemDescriptorProvid
 
 import org.jetbrains.annotations.NotNull;
 
-public class LongMethodIdentification implements ProblemDescriptorProvider {
-    public static final String SHORT_DESCRIPTION = "Long method";
+public class ComplexMethodIdentification implements ProblemDescriptorProvider {
+    public static final String SHORT_DESCRIPTION = "Complex method";
 
     @NotNull
     private final PsiMethod method;
 
-    public LongMethodIdentification(@NotNull PsiMethod method) {
+    public ComplexMethodIdentification(@NotNull PsiMethod method) {
         this.method = method;
     }
 

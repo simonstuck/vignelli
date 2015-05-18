@@ -8,7 +8,7 @@ import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiParameterList;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.simonstuck.vignelli.inspection.identification.engine.IdentificationEngine;
-import com.simonstuck.vignelli.inspection.identification.impl.LongMethodIdentification;
+import com.simonstuck.vignelli.inspection.identification.impl.ComplexMethodIdentification;
 import com.simonstuck.vignelli.psi.util.LineUtil;
 import com.simonstuck.vignelli.psi.util.MetricsUtil;
 
@@ -16,20 +16,20 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-public class LongMethodIdentificationEngine implements IdentificationEngine<LongMethodIdentification> {
+public class ComplexMethodIdentificationEngine implements IdentificationEngine<ComplexMethodIdentification> {
 
-    private static final Logger LOG = Logger.getInstance(LongMethodIdentificationEngine.class.getName());
+    private static final Logger LOG = Logger.getInstance(ComplexMethodIdentificationEngine.class.getName());
 
     //TODO: Find a sensible value for this
     private static final double LIKELIHOOD_THRESHOLD = 0.9;
 
     @Override
-    public Set<LongMethodIdentification> process(PsiElement element) {
+    public Set<ComplexMethodIdentification> process(PsiElement element) {
         @SuppressWarnings("unchecked")
         Collection<PsiMethod> methods = PsiTreeUtil.collectElementsOfType(element, PsiMethod.class);
-        Set<LongMethodIdentification> result = new HashSet<LongMethodIdentification>();
+        Set<ComplexMethodIdentification> result = new HashSet<ComplexMethodIdentification>();
         for (PsiMethod method : methods) {
-            Optional<LongMethodIdentification> id = identifyLongMethod(method);
+            Optional<ComplexMethodIdentification> id = identifyLongMethod(method);
             if (id.isPresent()) {
                 result.add(id.get());
             }
@@ -38,7 +38,7 @@ public class LongMethodIdentificationEngine implements IdentificationEngine<Long
         return result;
     }
 
-    private Optional<LongMethodIdentification> identifyLongMethod(PsiMethod method) {
+    private Optional<ComplexMethodIdentification> identifyLongMethod(PsiMethod method) {
         PsiCodeBlock body = method.getBody();
         int loc = LineUtil.countLines(body);
         int cyclomaticComplexity = MetricsUtil.getCyclomaticComplexity(method);
@@ -57,7 +57,7 @@ public class LongMethodIdentificationEngine implements IdentificationEngine<Long
         LOG.debug("LIKELIHOOD (" + method.getName() + "): " + likelihood);
 
         if (likelihood > LIKELIHOOD_THRESHOLD) {
-            return Optional.of(new LongMethodIdentification(method));
+            return Optional.of(new ComplexMethodIdentification(method));
         } else {
             return Optional.absent();
         }
