@@ -61,4 +61,19 @@ public class MethodCallUtil {
         }
         return currentLength;
     }
+
+    /**
+     * Retrieves the final qualifier of a method call chain.
+     * @param element An element of a method call chain
+     * @return The final qualifier of the given method call chain.
+     */
+    public static PsiExpression getFinalQualifier(PsiExpression element) {
+        if (element instanceof PsiMethodCallExpression) {
+            PsiMethodCallExpression expression = (PsiMethodCallExpression) element;
+            PsiReferenceExpression methodRefExpression = expression.getMethodExpression();
+            return getFinalQualifier(methodRefExpression.getQualifierExpression());
+        } else {
+            return element;
+        }
+    }
 }

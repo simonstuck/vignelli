@@ -4,15 +4,8 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiExpression;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiMethod;
-import com.intellij.psi.PsiMethodCallExpression;
-import com.intellij.psi.PsiReference;
-import com.intellij.psi.PsiReferenceExpression;
 import com.intellij.psi.PsiStatement;
-import com.intellij.psi.search.LocalSearchScope;
-import com.intellij.psi.search.searches.ReferencesSearch;
 import com.simonstuck.vignelli.inspection.identification.engine.impl.TrainWreckIdentificationEngine;
 import com.simonstuck.vignelli.inspection.identification.impl.TrainWreckIdentification;
 import com.simonstuck.vignelli.psi.impl.IntelliJClassFinderAdapter;
@@ -24,7 +17,6 @@ import com.simonstuck.vignelli.refactoring.step.RefactoringStepResult;
 import com.simonstuck.vignelli.refactoring.step.RefactoringStepVisitor;
 import com.simonstuck.vignelli.refactoring.step.RefactoringStepVisitorAdapter;
 import com.simonstuck.vignelli.refactoring.step.impl.ExtractMethodRefactoringStep;
-import com.simonstuck.vignelli.refactoring.step.impl.IntroduceParameterRefactoringStep;
 import com.simonstuck.vignelli.refactoring.step.impl.MoveMethodRefactoringStep;
 import com.simonstuck.vignelli.refactoring.step.impl.RenameMethodRefactoringStep;
 import com.simonstuck.vignelli.util.IOUtil;
@@ -33,9 +25,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 
 public class TrainWreckExpressionRefactoringImpl extends Refactoring implements RefactoringStepDelegate, RefactoringStep {
 
@@ -120,147 +110,41 @@ public class TrainWreckExpressionRefactoringImpl extends Refactoring implements 
 
     @Override
     public void didFinishRefactoringStep(RefactoringStep step, final RefactoringStepResult result) {
-        LOG.info("didFinishRefactoringStep!");
-        currentRefactoringStep.end();
+        LOG.info("didFinishRefactoringStep");
+        step.end();
 
         if (result != null && !result.isSuccess()) {
             complete();
             return;
         }
 
+        final RefactoringStepCompletionHandler stepCompletionHandler = new RefactoringStepCompletionHandler(result);
+        step.accept(stepCompletionHandler);
 
-        final RefactoringStepVisitor stepVisitor = new RefactoringStepVisitorAdapter() {
-            @Override
-            public void visitElement(ExtractMethodRefactoringStep extractMethodRefactoringStep) {
-                super.visitElement(extractMethodRefactoringStep);
-                extractMethodResult = (ExtractMethodRefactoringStep.Result) result;
-                assert extractMethodResult != null;
-
-                if (shouldExtractCriticalCall()) {
-                    currentRefactoringStep = new IntroduceParametersForCriticalCallsImpl(extractMethodResult.getExtractedMethod(), criticalCallStructure, tracker, project, file, TrainWreckExpressionRefactoringImpl.this);
-                } else {
-                    IntroduceParametersForMembersRefactoringImpl introduceParametersForMembersRefactoring = new IntroduceParametersForMembersRefactoringImpl(extractMethodResult.getExtractedMethod(), tracker, project, file, TrainWreckExpressionRefactoringImpl.this);
-                    if (introduceParametersForMembersRefactoring.hasNextStep()) {
-                        currentRefactoringStep = introduceParametersForMembersRefactoring;
-                    } else {
-                        currentRefactoringStep = createMoveMethodRefactoringStep(extractMethodResult.getExtractedMethod());
-                    }
-                }
-            }
-
-            @Override
-            public void visitElement(IntroduceParametersForCriticalCallsImpl introduceParametersForCriticalCalls) {
-                super.visitElement(introduceParametersForCriticalCalls);
-                introduceParameterForCriticalChainResult = (IntroduceParametersForCriticalCallsImpl.Result) result;
-
-                assert introduceParameterForCriticalChainResult != null;
-                if (!introduceParameterForCriticalChainResult.isSuccess() || introduceParameterForCriticalChainResult.getResults().size() != 1) {
-                    complete();
-                    return;
-                }
-
-                IntroduceParametersForMembersRefactoringImpl introduceParametersForMembersRefactoring = new IntroduceParametersForMembersRefactoringImpl(extractMethodResult.getExtractedMethod(), tracker, project, file, TrainWreckExpressionRefactoringImpl.this);
-                if (introduceParametersForMembersRefactoring.hasNextStep()) {
-                    currentRefactoringStep = introduceParametersForMembersRefactoring;
-                } else {
-                    currentRefactoringStep = createMoveMethodRefactoringStep(extractMethodResult.getExtractedMethod());
-                }
-            }
-
-            @Override
-            public void visitElement(IntroduceParametersForMembersRefactoringImpl introduceParametersForMembersRefactoring) {
-                super.visitElement(introduceParametersForMembersRefactoring);
-                currentRefactoringStep = createMoveMethodRefactoringStep(extractMethodResult.getExtractedMethod());
-            }
-
-            @Override
-            public void visitElement(MoveMethodRefactoringStep moveMethodRefactoringStep) {
-                super.visitElement(moveMethodRefactoringStep);
-                MoveMethodRefactoringStep.Result moveMethodResult = (MoveMethodRefactoringStep.Result) result;
-                assert moveMethodResult != null;
-                currentRefactoringStep = new RenameMethodRefactoringStep(moveMethodResult.getNewMethod(), project, TrainWreckExpressionRefactoringImpl.this, ApplicationManager.getApplication());
-            }
-
-            @Override
-            public void visitElement(RenameMethodRefactoringStep renameMethodRefactoringStep) {
-                super.visitElement(renameMethodRefactoringStep);
-                currentRefactoringStep = null;
-                if (delegate != null) {
-                    delegate.didFinishRefactoringStep(TrainWreckExpressionRefactoringImpl.this, null);
-                }
-            }
-        };
-        step.accept(stepVisitor);
-        
-        if (currentRefactoringStep != null) {
-            currentRefactoringStep.start();
+        if (!stepCompletionHandler.hasBeenHandledSuccessfully()) {
+            currentRefactoringStep = null;
         }
+
+        if (hasNextStep()) {
+            currentRefactoringStep.start();
+        } else {
+            notifyDelegateIfNecessary();
+        }
+
         setChanged();
         notifyObservers();
+    }
+
+    private void notifyDelegateIfNecessary() {
+        if (delegate != null) {
+            LOG.info("finishing refactoring, letting delegate know.");
+            delegate.didFinishRefactoringStep(TrainWreckExpressionRefactoringImpl.this, null);
+        }
     }
 
     private boolean shouldExtractCriticalCall() {
         return criticalCallStructure != null;
     }
-
-    private MoveMethodRefactoringStep createMoveMethodRefactoringStep(PsiMethod methodToMove) {
-        PsiExpression targetExpression;
-        if (introduceParameterForCriticalChainResult != null) {
-            final IntroduceParameterRefactoringStep.Result next = introduceParameterForCriticalChainResult.getResults().iterator().next();
-            final Collection<PsiReference> allRefs = ReferencesSearch.search(next.getNewParameter(), new LocalSearchScope(methodToMove)).findAll();
-            if (allRefs.isEmpty()) {
-                complete();
-                return null;
-            }
-
-
-            PsiExpression refExpr = null;
-            final Iterator<PsiReference> referenceIterator = allRefs.iterator();
-            while (referenceIterator.hasNext() && refExpr == null) {
-                final PsiReference nextRef = referenceIterator.next();
-                if (nextRef instanceof PsiExpression) {
-                    refExpr = (PsiExpression) nextRef;
-                }
-            }
-
-            targetExpression = refExpr;
-        } else {
-            targetExpression = getTargetExpression(methodToMove);
-        }
-
-        if (targetExpression == null) {
-            complete();
-            return null;
-        } else {
-            return new MoveMethodRefactoringStep(project, methodToMove, targetExpression, ApplicationManager.getApplication(), this);
-        }
-    }
-
-
-    public PsiExpression getFinalQualifier(PsiExpression element) {
-        if (element instanceof PsiMethodCallExpression) {
-            PsiMethodCallExpression expression = (PsiMethodCallExpression) element;
-            PsiReferenceExpression methodRefExpression = expression.getMethodExpression();
-            return getFinalQualifier(methodRefExpression.getQualifierExpression());
-        } else {
-            return element;
-        }
-    }
-
-
-    @Nullable
-    private PsiExpression getTargetExpression(PsiMethod methodToMove) {
-        TrainWreckIdentificationEngine engine = new TrainWreckIdentificationEngine(new IntelliJClassFinderAdapter(project));
-        Set<TrainWreckIdentification> methodChains = engine.process(methodToMove);
-        if (!methodChains.isEmpty()) {
-            TrainWreckIdentification first = methodChains.iterator().next();
-            return getFinalQualifier(first.getFinalCall());
-        } else {
-            return null;
-        }
-    }
-
-
 
 
     @Override
@@ -289,4 +173,99 @@ public class TrainWreckExpressionRefactoringImpl extends Refactoring implements 
         refactoringStepVisitor.visitElement(this);
     }
 
+    private class RefactoringStepCompletionHandler extends RefactoringStepVisitorAdapter {
+        private final RefactoringStepResult result;
+        private boolean success = false;
+
+        public RefactoringStepCompletionHandler(RefactoringStepResult result) {
+            this.result = result;
+        }
+
+        @Override
+        public void visitElement(ExtractMethodRefactoringStep extractMethodRefactoringStep) {
+            super.visitElement(extractMethodRefactoringStep);
+            extractMethodResult = (ExtractMethodRefactoringStep.Result) result;
+            if (extractMethodResult == null) {
+                success = false;
+            } else {
+                if (shouldExtractCriticalCall()) {
+                    initCriticalCallExtraction();
+                } else {
+                    IntroduceParametersForMembersRefactoringImpl introduceParametersForMembersRefactoring = new IntroduceParametersForMembersRefactoringImpl(extractMethodResult.getExtractedMethod(), tracker, project, file, TrainWreckExpressionRefactoringImpl.this);
+                    if (introduceParametersForMembersRefactoring.hasNextStep()) {
+                        currentRefactoringStep = introduceParametersForMembersRefactoring;
+                    } else {
+                        initMoveMethodStep();
+                    }
+                }
+                success = true;
+            }
+        }
+
+        @Override
+        public void visitElement(IntroduceParametersForCriticalCallsImpl introduceParametersForCriticalCalls) {
+            super.visitElement(introduceParametersForCriticalCalls);
+            introduceParameterForCriticalChainResult = (IntroduceParametersForCriticalCallsImpl.Result) result;
+
+            assert introduceParameterForCriticalChainResult != null;
+            if (!introduceParameterForCriticalChainResult.isSuccess() || introduceParameterForCriticalChainResult.getResults().size() != 1) {
+                success = false;
+                return;
+            }
+
+            IntroduceParametersForMembersRefactoringImpl introduceParametersForMembersRefactoring = new IntroduceParametersForMembersRefactoringImpl(extractMethodResult.getExtractedMethod(), tracker, project, file, TrainWreckExpressionRefactoringImpl.this);
+            if (introduceParametersForMembersRefactoring.hasNextStep()) {
+                currentRefactoringStep = introduceParametersForMembersRefactoring;
+            } else {
+                initMoveMethodStep();
+            }
+            success = true;
+        }
+
+        @Override
+        public void visitElement(IntroduceParametersForMembersRefactoringImpl introduceParametersForMembersRefactoring) {
+            super.visitElement(introduceParametersForMembersRefactoring);
+            initMoveMethodStep();
+            success = true;
+        }
+
+        @Override
+        public void visitElement(MoveMethodRefactoringStep moveMethodRefactoringStep) {
+            super.visitElement(moveMethodRefactoringStep);
+            MoveMethodRefactoringStep.Result moveMethodResult = (MoveMethodRefactoringStep.Result) result;
+            if (moveMethodResult == null) {
+                success = false;
+            } else {
+                initRenameMethodStep(moveMethodResult);
+                success = true;
+            }
+        }
+
+        @Override
+        public void visitElement(RenameMethodRefactoringStep renameMethodRefactoringStep) {
+            super.visitElement(renameMethodRefactoringStep);
+            currentRefactoringStep = null;
+        }
+
+        /**
+         * Checks if the step has been handled successfully.
+         * @return True iff the step has been handled successfully.
+         */
+        public boolean hasBeenHandledSuccessfully() {
+            return success;
+        }
+
+
+        private void initMoveMethodStep() {
+            currentRefactoringStep = new TrainWreckMoveMethodRefactoringStepCreation(extractMethodResult.getExtractedMethod(), project, introduceParameterForCriticalChainResult, TrainWreckExpressionRefactoringImpl.this, new IntelliJClassFinderAdapter(project)).invoke();
+        }
+
+        private void initCriticalCallExtraction() {
+            currentRefactoringStep = new IntroduceParametersForCriticalCallsImpl(extractMethodResult.getExtractedMethod(), criticalCallStructure, tracker, project, file, TrainWreckExpressionRefactoringImpl.this);
+        }
+
+        private void initRenameMethodStep(MoveMethodRefactoringStep.Result moveMethodResult) {
+            currentRefactoringStep = new RenameMethodRefactoringStep(moveMethodResult.getNewMethod(), project, TrainWreckExpressionRefactoringImpl.this, ApplicationManager.getApplication());
+        }
+    }
 }
