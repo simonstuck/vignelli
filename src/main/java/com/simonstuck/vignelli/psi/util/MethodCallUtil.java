@@ -46,6 +46,10 @@ public class MethodCallUtil {
      * @return The number of elements in the method call chain.
      */
     public static int getLength(PsiMethodCallExpression finalCall) {
+        if (finalCall == null) {
+            return -1;
+        }
+
         int currentLength = 0;
         PsiExpression currentExpression = finalCall;
         while (currentExpression != null) {

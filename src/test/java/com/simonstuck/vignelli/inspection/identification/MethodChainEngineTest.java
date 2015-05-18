@@ -76,6 +76,24 @@ public class MethodChainEngineTest extends LightIdeaTestCase {
         assertEquals(1, engine.process(clazz).size());
     }
 
+    public void testIdentifiesNoTrainWreckForMinimumLengthBuilderChain() throws Exception {
+        String minimumBuilderChain = IOUtils.readFile("src/test/resources/psi/class/minimumBuilderChain.txt");
+        PsiClass clazz = getJavaFacade().getElementFactory().createClassFromText(minimumBuilderChain, null);
+        assertEquals(0, engine.process(clazz).size());
+    }
+
+    public void testReportNoFullTrainWreckForTypeDifferenceEqualToThreshold() throws Exception {
+        assertFalse(TrainWreckIdentificationEngine.isFullTrainWreck(TrainWreckIdentification.TRAIN_WRECK_TYPE_DIFFERENCE_THRESHOLD));
+    }
+
+    public void testReportShortTrainWreckForTypeDifferenceEqualToThreshold() throws Exception {
+        assertTrue(TrainWreckIdentificationEngine.isShortTrainWreck(TrainWreckIdentification.TRAIN_WRECK_TYPE_DIFFERENCE_THRESHOLD, TrainWreckIdentificationEngine.MIN_TRAIN_WRECK_LENGTH));
+    }
+
+    public void testReportNoShortTrainWreckForCallChainLengthLessThanMinimumLength() throws Exception {
+        assertFalse(TrainWreckIdentificationEngine.isShortTrainWreck(Integer.MAX_VALUE, TrainWreckIdentificationEngine.MIN_TRAIN_WRECK_LENGTH - 1));
+    }
+
     private PsiMethod getEmptyMethod() throws IOException {
         String emptyMethod = IOUtils.readFile("src/test/resources/psi/method/emptyMethod.txt");
         return getJavaFacade().getElementFactory().createMethodFromText(emptyMethod, null);
