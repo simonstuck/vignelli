@@ -209,6 +209,7 @@ public class TrainWreckExpressionRefactoringImpl extends Refactoring implements 
         public void visitElement(IntroduceParametersForCriticalCallsImpl introduceParametersForCriticalCalls) {
             super.visitElement(introduceParametersForCriticalCalls);
             introduceParameterForCriticalChainResult = (IntroduceParametersForCriticalCallsImpl.Result) result;
+            introduceParametersForCriticalCalls.deleteObserver(this);
 
             assert introduceParameterForCriticalChainResult != null;
             if (!introduceParameterForCriticalChainResult.isSuccess() || introduceParameterForCriticalChainResult.getResults().size() != 1) {
@@ -266,7 +267,9 @@ public class TrainWreckExpressionRefactoringImpl extends Refactoring implements 
         }
 
         private void initCriticalCallExtraction() {
-            currentRefactoringStep = new IntroduceParametersForCriticalCallsImpl(extractMethodResult.getExtractedMethod(), criticalCallStructure, tracker, project, file, TrainWreckExpressionRefactoringImpl.this);
+            final IntroduceParametersForCriticalCallsImpl introduceParametersForCriticalCalls = new IntroduceParametersForCriticalCallsImpl(extractMethodResult.getExtractedMethod(), criticalCallStructure, tracker, project, file, TrainWreckExpressionRefactoringImpl.this);
+            introduceParametersForCriticalCalls.addObserver(this);
+            currentRefactoringStep = introduceParametersForCriticalCalls;
         }
 
         private void initRenameMethodStep(MoveMethodRefactoringStep.Result moveMethodResult) {

@@ -117,6 +117,9 @@ public class IntroduceParametersForCriticalCallsImpl extends Refactoring impleme
         if (introduceParameterStep == null && listening) {
             delegate.didFinishRefactoringStep(this, new Result(results));
         }
+
+        setChanged();
+        notifyObservers();
     }
 
     private void prepareNextStep() {
