@@ -26,7 +26,7 @@ import java.util.Set;
 
 public class IntroduceParametersForCriticalCallsImpl extends Refactoring implements RefactoringStepDelegate, RefactoringStep {
 
-    private static final String STEP_DESCRIPTION_PATH = "descriptionTemplates/introduceParameterStepDescription.html";
+    private static final String STEP_DESCRIPTION_PATH = "descriptionTemplates/introduceParameterForCriticalCallStepDescription.html";
 
     @NotNull
     private final PsiMethod method;
