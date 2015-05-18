@@ -11,6 +11,7 @@ import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiReference;
 import com.intellij.psi.PsiReferenceExpression;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.psi.util.PsiTypesUtil;
 import com.intellij.refactoring.introduceField.IntroduceFieldHandler;
 import com.simonstuck.vignelli.psi.PsiContainsChecker;
 import com.simonstuck.vignelli.refactoring.step.RefactoringStep;
@@ -92,6 +93,13 @@ public class ConvertToConstructorAssignedFieldRefactoringStep implements Refacto
         if (thisClass != null) {
             contentMap.put("thisClass", thisClass.getName());
         }
+
+        final PsiClass expressionClass = PsiTypesUtil.getPsiClass(expression.getType());
+        if (expressionClass != null) {
+            contentMap.put("expressionClass", expressionClass.getName());
+        }
+
+        contentMap.put("expression", expression.getText());
 
         return template.render(contentMap);
     }

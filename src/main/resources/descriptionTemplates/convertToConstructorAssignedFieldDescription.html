@@ -1,4 +1,9 @@
-<p>The singleton instance retrieval can now only be found in one method in this class. However, coupling between the singleton and <span class="code">${thisClass}</span> is still high.</p>
+<p>The singleton instance retrieval in <span class="code">${thisClass}</span> causes coupling between <span class="code">${thisClass}</span> and <span class="code">${expressionClass}</span> to be very high as <span class="code">${thisClass}</span> cannot be used without <span class="code">${expressionClass}</span>.</p>
 <p>Soon, we will therefore inject the singleton instance into <span class="code">${thisClass}</span> on instance creation, i.e. as a constructor parameter. To move towards this goal, we first assign the singleton instance to a field, initialised in the constructor.</p>
-<p><b>In the following step, ensure that you select the constructor to be the initialisation place for the field.</b></p>
+<p><b>In the following step, ensure that you:</b></p>
+<ul>
+    <li><b>Select the constructor to be the initialisation place for the field.</b></li>
+    <li><b>Choose to replace all occurrences of </b><span class="code">${expression}</span><b> in the class with the field.</b></li>
+    <li><b>Declare the resulting field </b><span class="code">final</span> <b>(good practice)</b></li>
+</ul>
 <p>Click below to perform this refactoring step.</p>
