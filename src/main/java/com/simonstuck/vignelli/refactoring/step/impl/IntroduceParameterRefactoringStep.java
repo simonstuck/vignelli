@@ -23,6 +23,7 @@ import com.simonstuck.vignelli.refactoring.step.RefactoringStep;
 import com.simonstuck.vignelli.refactoring.step.RefactoringStepDelegate;
 import com.simonstuck.vignelli.refactoring.step.RefactoringStepGoalChecker;
 import com.simonstuck.vignelli.refactoring.step.RefactoringStepResult;
+import com.simonstuck.vignelli.refactoring.step.RefactoringStepVisitor;
 import com.simonstuck.vignelli.ui.description.HTMLFileTemplate;
 import com.simonstuck.vignelli.ui.description.Template;
 import com.simonstuck.vignelli.util.IOUtil;
@@ -82,6 +83,11 @@ public class IntroduceParameterRefactoringStep implements RefactoringStep {
     public void describeStep(Map<String, Object> templateValues) {
         templateValues.put(STEP_NAME_TEMPLATE_KEY, STEP_NAME);
         templateValues.put(STEP_DESCRIPTION_TEMPLATE_KEY, getDescription());
+    }
+
+    @Override
+    public void accept(RefactoringStepVisitor refactoringStepVisitor) {
+        refactoringStepVisitor.visitElement(this);
     }
 
     private String getDescription() {

@@ -45,4 +45,11 @@ public interface RefactoringStep {
      * @param templateValues The template store that will be used to render the UI for the step.
      */
     void describeStep(Map<String, Object> templateValues);
+
+
+    /**
+     * Accepts the given visitor and sends the appropriate method on it.
+     * @param refactoringStepVisitor The visitor to use.
+     */
+    void accept(RefactoringStepVisitor refactoringStepVisitor);
 }

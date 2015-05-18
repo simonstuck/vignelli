@@ -19,6 +19,7 @@ import com.simonstuck.vignelli.refactoring.step.RefactoringStep;
 import com.simonstuck.vignelli.refactoring.step.RefactoringStepDelegate;
 import com.simonstuck.vignelli.refactoring.step.RefactoringStepGoalChecker;
 import com.simonstuck.vignelli.refactoring.step.RefactoringStepResult;
+import com.simonstuck.vignelli.refactoring.step.RefactoringStepVisitor;
 import com.simonstuck.vignelli.ui.description.HTMLFileTemplate;
 import com.simonstuck.vignelli.util.IOUtil;
 
@@ -91,6 +92,11 @@ public class InlineMethodCallRefactoringStep implements RefactoringStep {
         }
 
         templateValues.put(STEP_NAME_TEMPLATE_KEY, descriptionTemplate.render(contents));
+    }
+
+    @Override
+    public void accept(RefactoringStepVisitor refactoringStepVisitor) {
+        refactoringStepVisitor.visitElement(this);
     }
 
     private static class Result implements RefactoringStepResult {

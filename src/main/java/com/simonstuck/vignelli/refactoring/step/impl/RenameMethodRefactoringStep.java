@@ -14,6 +14,7 @@ import com.simonstuck.vignelli.refactoring.step.RefactoringStep;
 import com.simonstuck.vignelli.refactoring.step.RefactoringStepDelegate;
 import com.simonstuck.vignelli.refactoring.step.RefactoringStepGoalChecker;
 import com.simonstuck.vignelli.refactoring.step.RefactoringStepResult;
+import com.simonstuck.vignelli.refactoring.step.RefactoringStepVisitor;
 import com.simonstuck.vignelli.ui.description.HTMLFileTemplate;
 import com.simonstuck.vignelli.ui.description.Template;
 import com.simonstuck.vignelli.util.IOUtil;
@@ -87,6 +88,11 @@ public class RenameMethodRefactoringStep implements RefactoringStep {
         Template template = new HTMLFileTemplate(IOUtil.tryReadFile(DESCRIPTION_TEMPLATE_PATH));
         templateValues.put(STEP_DESCRIPTION_TEMPLATE_KEY, template.render(new HashMap<String, Object>()));
         templateValues.put(STEP_NAME_TEMPLATE_KEY, RENAME_METHOD_STEP_NAME);
+    }
+
+    @Override
+    public void accept(RefactoringStepVisitor refactoringStepVisitor) {
+        refactoringStepVisitor.visitElement(this);
     }
 
     /**

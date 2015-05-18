@@ -14,6 +14,7 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.refactoring.extractMethod.ExtractMethodHandler;
 import com.intellij.refactoring.extractMethod.ExtractMethodProcessor;
 import com.intellij.util.Query;
+import com.simonstuck.vignelli.refactoring.step.RefactoringStepVisitor;
 import com.simonstuck.vignelli.psi.PsiElementLiftToCommonContext;
 import com.simonstuck.vignelli.psi.util.EditorUtil;
 import com.simonstuck.vignelli.refactoring.step.RefactoringStep;
@@ -110,6 +111,11 @@ public class ExtractMethodRefactoringStep implements RefactoringStep {
         contentMap.put("elementsToExtract", strElementsToExtract);
 
         return template.render(contentMap);
+    }
+
+    @Override
+    public void accept(RefactoringStepVisitor refactoringStepVisitor) {
+        refactoringStepVisitor.visitElement(this);
     }
 
     public static final class Result implements RefactoringStepResult {

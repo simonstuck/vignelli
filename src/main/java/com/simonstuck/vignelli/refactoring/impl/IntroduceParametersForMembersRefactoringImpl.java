@@ -13,6 +13,7 @@ import com.simonstuck.vignelli.refactoring.RefactoringTracker;
 import com.simonstuck.vignelli.refactoring.step.RefactoringStep;
 import com.simonstuck.vignelli.refactoring.step.RefactoringStepDelegate;
 import com.simonstuck.vignelli.refactoring.step.RefactoringStepResult;
+import com.simonstuck.vignelli.refactoring.step.RefactoringStepVisitor;
 import com.simonstuck.vignelli.refactoring.step.impl.IntroduceParameterRefactoringStep;
 
 import org.jetbrains.annotations.NotNull;
@@ -67,6 +68,11 @@ public class IntroduceParametersForMembersRefactoringImpl extends Refactoring im
     @Override
     public void describeStep(Map<String, Object> templateValues) {
         fillTemplateValues(templateValues);
+    }
+
+    @Override
+    public void accept(RefactoringStepVisitor refactoringStepVisitor) {
+        refactoringStepVisitor.visitElement(this);
     }
 
     @Override
