@@ -19,8 +19,10 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Observable;
+import java.util.Observer;
 
-public class TrainWreckVariableRefactoringImpl extends Refactoring implements RefactoringStepDelegate {
+public class TrainWreckVariableRefactoringImpl extends Refactoring implements RefactoringStepDelegate, Observer {
 
     public static final String TRAIN_WRECK_REFACTORING_DESCRIPTION = "Train Wreck Refactoring";
     public static final String REFACTORING_DESCRIPTION_PATH = "descriptionTemplates/trainWreckRefactoring.html";
@@ -94,15 +96,24 @@ public class TrainWreckVariableRefactoringImpl extends Refactoring implements Re
             assert result != null;
             InlineVariableRefactoringStep.Result inlineVariableResult = (InlineVariableRefactoringStep.Result) result;
             Collection<PsiStatement> extractRegion = inlineVariableResult.getAffectedStatements();
-            currentRefactoringStep = new TrainWreckExpressionRefactoringImpl(extractRegion, criticalTrainWreckElement, refactoringTracker, project, file, this);
+            final TrainWreckExpressionRefactoringImpl trainWreckExpressionRefactoring = new TrainWreckExpressionRefactoringImpl(extractRegion, criticalTrainWreckElement, refactoringTracker, project, file, this);
+            currentRefactoringStep = trainWreckExpressionRefactoring;
+            trainWreckExpressionRefactoring.addObserver(this);
         } else if (step instanceof TrainWreckExpressionRefactoringImpl) {
             currentRefactoringStep = null;
+            ((TrainWreckExpressionRefactoringImpl) step).deleteObserver(this);
         }
 
         if (hasNextStep()) {
             currentRefactoringStep.start();
         }
 
+        setChanged();
+        notifyObservers();
+    }
+
+    @Override
+    public void update(Observable observable, Object o) {
         setChanged();
         notifyObservers();
     }

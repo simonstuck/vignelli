@@ -29,7 +29,7 @@ import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 
-public class TrainWreckExpressionRefactoringImpl extends Refactoring implements RefactoringStepDelegate, RefactoringStep {
+public class TrainWreckExpressionRefactoringImpl extends Refactoring implements RefactoringStepDelegate, RefactoringStep, Observer  {
 
     private static final Logger LOG = Logger.getInstance(TrainWreckExpressionRefactoringImpl.class.getName());
 
@@ -175,7 +175,13 @@ public class TrainWreckExpressionRefactoringImpl extends Refactoring implements 
         refactoringStepVisitor.visitElement(this);
     }
 
-    private class RefactoringStepCompletionHandler extends RefactoringStepVisitorAdapter implements Observer {
+    @Override
+    public void update(Observable observable, Object o) {
+        setChanged();
+        notifyObservers();
+    }
+
+    private class RefactoringStepCompletionHandler extends RefactoringStepVisitorAdapter {
         private final RefactoringStepResult result;
         private boolean success = false;
 
@@ -196,7 +202,7 @@ public class TrainWreckExpressionRefactoringImpl extends Refactoring implements 
                     IntroduceParametersForMembersRefactoringImpl introduceParametersForMembersRefactoring = new IntroduceParametersForMembersRefactoringImpl(extractMethodResult.getExtractedMethod(), tracker, project, file, TrainWreckExpressionRefactoringImpl.this);
                     if (introduceParametersForMembersRefactoring.hasNextStep()) {
                         currentRefactoringStep = introduceParametersForMembersRefactoring;
-                        introduceParametersForMembersRefactoring.addObserver(this);
+                        introduceParametersForMembersRefactoring.addObserver(TrainWreckExpressionRefactoringImpl.this);
                     } else {
                         initMoveMethodStep();
                     }
@@ -209,7 +215,7 @@ public class TrainWreckExpressionRefactoringImpl extends Refactoring implements 
         public void visitElement(IntroduceParametersForCriticalCallsImpl introduceParametersForCriticalCalls) {
             super.visitElement(introduceParametersForCriticalCalls);
             introduceParameterForCriticalChainResult = (IntroduceParametersForCriticalCallsImpl.Result) result;
-            introduceParametersForCriticalCalls.deleteObserver(this);
+            introduceParametersForCriticalCalls.deleteObserver(TrainWreckExpressionRefactoringImpl.this);
 
             assert introduceParameterForCriticalChainResult != null;
             if (!introduceParameterForCriticalChainResult.isSuccess() || introduceParameterForCriticalChainResult.getResults().size() != 1) {
@@ -220,7 +226,7 @@ public class TrainWreckExpressionRefactoringImpl extends Refactoring implements 
             IntroduceParametersForMembersRefactoringImpl introduceParametersForMembersRefactoring = new IntroduceParametersForMembersRefactoringImpl(extractMethodResult.getExtractedMethod(), tracker, project, file, TrainWreckExpressionRefactoringImpl.this);
             if (introduceParametersForMembersRefactoring.hasNextStep()) {
                 currentRefactoringStep = introduceParametersForMembersRefactoring;
-                introduceParametersForMembersRefactoring.addObserver(this);
+                introduceParametersForMembersRefactoring.addObserver(TrainWreckExpressionRefactoringImpl.this);
             } else {
                 initMoveMethodStep();
             }
@@ -230,7 +236,7 @@ public class TrainWreckExpressionRefactoringImpl extends Refactoring implements 
         @Override
         public void visitElement(IntroduceParametersForMembersRefactoringImpl introduceParametersForMembersRefactoring) {
             super.visitElement(introduceParametersForMembersRefactoring);
-            introduceParametersForMembersRefactoring.deleteObserver(this);
+            introduceParametersForMembersRefactoring.deleteObserver(TrainWreckExpressionRefactoringImpl.this);
             initMoveMethodStep();
             success = true;
         }
@@ -268,18 +274,12 @@ public class TrainWreckExpressionRefactoringImpl extends Refactoring implements 
 
         private void initCriticalCallExtraction() {
             final IntroduceParametersForCriticalCallsImpl introduceParametersForCriticalCalls = new IntroduceParametersForCriticalCallsImpl(extractMethodResult.getExtractedMethod(), criticalCallStructure, tracker, project, file, TrainWreckExpressionRefactoringImpl.this);
-            introduceParametersForCriticalCalls.addObserver(this);
+            introduceParametersForCriticalCalls.addObserver(TrainWreckExpressionRefactoringImpl.this);
             currentRefactoringStep = introduceParametersForCriticalCalls;
         }
 
         private void initRenameMethodStep(MoveMethodRefactoringStep.Result moveMethodResult) {
             currentRefactoringStep = new RenameMethodRefactoringStep(moveMethodResult.getNewMethod(), project, TrainWreckExpressionRefactoringImpl.this, ApplicationManager.getApplication());
-        }
-
-        @Override
-        public void update(Observable observable, Object o) {
-            setChanged();
-            notifyObservers();
         }
     }
 }
