@@ -15,6 +15,7 @@ import com.intellij.psi.util.PropertyUtil;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.refactoring.inline.InlineMethodDialog;
 import com.simonstuck.vignelli.psi.util.EditorUtil;
+import com.simonstuck.vignelli.psi.util.PsiElementUtil;
 import com.simonstuck.vignelli.refactoring.step.RefactoringStep;
 import com.simonstuck.vignelli.refactoring.step.RefactoringStepDelegate;
 import com.simonstuck.vignelli.refactoring.step.RefactoringStepGoalChecker;
@@ -130,7 +131,7 @@ public class InlineMethodCallRefactoringStep implements RefactoringStep {
 
             PsiField fieldToInline = PropertyUtil.findPropertyFieldByMember(method);
 
-            if (isAnyNullOrInvalid(fieldToInline, surroundingStatement)) {
+            if (PsiElementUtil.isAnyNullOrInvalid(fieldToInline, surroundingStatement)) {
                 return new Result(false);
             }
             assert fieldToInline != null;

@@ -14,6 +14,7 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.refactoring.extractMethod.ExtractMethodHandler;
 import com.intellij.refactoring.extractMethod.ExtractMethodProcessor;
 import com.intellij.util.Query;
+import com.simonstuck.vignelli.psi.util.PsiElementUtil;
 import com.simonstuck.vignelli.refactoring.step.RefactoringStepVisitor;
 import com.simonstuck.vignelli.psi.PsiElementLiftToCommonContext;
 import com.simonstuck.vignelli.psi.util.EditorUtil;
@@ -168,7 +169,7 @@ public class ExtractMethodRefactoringStep implements RefactoringStep {
         private void setUpOriginalCallerMethods() {
             for (PsiElement elementToExtract : elementsToExtract) {
                 PsiMethod method = PsiTreeUtil.getParentOfType(elementToExtract, PsiMethod.class);
-                if (isAnyNullOrInvalid(method)) {
+                if (PsiElementUtil.isAnyNullOrInvalid(method)) {
                     originalCallerMethods.add(method);
                 }
             }
@@ -185,7 +186,7 @@ public class ExtractMethodRefactoringStep implements RefactoringStep {
 
         @Override
         public RefactoringStepResult computeResult() {
-            if (isAnyNullOrInvalid(clazz)) {
+            if (PsiElementUtil.isAnyNullOrInvalid(clazz)) {
                 return null;
             }
             Set<PsiMethod> newMethods = getDefinedMethods(clazz);
@@ -201,7 +202,7 @@ public class ExtractMethodRefactoringStep implements RefactoringStep {
 
         private boolean containsElementsSimilarToThoseToExtract(PsiMethod newMethod) {
             PsiCodeBlock body = newMethod.getBody();
-            if (isAnyNullOrInvalid(body)) {
+            if (PsiElementUtil.isAnyNullOrInvalid(body)) {
                 return false;
             }
 

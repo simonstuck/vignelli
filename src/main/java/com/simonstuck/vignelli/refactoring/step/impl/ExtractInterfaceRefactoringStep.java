@@ -14,6 +14,7 @@ import com.intellij.psi.search.searches.ReferencesSearch;
 import com.intellij.psi.util.PsiTypesUtil;
 import com.intellij.refactoring.extractInterface.ExtractInterfaceHandler;
 import com.intellij.util.Query;
+import com.simonstuck.vignelli.psi.util.PsiElementUtil;
 import com.simonstuck.vignelli.refactoring.step.RefactoringStep;
 import com.simonstuck.vignelli.refactoring.step.RefactoringStepDelegate;
 import com.simonstuck.vignelli.refactoring.step.RefactoringStepGoalChecker;
@@ -121,7 +122,7 @@ public class ExtractInterfaceRefactoringStep implements RefactoringStep {
 
         @Override
         public RefactoringStepResult computeResult() {
-            if (isAnyNullOrInvalid(clazz)) {
+            if (PsiElementUtil.isAnyNullOrInvalid(clazz)) {
                 return new Result(false);
             }
 

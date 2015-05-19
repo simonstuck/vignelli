@@ -17,11 +17,13 @@ import com.intellij.psi.search.LocalSearchScope;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.util.PsiTypesUtil;
 import com.simonstuck.vignelli.psi.ApplicableInterfacesForUsedMethodsInClassSearch;
+import com.simonstuck.vignelli.psi.util.PsiElementUtil;
 import com.simonstuck.vignelli.refactoring.Refactoring;
 import com.simonstuck.vignelli.refactoring.RefactoringTracker;
 import com.simonstuck.vignelli.refactoring.step.RefactoringStep;
 import com.simonstuck.vignelli.refactoring.step.RefactoringStepDelegate;
 import com.simonstuck.vignelli.refactoring.step.RefactoringStepResult;
+import com.simonstuck.vignelli.refactoring.step.RefactoringStepVisitorAdapter;
 import com.simonstuck.vignelli.refactoring.step.impl.ConvertToConstructorAssignedFieldRefactoringStep;
 import com.simonstuck.vignelli.refactoring.step.impl.ExtractInterfaceRefactoringStep;
 import com.simonstuck.vignelli.refactoring.step.impl.IntroduceParameterRefactoringStep;
@@ -65,8 +67,14 @@ public class DirectSingletonUseRefactoringImpl extends Refactoring implements Re
         currentRefactoringStep.start();
     }
 
+    /**
+     * Initialises the first refactoring step in the refactoring process depending on the nature of the problem.
+     * @param getInstanceElement The instance retrieval method call.
+     * @param project The project
+     * @param file The file in which the problem occurs
+     * @return The first refactoring step.
+     */
     private RefactoringStep initFirstStep(PsiMethodCallExpression getInstanceElement, Project project, PsiFile file) {
-
         PsiMethod containingMethod = PsiTreeUtil.getParentOfType(getInstanceElement, PsiMethod.class);
         LOG.assertTrue(containingMethod != null);
         if (containingMethod.isConstructor()) {
@@ -106,6 +114,10 @@ public class DirectSingletonUseRefactoringImpl extends Refactoring implements Re
         if (currentRefactoringStep != null) {
             currentRefactoringStep.end();
         }
+
+        if (typeMigrationParameterUpdater != null) {
+            ApplicationManager.getApplication().removeApplicationListener(typeMigrationParameterUpdater);
+        }
     }
 
     @Override
@@ -123,35 +135,13 @@ public class DirectSingletonUseRefactoringImpl extends Refactoring implements Re
             complete();
         }
 
-        if (step instanceof ConvertToConstructorAssignedFieldRefactoringStep) {
-            ConvertToConstructorAssignedFieldRefactoringStep.Result convertToConstructorAssignedFieldStepResult = (ConvertToConstructorAssignedFieldRefactoringStep.Result) result;
-            currentRefactoringStep = createIntroduceParameterRefactoringStep(convertToConstructorAssignedFieldStepResult.getConstructorExpression());
-        } else if (step instanceof IntroduceParameterRefactoringStep) {
-            ProgressManager.getInstance().runProcessWithProgressSynchronously(new Runnable() {
-                @Override
-                public void run() {
-                    allApplicableInterfaces = new ApplicableInterfacesForUsedMethodsInClassSearch(singletonClass, new LocalSearchScope(currentClass)).invoke();
-                }
-            }, SEARCHING_FOR_INTERFACES_MSG, false, project);
+        final RefactoringStepCompletionHandler refactoringStepCompletionHandler = new RefactoringStepCompletionHandler(result);
+        step.accept(refactoringStepCompletionHandler);
 
-            if (allApplicableInterfaces.isEmpty()) {
-                currentRefactoringStep = createExtractInterfaceRefactoringStep();
-            } else {
-                IntroduceParameterRefactoringStep.Result parameterResult = (IntroduceParameterRefactoringStep.Result) result;
-                PsiParameter param = parameterResult.getNewParameter();
-
-                PsiMethod method = PsiTreeUtil.getParentOfType(param, PsiMethod.class);
-                PsiType suggestedType = PsiTypesUtil.getClassType(allApplicableInterfaces.iterator().next());
-                typeMigrationRefactoringStep = new TypeMigrationRefactoringStep(project, param, ApplicationManager.getApplication(), this, suggestedType);
-                typeMigrationParameterUpdater = new TypeMigrationParameterUpdater(param, param.getType(), method);
-                ApplicationManager.getApplication().addApplicationListener(typeMigrationParameterUpdater);
-                currentRefactoringStep = typeMigrationRefactoringStep;
-            }
-        } else if (step instanceof TypeMigrationRefactoringStep) {
-            ApplicationManager.getApplication().removeApplicationListener(typeMigrationParameterUpdater);
-            currentRefactoringStep = null;
+        if (!refactoringStepCompletionHandler.hasBeenHandledSuccessfully()) {
+            complete();
+            return;
         }
-
         if (currentRefactoringStep != null) {
             currentRefactoringStep.start();
         }
@@ -165,6 +155,82 @@ public class DirectSingletonUseRefactoringImpl extends Refactoring implements Re
 
     private IntroduceParameterRefactoringStep createIntroduceParameterRefactoringStep(PsiExpression parameterExpression) {
         return new IntroduceParameterRefactoringStep(project, file, parameterExpression, INTRODUCE_CONSTRUCTOR_PARAMETER_STEP_DESCRIPTION_PATH, ApplicationManager.getApplication(), this);
+    }
+
+    private class RefactoringStepCompletionHandler extends RefactoringStepVisitorAdapter {
+
+        private final RefactoringStepResult result;
+        private boolean success = false;
+
+        private RefactoringStepCompletionHandler(RefactoringStepResult result) {
+            this.result = result;
+        }
+
+        @Override
+        public void visitElement(ConvertToConstructorAssignedFieldRefactoringStep convertToConstructorAssignedFieldRefactoringStep) {
+            super.visitElement(convertToConstructorAssignedFieldRefactoringStep);
+            ConvertToConstructorAssignedFieldRefactoringStep.Result convertToConstructorAssignedFieldStepResult = (ConvertToConstructorAssignedFieldRefactoringStep.Result) result;
+            currentRefactoringStep = createIntroduceParameterRefactoringStep(convertToConstructorAssignedFieldStepResult.getConstructorExpression());
+            success = true;
+        }
+
+        @Override
+        public void visitElement(IntroduceParameterRefactoringStep introduceParameterRefactoringStep) {
+            super.visitElement(introduceParameterRefactoringStep);
+            findAllApplicableInterfacesWithProgressIndicator();
+
+            if (allApplicableInterfaces.isEmpty()) {
+                currentRefactoringStep = createExtractInterfaceRefactoringStep();
+                success = true;
+            } else {
+                IntroduceParameterRefactoringStep.Result parameterResult = (IntroduceParameterRefactoringStep.Result) result;
+                PsiParameter param = parameterResult.getNewParameter();
+
+                PsiMethod method = PsiTreeUtil.getParentOfType(param, PsiMethod.class);
+                PsiType suggestedType = PsiTypesUtil.getClassType(allApplicableInterfaces.iterator().next());
+                if (PsiElementUtil.isAnyNullOrInvalid(method) || PsiElementUtil.isAnyTypeNullOrInvalid(suggestedType)) {
+                    success = false;
+                    return;
+                }
+                typeMigrationRefactoringStep = new TypeMigrationRefactoringStep(project, param, ApplicationManager.getApplication(), DirectSingletonUseRefactoringImpl.this, suggestedType);
+                typeMigrationParameterUpdater = new TypeMigrationParameterUpdater(param, param.getType(), method);
+                ApplicationManager.getApplication().addApplicationListener(typeMigrationParameterUpdater);
+                currentRefactoringStep = typeMigrationRefactoringStep;
+                success = true;
+            }
+        }
+
+        @Override
+        public void visitElement(TypeMigrationRefactoringStep typeMigrationRefactoringStep) {
+            super.visitElement(typeMigrationRefactoringStep);
+            ApplicationManager.getApplication().removeApplicationListener(typeMigrationParameterUpdater);
+            currentRefactoringStep = null;
+            success = true;
+        }
+
+        @Override
+        public void visitElement(ExtractInterfaceRefactoringStep extractInterfaceRefactoringStep) {
+            super.visitElement(extractInterfaceRefactoringStep);
+            currentRefactoringStep = null;
+            success = true;
+        }
+
+        /**
+         * Checks if the step has been handled successfully.
+         * @return True iff the step has been handled successfully.
+         */
+        public boolean hasBeenHandledSuccessfully() {
+            return success;
+        }
+
+        private void findAllApplicableInterfacesWithProgressIndicator() {
+            ProgressManager.getInstance().runProcessWithProgressSynchronously(new Runnable() {
+                @Override
+                public void run() {
+                    allApplicableInterfaces = new ApplicableInterfacesForUsedMethodsInClassSearch(singletonClass, new LocalSearchScope(currentClass)).invoke();
+                }
+            }, SEARCHING_FOR_INTERFACES_MSG, false, project);
+        }
     }
 
     private class TypeMigrationParameterUpdater extends ApplicationAdapter {

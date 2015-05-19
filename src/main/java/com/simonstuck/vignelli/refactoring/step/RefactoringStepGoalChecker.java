@@ -58,20 +58,6 @@ public abstract class RefactoringStepGoalChecker implements ApplicationListener 
 
 
     /**
-     * Checks if any of the given {@link com.intellij.psi.PsiElement}s are null or invalid.
-     * @param elements The elements to check.
-     * @return True iff any fo the elements are null or invalid.
-     */
-    protected boolean isAnyNullOrInvalid(PsiElement... elements) {
-        for (PsiElement element : elements) {
-            if (element == null || !element.isValid()) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
      * Helper method that retrieves all defined methods in the given class.
      * @param clazz The class for which to compute methods.
      * @return The set of defined methods in the given class.

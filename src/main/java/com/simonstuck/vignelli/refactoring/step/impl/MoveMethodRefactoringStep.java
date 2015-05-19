@@ -10,6 +10,7 @@ import com.intellij.psi.util.PsiTypesUtil;
 import com.intellij.refactoring.move.moveInstanceMethod.MoveInstanceMethodHandlerDelegate;
 import com.simonstuck.vignelli.psi.PsiContainsChecker;
 import com.simonstuck.vignelli.psi.util.EditorUtil;
+import com.simonstuck.vignelli.psi.util.PsiElementUtil;
 import com.simonstuck.vignelli.refactoring.step.RefactoringStep;
 import com.simonstuck.vignelli.refactoring.step.RefactoringStepDelegate;
 import com.simonstuck.vignelli.refactoring.step.RefactoringStepGoalChecker;
@@ -123,7 +124,7 @@ public class MoveMethodRefactoringStep implements RefactoringStep {
 
         @Override
         public RefactoringStepResult computeResult() {
-            if (isAnyNullOrInvalid(targetClass)) {
+            if (PsiElementUtil.isAnyNullOrInvalid(targetClass)) {
                 return new Result(false, null);
             }
 
