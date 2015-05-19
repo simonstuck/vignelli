@@ -30,6 +30,7 @@ import com.simonstuck.vignelli.refactoring.step.impl.IntroduceParameterRefactori
 import com.simonstuck.vignelli.refactoring.step.impl.TypeMigrationRefactoringStep;
 import com.simonstuck.vignelli.util.IOUtil;
 
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -186,13 +187,18 @@ public class DirectSingletonUseRefactoringImpl extends Refactoring implements Re
                 IntroduceParameterRefactoringStep.Result parameterResult = (IntroduceParameterRefactoringStep.Result) result;
                 PsiParameter param = parameterResult.getNewParameter();
 
+                Set<PsiType> allApplicableTypes = new HashSet<PsiType>();
+                for (PsiClass clazz : allApplicableInterfaces) {
+                    allApplicableTypes.add(PsiTypesUtil.getClassType(clazz));
+                }
+
                 PsiMethod method = PsiTreeUtil.getParentOfType(param, PsiMethod.class);
                 PsiType suggestedType = PsiTypesUtil.getClassType(allApplicableInterfaces.iterator().next());
                 if (PsiElementUtil.isAnyNullOrInvalid(method) || PsiElementUtil.isAnyTypeNullOrInvalid(suggestedType)) {
                     success = false;
                     return;
                 }
-                typeMigrationRefactoringStep = new TypeMigrationRefactoringStep(project, param, ApplicationManager.getApplication(), DirectSingletonUseRefactoringImpl.this, suggestedType);
+                typeMigrationRefactoringStep = new TypeMigrationRefactoringStep(project, param, suggestedType, allApplicableTypes, DirectSingletonUseRefactoringImpl.this, ApplicationManager.getApplication());
                 typeMigrationParameterUpdater = new TypeMigrationParameterUpdater(param, param.getType(), method);
                 ApplicationManager.getApplication().addApplicationListener(typeMigrationParameterUpdater);
                 currentRefactoringStep = typeMigrationRefactoringStep;

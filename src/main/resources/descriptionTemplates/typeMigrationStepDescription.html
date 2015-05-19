@@ -1,0 +1,12 @@
+<p>
+    The next step in the process is to use an interface instead of the concrete <span class="code">${thisClass}</span> class. This reduces coupling between <span class="code">${thisClass}</span> and <span class="code">${otherClass}</span> further.
+</p>
+<p>
+    It turns out that <span class="code">${otherClass}</span> already extends other classes such as <span class="code">${suggestedType}</span>. The next step is therefore to migrate the used type from <span class="code">${otherClass}</span> to a more general type. You can choose one of the following:
+</p>
+<ul>
+    ${foreach applicableTypes type}
+    <li class="code">${type}</li>
+    ${end}
+</ul>
+<p>Click to perform the type migration now.</p>
