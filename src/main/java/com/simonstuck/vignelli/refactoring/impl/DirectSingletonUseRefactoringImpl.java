@@ -3,22 +3,20 @@ package com.simonstuck.vignelli.refactoring.impl;
 import com.intellij.openapi.application.ApplicationAdapter;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiClass;
-import com.intellij.psi.PsiClassType;
 import com.intellij.psi.PsiExpression;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.PsiParameter;
 import com.intellij.psi.PsiReferenceExpression;
-import com.intellij.psi.PsiReferenceList;
 import com.intellij.psi.PsiType;
-import com.intellij.psi.impl.PsiClassImplUtil;
 import com.intellij.psi.search.LocalSearchScope;
-import com.intellij.psi.search.searches.ReferencesSearch;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.util.PsiTypesUtil;
+import com.simonstuck.vignelli.psi.ApplicableInterfacesForUsedMethodsInClassSearch;
 import com.simonstuck.vignelli.refactoring.Refactoring;
 import com.simonstuck.vignelli.refactoring.RefactoringTracker;
 import com.simonstuck.vignelli.refactoring.step.RefactoringStep;
@@ -30,8 +28,6 @@ import com.simonstuck.vignelli.refactoring.step.impl.IntroduceParameterRefactori
 import com.simonstuck.vignelli.refactoring.step.impl.TypeMigrationRefactoringStep;
 import com.simonstuck.vignelli.util.IOUtil;
 
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -41,6 +37,7 @@ public class DirectSingletonUseRefactoringImpl extends Refactoring implements Re
 
     private static final String DESCRIPTION_TEMPLATE = "descriptionTemplates/directSingletonUseRefactoring.html";
     private static final String INTRODUCE_CONSTRUCTOR_PARAMETER_STEP_DESCRIPTION_PATH = "descriptionTemplates/introduceConstructorParameterStepDescription.html";
+    private static final String SEARCHING_FOR_INTERFACES_MSG = "Searching for existing applicable interfaces";
 
     private final Project project;
     private final PsiFile file;
@@ -51,6 +48,7 @@ public class DirectSingletonUseRefactoringImpl extends Refactoring implements Re
     private RefactoringStep currentRefactoringStep;
     private TypeMigrationRefactoringStep typeMigrationRefactoringStep;
     private TypeMigrationParameterUpdater typeMigrationParameterUpdater;
+    private Set<PsiClass> allApplicableInterfaces;
 
     public DirectSingletonUseRefactoringImpl(PsiMethodCallExpression getInstanceElement, RefactoringTracker tracker, Project project, PsiFile file) {
         this.tracker = tracker;
@@ -129,7 +127,13 @@ public class DirectSingletonUseRefactoringImpl extends Refactoring implements Re
             ConvertToConstructorAssignedFieldRefactoringStep.Result convertToConstructorAssignedFieldStepResult = (ConvertToConstructorAssignedFieldRefactoringStep.Result) result;
             currentRefactoringStep = createIntroduceParameterRefactoringStep(convertToConstructorAssignedFieldStepResult.getConstructorExpression());
         } else if (step instanceof IntroduceParameterRefactoringStep) {
-            final Set<PsiClass> allApplicableInterfaces = getAllApplicableInterfaces();
+            ProgressManager.getInstance().runProcessWithProgressSynchronously(new Runnable() {
+                @Override
+                public void run() {
+                    allApplicableInterfaces = new ApplicableInterfacesForUsedMethodsInClassSearch(singletonClass, new LocalSearchScope(currentClass)).invoke();
+                }
+            }, SEARCHING_FOR_INTERFACES_MSG, false, project);
+
             if (allApplicableInterfaces.isEmpty()) {
                 currentRefactoringStep = createExtractInterfaceRefactoringStep();
             } else {
@@ -163,50 +167,6 @@ public class DirectSingletonUseRefactoringImpl extends Refactoring implements Re
         return new IntroduceParameterRefactoringStep(project, file, parameterExpression, INTRODUCE_CONSTRUCTOR_PARAMETER_STEP_DESCRIPTION_PATH, ApplicationManager.getApplication(), this);
     }
 
-    private Set<PsiClass> getAllApplicableInterfaces() {
-        Set<PsiClass> applicableInterfaces = new HashSet<PsiClass>();
-        Set<PsiClass> extendsOrImplements = getAllExtendedClassesAndImplementedInterfaces();
-        Set<PsiMethod> referencedSingletonMethods = getReferencedSingletonMethods();
-
-        for (PsiClass extendedClass : extendsOrImplements) {
-            if (definesAllMethods(extendedClass, referencedSingletonMethods)) {
-                applicableInterfaces.add(extendedClass);
-            }
-        }
-        return applicableInterfaces;
-    }
-
-    private boolean definesAllMethods(PsiClass clazz, Set<PsiMethod> methods) {
-        boolean allFound = true;
-        for (PsiMethod requiredMethod : methods) {
-            allFound &= PsiClassImplUtil.findMethodBySignature(clazz, requiredMethod, true) != null;
-        }
-        return allFound;
-    }
-
-    private Set<PsiMethod> getReferencedSingletonMethods() {
-        Set<PsiMethod> referencedSingletonMethods = new HashSet<PsiMethod>();
-        for (PsiMethod method : singletonClass.getAllMethods()) {
-            if (!ReferencesSearch.search(method, new LocalSearchScope(currentClass)).findAll().isEmpty()) {
-                referencedSingletonMethods.add(method);
-            }
-        }
-        return referencedSingletonMethods;
-    }
-
-    private Set<PsiClass> getAllExtendedClassesAndImplementedInterfaces() {
-        Set<PsiClass> extendsOrImplements = new HashSet<PsiClass>();
-        extendsOrImplements.addAll(Arrays.asList(singletonClass.getInterfaces()));
-        final PsiReferenceList extendsList = singletonClass.getExtendsList();
-        if (extendsList != null) {
-            for (PsiClassType type : extendsList.getReferencedTypes()) {
-                PsiClass extendedClazz = PsiTypesUtil.getPsiClass(type);
-                extendsOrImplements.add(extendedClazz);
-            }
-        }
-        return extendsOrImplements;
-    }
-
     private class TypeMigrationParameterUpdater extends ApplicationAdapter {
         private PsiParameter previousParameter;
         private final String parameterTypeStr;
@@ -223,7 +183,7 @@ public class DirectSingletonUseRefactoringImpl extends Refactoring implements Re
             super.writeActionFinished(action);
             if (!previousParameter.isValid()) {
                 for (PsiParameter param : methodToCheck.getParameterList().getParameters()) {
-                    if (parameterTypeStr.equals(param.getType().getCanonicalText())) {
+                    if (param.isValid() && parameterTypeStr.equals(param.getType().getCanonicalText())) {
                         // update the element
                         typeMigrationRefactoringStep.setRootElement(param);
                         previousParameter = param;
@@ -233,4 +193,5 @@ public class DirectSingletonUseRefactoringImpl extends Refactoring implements Re
             }
         }
     }
+
 }
