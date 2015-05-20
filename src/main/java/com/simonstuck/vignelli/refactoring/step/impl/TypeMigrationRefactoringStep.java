@@ -4,13 +4,17 @@ import com.intellij.openapi.application.Application;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiReference;
 import com.intellij.psi.PsiType;
 import com.intellij.psi.search.GlobalSearchScope;
+import com.intellij.psi.search.LocalSearchScope;
+import com.intellij.psi.search.searches.ReferencesSearch;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.util.PsiTypesUtil;
 import com.intellij.refactoring.typeMigration.TypeMigrationLabeler;
 import com.intellij.refactoring.typeMigration.TypeMigrationRules;
 import com.intellij.refactoring.typeMigration.ui.TypeMigrationDialog;
+import com.simonstuck.vignelli.psi.util.PsiElementUtil;
 import com.simonstuck.vignelli.refactoring.step.RefactoringStep;
 import com.simonstuck.vignelli.refactoring.step.RefactoringStepDelegate;
 import com.simonstuck.vignelli.refactoring.step.RefactoringStepGoalChecker;
@@ -130,23 +134,48 @@ public class TypeMigrationRefactoringStep implements RefactoringStep {
         refactoringStepVisitor.visitElement(this);
     }
 
+    /**
+     * This goal checker checks for completion of the type migration by waiting until no
+     * more references to the old type occur in the class.
+     */
     private class TypeMigrationGoalChecker extends RefactoringStepGoalChecker {
+
+        private final PsiClass thisClass;
+        private final PsiClass otherClass;
 
         public TypeMigrationGoalChecker(@NotNull RefactoringStep refactoringStep, @NotNull RefactoringStepDelegate delegate) {
             super(refactoringStep, delegate);
+            thisClass = PsiTreeUtil.getParentOfType(rootElement, PsiClass.class);
+            final PsiType elementType = TypeMigrationLabeler.getElementType(rootElement);
+            otherClass = (elementType != null) ? PsiTypesUtil.getPsiClass(elementType) : null;
         }
 
         @Override
         public RefactoringStepResult computeResult() {
-            return null;
+            if (PsiElementUtil.isAnyNullOrInvalid(thisClass, otherClass)) {
+                return new Result(false);
+            }
+
+            final PsiReference otherClassReference = ReferencesSearch.search(otherClass, new LocalSearchScope(thisClass)).findFirst();
+            if (otherClassReference == null) {
+                return new Result(true);
+            } else {
+                return null;
+            }
         }
     }
 
     public static class Result implements RefactoringStepResult {
 
+        private final boolean success;
+
+        public Result(boolean success) {
+            this.success = success;
+        }
+
         @Override
         public boolean isSuccess() {
-            return true;
+            return success;
         }
     }
 }
