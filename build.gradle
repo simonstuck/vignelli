@@ -7,7 +7,7 @@ buildscript {
 apply plugin: 'java'
 apply plugin: 'distribution'
 
-version = '0.2-SNAPSHOT'
+version = '1.0-SNAPSHOT'
 group = 'com.simonstuck'
 
 targetCompatibility = 1.6
@@ -41,7 +41,7 @@ dependencies {
   antTask group: 'com.intellij', name: 'asm-all', version: '12.1.0-idea'
   antTask group: 'org.jdom', name: 'jdom', version: '1.1'
 
-  testCompile "org.mockito:mockito-core:1.+"
+  testCompile "org.mockito:mockito-core:1.10.19"
 }
 
 
