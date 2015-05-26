@@ -2,19 +2,13 @@
     <id>com.simonstuck.vignelli</id>
     <name>Vignelli Code Designer</name>
     <version>1.0</version>
-    <vendor email="simon.stuckemann11@imperial.ac.uk" url="http://simonstuck.com">Simon
-        Stueckemann
-    </vendor>
+    <vendor email="simon.stuckemann11@imperial.ac.uk" url="http://simonstuck.com">Simon Stueckemann</vendor>
 
     <description><![CDATA[
       Vignelli Code Designer helps you develop better-designed code.<br>
       <em>Vignelli will observe what you are typing and suggest possible refactorings that will improve the design of your code.</em>
+      The tool currently supports the detection and refactoring suggestions for train wrecks and the direct use of singletons.
     ]]></description>
-
-    <change-notes><![CDATA[
-      This plugin is currently work in progress and should of course not be trusted ;).
-    ]]>
-    </change-notes>
 
     <!-- please see http://confluence.jetbrains.com/display/IDEADEV/Build+Number+Ranges for description -->
     <idea-version since-build="139"/>
@@ -39,7 +33,7 @@
         <inspectionToolProvider
                 implementation="com.simonstuck.vignelli.inspection.VignelliInspectionToolProvider"/>
 
-        <toolWindow id="Vignelli Analysis" icon="/vignelli_icon.png" anchor="bottom"
+        <toolWindow id="Vignelli Analysis" icon="/vignelli_icon_13.png" anchor="bottom"
                     factoryClass="com.simonstuck.vignelli.ui.AnalysisToolWindowFactory"/>
 
         <refactoring.elementListenerProvider implementation="com.simonstuck.vignelli.inspection.VignelliRefactoringListener" />
