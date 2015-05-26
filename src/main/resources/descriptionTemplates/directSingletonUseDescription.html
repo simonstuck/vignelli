@@ -7,7 +7,9 @@
 <body class="vignelli-description">
 <h1>Direct Use of a Singleton</h1>
 <p>You appear to be using a singleton directly in your code.</p>
-<p>This is bad and you should feel bad.</p>
+<p>The singleton pattern should be used to <b>restrict</b> the number of instances a class can have instead of enabling easier retrieval of a specific object.</p>
+<p>Using a singleton instance directly in another class by calling the <span class="code">Singleton.getInstance()</span> instance retrieval method increases a strong coupling between the singleton and the class it is used in, i.e. the class using the singleton can only ever use this one specific instance.</p>
+<p>This can be a particular problem during testing. For this reason, instance retrieval of a singleton — be it a legitimate usage of the pattern or not — should only ideally occur once in the entire code base and the instances can be passed into any constructor whose class is using the instance. Even better, to reduce coupling even further, <span class="code">Singleton</span> should implement a generic interface which can be injected into other classes using it. This allows for even easier testing.</p>
 ${if improvement}
 <h2>Improvement</h2>
 <p><a href="vignelli://improve">Refactor this!</a></p>
