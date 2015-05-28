@@ -18,6 +18,23 @@ Vignelli currently supports the following features:
 ### IntelliJ IDEA Setup
 As Vignelli is an IntelliJ plugin, IntelliJ can be used to build the plugin using the built-in SDK with Java 6 support. 
 
+To make changes to Vignelli, this is the recommended option that allows debugging inside a host IntelliJ instance. Note that this process is not for the faint-hearted as setting up an existing plugin in IntelliJ can be painful; good luck! To set up the project, follow these instructions:
+
+1. Open IntelliJ (v >= 14.0.1) Community Edition
+2. Select **New Project** and select **IntelliJ Platform Plugin** 
+3. You may have to create a new Project SDK for plugin development based on your Java distribution (IntelliJ plugins run on Java 6, so all versions >= 6 are fine)
+4. Point IntelliJ to the path of the existing sources.
+5. **Open Module Settings** and navigate to **Modules**
+6. Instead of `src`, mark `src/main/java` as *Sources*
+7. Mark `src/main/resources` as *Resources*
+8. Mark `src/test/java` as *Tests*
+9. Mark `src/test/resources` as *Test Resources*
+10. Still in the Module settings, navigate to **Libraries** and add the following libraries by adding them from **Maven**:
+-- `JMTE` (`com.floreysoft:jmte:3.1.1`)
+-- `Mockito` (`org.mockito:mockito-core:1.10.19`)
+-- `Guava` (`com.google.guava:guava:18.0`)
+11. You can now run the plugin. Enjoy!
+
 ### Gradle Build
 Vignelli also supports an automated build via a Gradle build script. 
 
