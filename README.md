@@ -30,9 +30,9 @@ To make changes to Vignelli, this is the recommended option that allows debuggin
 8. Mark `src/test/java` as *Tests*
 9. Mark `src/test/resources` as *Test Resources*
 10. Still in the Module settings, navigate to **Libraries** and add the following libraries by adding them from **Maven**:
--- `JMTE` (`com.floreysoft:jmte:3.1.1`)
--- `Mockito` (`org.mockito:mockito-core:1.10.19`)
--- `Guava` (`com.google.guava:guava:18.0`)
+    * `JMTE` (`com.floreysoft:jmte:3.1.1`)
+    * `Mockito` (`org.mockito:mockito-core:1.10.19`)
+    * `Guava` (`com.google.guava:guava:18.0`)
 11. You can now run the plugin. Enjoy!
 
 ### Gradle Build
