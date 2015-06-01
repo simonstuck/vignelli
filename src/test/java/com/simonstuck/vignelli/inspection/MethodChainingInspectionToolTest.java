@@ -1,12 +1,10 @@
 package com.simonstuck.vignelli.inspection;
 
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.ModuleType;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.projectRoots.impl.JavaAwareProjectJdkTableImpl;
 import com.intellij.openapi.roots.ContentEntry;
 import com.intellij.openapi.roots.ModifiableRootModel;
-import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiFile;
 import com.intellij.testFramework.LightProjectDescriptor;
 import com.intellij.testFramework.fixtures.DefaultLightProjectDescriptor;
@@ -47,12 +45,24 @@ public class MethodChainingInspectionToolTest extends LightCodeInsightFixtureTes
 
     public void testZipCodeExamples() throws Exception {
         final PsiFile[] psiFiles = myFixture.configureByFiles(
-                "testcode/ex1/ZipCodeExample.java",
-                "testcode/ex2/ZipCodeExample.java",
-                "testcode/ex3/ZipCodeExample.java",
-                "testcode/ex4/ZipCodeExample.java",
-                "testcode/ex5/ZipCodeExample.java",
-                "testcode/ex6/ZipCodeExample.java"
+                "testcode/trainwreck/zipcode/ex1/ZipCodeExample.java",
+                "testcode/trainwreck/zipcode/ex2/ZipCodeExample.java",
+                "testcode/trainwreck/zipcode/ex3/ZipCodeExample.java",
+                "testcode/trainwreck/zipcode/ex4/ZipCodeExample.java",
+                "testcode/trainwreck/zipcode/ex5/ZipCodeExample.java",
+                "testcode/trainwreck/zipcode/ex6/ZipCodeExample.java"
+        );
+        for (PsiFile file : psiFiles) {
+            myFixture.openFileInEditor(file.getVirtualFile());
+            myFixture.checkHighlighting();
+        }
+    }
+
+    public void testBuilderExamples() throws Exception {
+        final PsiFile[] psiFiles = myFixture.configureByFiles(
+                "testcode/trainwreck/builder/ex1/BuilderExample.java",
+                "testcode/trainwreck/builder/ex2/BuilderExample.java",
+                "testcode/trainwreck/builder/ex3/BuilderExample.java"
         );
         for (PsiFile file : psiFiles) {
             myFixture.openFileInEditor(file.getVirtualFile());
