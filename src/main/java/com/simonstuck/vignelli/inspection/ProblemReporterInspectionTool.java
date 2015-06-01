@@ -102,13 +102,14 @@ abstract class ProblemReporterInspectionTool<T extends ProblemDescriptorProvider
      */
     private void notifyProblemCacheIfNecessary(VirtualFile virtualFile, InspectionManager manager) {
         ProblemIdentificationCacheComponent cache = manager.getProject().getComponent(ProblemIdentificationCacheComponent.class);
+        if (cache != null) {
+            Collection<ProblemIdentification> allIdentifications = new LinkedList<ProblemIdentification>();
+            for (Collection<ProblemIdentification> identifications : methodProblemsMap.values()) {
+                allIdentifications.addAll(identifications);
+            }
 
-        Collection<ProblemIdentification> allIdentifications = new LinkedList<ProblemIdentification>();
-        for (Collection<ProblemIdentification> identifications : methodProblemsMap.values()) {
-            allIdentifications.addAll(identifications);
+            cache.updateFileProblems(virtualFile, getProblemOwner(), allIdentifications);
         }
-
-        cache.updateFileProblems(virtualFile, getProblemOwner(), allIdentifications);
     }
 
     /**
