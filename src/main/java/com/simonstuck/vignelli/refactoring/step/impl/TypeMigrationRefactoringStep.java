@@ -156,6 +156,10 @@ public class TypeMigrationRefactoringStep implements RefactoringStep {
                 return new Result(false);
             }
 
+            if (applicableTypes.contains(PsiTypesUtil.getClassType(otherClass))) {
+                return new Result(true);
+            }
+
             final PsiReference otherClassReference = ReferencesSearch.search(otherClass, new LocalSearchScope(thisClass)).findFirst();
             if (otherClassReference == null) {
                 return new Result(true);
