@@ -134,7 +134,7 @@ public class ExtractInterfaceRefactoringStep implements RefactoringStep {
         }
 
         private boolean currentClassContainsReferencesToClassUpForInterfaceExtraction() {
-            Query<PsiReference> search = ReferencesSearch.search(clazz, new LocalSearchScope(currentClass.getScope()));
+            Query<PsiReference> search = ReferencesSearch.search(clazz, new LocalSearchScope(currentClass));
             Collection<PsiReference> references = search.findAll();
 
             if (!references.isEmpty()) {
