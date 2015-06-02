@@ -87,11 +87,11 @@ public class MethodChainEngineTest extends LightIdeaTestCase {
     }
 
     public void testReportShortTrainWreckForTypeDifferenceEqualToThreshold() throws Exception {
-        assertTrue(TrainWreckIdentificationEngine.isShortTrainWreck(TrainWreckIdentification.TRAIN_WRECK_TYPE_DIFFERENCE_THRESHOLD, TrainWreckIdentificationEngine.MIN_TRAIN_WRECK_LENGTH));
+        assertTrue(TrainWreckIdentificationEngine.isShortTrainWreck(TrainWreckIdentification.TRAIN_WRECK_TYPE_DIFFERENCE_THRESHOLD, TrainWreckIdentificationEngine.MIN_TRAIN_WRECK_LENGTH, false));
     }
 
     public void testReportNoShortTrainWreckForCallChainLengthLessThanMinimumLength() throws Exception {
-        assertFalse(TrainWreckIdentificationEngine.isShortTrainWreck(Integer.MAX_VALUE, TrainWreckIdentificationEngine.MIN_TRAIN_WRECK_LENGTH - 1));
+        assertFalse(TrainWreckIdentificationEngine.isShortTrainWreck(Integer.MAX_VALUE, TrainWreckIdentificationEngine.MIN_TRAIN_WRECK_LENGTH - 1, false));
     }
 
     private PsiMethod getEmptyMethod() throws IOException {

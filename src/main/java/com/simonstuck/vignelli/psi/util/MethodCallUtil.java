@@ -1,7 +1,11 @@
 package com.simonstuck.vignelli.psi.util;
 
+import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiExpression;
+import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiMethodCallExpression;
+import com.intellij.psi.PsiModifier;
 import com.intellij.psi.PsiReferenceExpression;
 import com.intellij.psi.PsiType;
 
@@ -25,7 +29,8 @@ public class MethodCallUtil {
 
         while (currentExpression != null) {
             PsiType newType = currentExpression.getType();
-            if (newType != PsiType.VOID && (currentType != null ? !currentType.equals(newType) : newType != null)) {
+
+            if (!isStaticMethodCall(currentExpression) && newType != PsiType.VOID && (currentType != null ? !currentType.equals(newType) : newType != null)) {
                 typeDifference++;
             }
             currentType = newType;
@@ -38,6 +43,45 @@ public class MethodCallUtil {
             }
         }
         return typeDifference;
+    }
+
+    public static boolean containsStaticCalls(@Nullable PsiMethodCallExpression methodCallExpression) {
+        PsiExpression currentExpression = methodCallExpression;
+
+        while (currentExpression != null) {
+            if (isStaticMethodCall(currentExpression)) {
+                return true;
+            } else if (currentExpression instanceof PsiMethodCallExpression) {
+                PsiReferenceExpression methodExpression = ((PsiMethodCallExpression) currentExpression).getMethodExpression();
+                currentExpression = methodExpression.getQualifierExpression();
+            } else {
+                currentExpression = null;
+            }
+        }
+        return false;
+    }
+
+    private static boolean isPsiClassReference(PsiElement element) {
+        if (element instanceof PsiReferenceExpression) {
+            PsiReferenceExpression ref = (PsiReferenceExpression) element;
+            return ref.resolve() instanceof PsiClass;
+        }
+        return false;
+    }
+
+    private static boolean isStaticMethodCall(PsiExpression currentExpression) {
+        if (!currentExpression.isValid()) {
+            return false;
+        }
+        if (currentExpression instanceof PsiMethodCallExpression) {
+            PsiMethodCallExpression methodCallExpression = (PsiMethodCallExpression) currentExpression;
+            PsiMethod method = methodCallExpression.resolveMethod();
+            if (!PsiElementUtil.isAnyNullOrInvalid(method)) {
+                assert method != null;
+                return method.hasModifierProperty(PsiModifier.STATIC);
+            }
+        }
+        return false;
     }
 
     /**

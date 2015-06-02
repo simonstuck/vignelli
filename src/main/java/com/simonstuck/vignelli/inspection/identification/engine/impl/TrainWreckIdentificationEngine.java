@@ -55,7 +55,7 @@ public class TrainWreckIdentificationEngine implements IdentificationEngine {
         int typeDifference = methodChain.calculateTypeDifference();
         boolean containsProjectExternalCalls = methodChain.containsProjectExternalCalls();
 
-        return !containsProjectExternalCalls && isFullTrainWreck(typeDifference) || isShortTrainWreck(typeDifference, methodChain.getLength());
+        return !containsProjectExternalCalls && isFullTrainWreck(typeDifference) || isShortTrainWreck(typeDifference, methodChain.getLength(), methodChain.containsStaticCalls());
     }
 
     /**
@@ -75,8 +75,8 @@ public class TrainWreckIdentificationEngine implements IdentificationEngine {
      * @param trainWreckLength The length of the method chain.
      * @return True iff the given identification is a short train wreck.
      */
-    public static boolean isShortTrainWreck(int typeDifference, int trainWreckLength) {
-        return typeDifference >= TrainWreckIdentification.TRAIN_WRECK_TYPE_DIFFERENCE_THRESHOLD && trainWreckLength == MIN_TRAIN_WRECK_LENGTH;
+    public static boolean isShortTrainWreck(int typeDifference, int trainWreckLength, boolean containsStaticCalls) {
+        return !containsStaticCalls && typeDifference >= TrainWreckIdentification.TRAIN_WRECK_TYPE_DIFFERENCE_THRESHOLD && trainWreckLength == MIN_TRAIN_WRECK_LENGTH;
     }
 
     /**

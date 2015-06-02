@@ -19,12 +19,14 @@ import java.util.Set;
 public class MethodChain {
     private final PsiMethodCallExpression finalCall;
     private final ClassFinder classFinder;
+    private final boolean containsStaticCalls;
     private int length;
 
     public MethodChain(@NotNull PsiMethodCallExpression finalCall, @NotNull ClassFinder classFinder) {
         this.finalCall = finalCall;
         this.classFinder = classFinder;
         this.length = MethodCallUtil.getLength(finalCall);
+        this.containsStaticCalls = MethodCallUtil.containsStaticCalls(finalCall);
     }
 
     /**
@@ -121,5 +123,9 @@ public class MethodChain {
 
     public int getLength() {
         return length;
+    }
+
+    public boolean containsStaticCalls() {
+        return containsStaticCalls;
     }
 }

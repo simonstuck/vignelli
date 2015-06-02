@@ -9,6 +9,7 @@ import com.intellij.psi.PsiStatement;
 import com.simonstuck.vignelli.inspection.identification.engine.impl.TrainWreckIdentificationEngine;
 import com.simonstuck.vignelli.inspection.identification.impl.TrainWreckIdentification;
 import com.simonstuck.vignelli.psi.impl.IntelliJClassFinderAdapter;
+import com.simonstuck.vignelli.psi.util.MethodCallUtil;
 import com.simonstuck.vignelli.refactoring.Refactoring;
 import com.simonstuck.vignelli.refactoring.RefactoringTracker;
 import com.simonstuck.vignelli.refactoring.step.RefactoringStep;
@@ -70,7 +71,7 @@ public class TrainWreckExpressionRefactoringImpl extends Refactoring implements 
      */
     public static boolean shouldCriticalCallRemain(@NotNull TrainWreckIdentification identification) {
         return TrainWreckIdentificationEngine.isFullTrainWreck(identification.calculateTypeDifference())
-                && !TrainWreckIdentificationEngine.isShortTrainWreck(identification.calculateTypeDifference(), identification.getLength());
+                && !TrainWreckIdentificationEngine.isShortTrainWreck(identification.calculateTypeDifference(), identification.getLength(), MethodCallUtil.containsStaticCalls(identification.getFinalCall()));
     }
 
     @Override
