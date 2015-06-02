@@ -1,10 +1,11 @@
 <p>In this final step we now decouple <span class="code">${thisClass}</span> from <span class="code">${singletonClass}</span> altogether by extracting an interface from it and using that whenever possible.</p>
 <p><span class="code">${singletonClass}</span> in this case will simply be just another instance of the interface that we extract, i.e. <span class="code">${singletonClass}</span> will implement the newly extracted interface.</p>
 <p>Instead of using <span class="code">${singletonClass}</span> directly we will then use the interface in <span class="code">${thisClass}</span> instead, allowing us to inject other objects that implement this interface, e.g. a test instance.</p>
-<p>IntelliJ provides an easy way to do just this via a simple refactoring step. The "Extract Interface" dialog accepts an option to rename the original class (<span class="code">${singletonClass}</span>) to something else and use <span class="code">${singletonClass}</span> as an interface name. Be sure to</p>
+<p>IntelliJ provides an easy way to do just this via a simple refactoring step. The "Extract Interface" dialog that will appear when you press "Perform Next Step" allows you to extract just such an interface and use it wherever possible. Be sure to</p>
 <ul>
-    <li>Select "rename original class and use interface where possible" option.</li>
-    <li>Select all member methods to form interface.</li>
-    <li>Choose a new name for the implementation class.</li>
+    <li><b>Select the "Extract Interface" option.</b></li>
+    <li><b>Choose a generic "Interface Name" for the new interface.</b></li>
+    <li><b>Select all member methods to form the interface.</b></li>
 </ul>
+<p>After you confirm, IntelliJ will find all references to <span class="code">${thisClass}</span> that can now be replaced with the new interface. Let IntelliJ do the work for you by pressing "<b>Do Refactor</b>".</p>
 <p>Click below to perform this refactoring step.</p>
