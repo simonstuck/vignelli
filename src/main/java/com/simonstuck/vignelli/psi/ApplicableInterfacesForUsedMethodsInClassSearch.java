@@ -3,8 +3,10 @@ package com.simonstuck.vignelli.psi;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiClassType;
 import com.intellij.psi.PsiMethod;
+import com.intellij.psi.PsiModifier;
 import com.intellij.psi.PsiReferenceList;
 import com.intellij.psi.impl.PsiClassImplUtil;
+import com.intellij.psi.impl.compiled.ClsMethodImpl;
 import com.intellij.psi.search.SearchScope;
 import com.intellij.psi.search.searches.ReferencesSearch;
 import com.intellij.psi.util.PsiTypesUtil;
@@ -81,7 +83,7 @@ public class ApplicableInterfacesForUsedMethodsInClassSearch {
     private Set<PsiMethod> getReferencedMethodsOfBaseClassInSearchScope() {
         Set<PsiMethod> referencedSingletonMethods = new HashSet<PsiMethod>();
         for (PsiMethod method : baseClass.getAllMethods()) {
-            if (!ReferencesSearch.search(method, usageSearchScope).findAll().isEmpty()) {
+            if (!(method instanceof ClsMethodImpl) && ReferencesSearch.search(method, usageSearchScope).findFirst() != null && !method.hasModifierProperty(PsiModifier.STATIC)) {
                 referencedSingletonMethods.add(method);
             }
         }
