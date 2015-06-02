@@ -1,7 +1,5 @@
 package com.simonstuck.vignelli.psi.util;
 
-import com.intellij.psi.PsiClass;
-import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiExpression;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiMethodCallExpression;
@@ -57,14 +55,6 @@ public class MethodCallUtil {
             } else {
                 currentExpression = null;
             }
-        }
-        return false;
-    }
-
-    private static boolean isPsiClassReference(PsiElement element) {
-        if (element instanceof PsiReferenceExpression) {
-            PsiReferenceExpression ref = (PsiReferenceExpression) element;
-            return ref.resolve() instanceof PsiClass;
         }
         return false;
     }
