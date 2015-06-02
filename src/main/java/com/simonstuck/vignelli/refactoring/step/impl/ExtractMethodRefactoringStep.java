@@ -14,6 +14,7 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.refactoring.extractMethod.ExtractMethodHandler;
 import com.intellij.refactoring.extractMethod.ExtractMethodProcessor;
 import com.intellij.util.Query;
+import com.intellij.util.containers.OrderedSet;
 import com.simonstuck.vignelli.psi.util.PsiElementUtil;
 import com.simonstuck.vignelli.refactoring.step.RefactoringStepVisitor;
 import com.simonstuck.vignelli.psi.PsiElementLiftToCommonContext;
@@ -30,9 +31,11 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -105,10 +108,11 @@ public class ExtractMethodRefactoringStep implements RefactoringStep {
     private String getDescription() {
         Template template = new HTMLFileTemplate(IOUtil.tryReadFile(templateDescriptionPath));
         HashMap<String, Object> contentMap = new HashMap<String, Object>();
-        List<String> strElementsToExtract = new ArrayList<String>(elementsToExtract.size());
+        Set<String> strElementsToExtract = new LinkedHashSet<String>();
         for (PsiElement element : elementsToExtract) {
             strElementsToExtract.add(element.getText());
         }
+
         contentMap.put("elementsToExtract", strElementsToExtract);
 
         return template.render(contentMap);
