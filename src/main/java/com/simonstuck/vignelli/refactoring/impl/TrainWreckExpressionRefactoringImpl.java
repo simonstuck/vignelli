@@ -4,7 +4,12 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiExpression;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiMethodCallExpression;
+import com.intellij.psi.PsiMethodReferenceExpression;
+import com.intellij.psi.PsiMethodReferenceUtil;
+import com.intellij.psi.PsiReferenceExpression;
 import com.intellij.psi.PsiStatement;
 import com.simonstuck.vignelli.inspection.identification.engine.impl.TrainWreckIdentificationEngine;
 import com.simonstuck.vignelli.inspection.identification.impl.TrainWreckIdentification;
@@ -70,8 +75,8 @@ public class TrainWreckExpressionRefactoringImpl extends Refactoring implements 
      * @return True iff the critical chain should remain at its current location.
      */
     public static boolean shouldCriticalCallRemain(@NotNull TrainWreckIdentification identification) {
-        return TrainWreckIdentificationEngine.isFullTrainWreck(identification.calculateTypeDifference())
-                && !TrainWreckIdentificationEngine.isShortTrainWreck(identification.calculateTypeDifference(), identification.getLength(), MethodCallUtil.containsStaticCalls(identification.getFinalCall()));
+        final PsiMethodCallExpression criticalCallExpression = identification.criticalCall();
+        return MethodCallUtil.getLength(criticalCallExpression) > 2;
     }
 
     @Override
