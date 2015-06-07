@@ -1,9 +1,12 @@
 package com.simonstuck.vignelli.inspection.identification.engine.impl;
 
+import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.PsiModifier;
+import com.intellij.psi.PsiParameterList;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.simonstuck.vignelli.inspection.identification.engine.IdentificationEngine;
 import com.simonstuck.vignelli.inspection.identification.impl.DirectSingletonUseIdentification;
 
@@ -47,7 +50,7 @@ public class DirectSingletonUseIdentificationEngine implements IdentificationEng
     private Set<PsiMethodCallExpression> getLikelyInstanceRetrievalMethods(Set<PsiMethodCallExpression> methodCallExpressions) {
         final Set<PsiMethodCallExpression> instanceRetrievalCalls = new HashSet<PsiMethodCallExpression>();
         for (PsiMethodCallExpression methodCallExpression : methodCallExpressions) {
-            PsiMethod method = (PsiMethod) methodCallExpression.getMethodExpression().resolve();
+            PsiMethod method = methodCallExpression.resolveMethod();
             if (isLikelyInstanceRetrievalMethod(method)) {
                 instanceRetrievalCalls.add(methodCallExpression);
             }
@@ -68,6 +71,33 @@ public class DirectSingletonUseIdentificationEngine implements IdentificationEng
 
     @Contract("null -> false")
     private boolean isLikelyInstanceRetrievalMethod(PsiMethod method) {
-        return method != null && method.getName().equals(GET_INSTANCE_NAME);
+        if (method == null) {
+            return false;
+        }
+
+        PsiClass containingClazz = PsiTreeUtil.getParentOfType(method, PsiClass.class);
+
+        return !hasNonPrivateConstructor(containingClazz)
+                && method.getName().equals(GET_INSTANCE_NAME)
+                && (method.getParameterList().getParametersCount() == 0);
+    }
+
+    /**
+     * Checks if the given class has a non-private constructor. Returns true iff it has the default constructor.
+     * @param clazz The class to check
+     * @return True iff the class has a non-private constructor.
+     */
+    private boolean hasNonPrivateConstructor(PsiClass clazz) {
+        final PsiMethod[] constructors = clazz.getConstructors();
+        if (constructors.length == 0) {
+            return true;
+        }
+
+        for (PsiMethod constructor : constructors) {
+            if (!constructor.hasModifierProperty(PsiModifier.PRIVATE)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

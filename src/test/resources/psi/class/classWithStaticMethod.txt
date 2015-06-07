@@ -3,7 +3,8 @@ void test() {
 }
 
 class King {
+    private King() {}
     static King getInstance() {
-        return this;
+        return new King();
     }
 }
