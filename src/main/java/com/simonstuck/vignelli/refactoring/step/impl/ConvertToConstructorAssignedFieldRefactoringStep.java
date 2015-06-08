@@ -14,6 +14,7 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.util.PsiTypesUtil;
 import com.intellij.refactoring.introduceField.IntroduceFieldHandler;
 import com.simonstuck.vignelli.psi.PsiContainsChecker;
+import com.simonstuck.vignelli.psi.util.EditorUtil;
 import com.simonstuck.vignelli.refactoring.step.RefactoringStep;
 import com.simonstuck.vignelli.refactoring.step.RefactoringStepDelegate;
 import com.simonstuck.vignelli.refactoring.step.RefactoringStepGoalChecker;
@@ -22,7 +23,6 @@ import com.simonstuck.vignelli.refactoring.step.RefactoringStepVisitor;
 import com.simonstuck.vignelli.ui.description.HTMLFileTemplate;
 import com.simonstuck.vignelli.ui.description.Template;
 import com.simonstuck.vignelli.util.IOUtil;
-import com.simonstuck.vignelli.psi.util.EditorUtil;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -106,14 +106,14 @@ public class ConvertToConstructorAssignedFieldRefactoringStep implements Refacto
 
 
     public static final class Result implements RefactoringStepResult {
-        PsiExpression constructorExpression;
+        HashSet<PsiExpression> constructorExpressions;
 
-        public Result(PsiExpression constructorExpression) {
-            this.constructorExpression = constructorExpression;
+        public Result(HashSet<PsiExpression> constructorExpressions) {
+            this.constructorExpressions = constructorExpressions;
         }
 
-        public PsiExpression getConstructorExpression() {
-            return constructorExpression;
+        public HashSet<PsiExpression> getConstructorExpressions() {
+            return constructorExpressions;
         }
 
         @Override
@@ -188,6 +188,8 @@ public class ConvertToConstructorAssignedFieldRefactoringStep implements Refacto
             Set<PsiAssignmentExpression> newAssignments = getAllConstructorFieldAssignmentExpressions();
             newAssignments.removeAll(originalConstructorFieldAssignments);
 
+            final Map<PsiMethod, PsiExpression> constructorAssignmentExpressions = new HashMap<PsiMethod, PsiExpression>();
+
             for (PsiAssignmentExpression newAssignment : newAssignments) {
                 PsiExpression constructorExpression = (PsiExpression) new PsiContainsChecker().findEquivalent(newAssignment, expression);
                 PsiExpression lExpression = newAssignment.getLExpression();
@@ -197,11 +199,21 @@ public class ConvertToConstructorAssignedFieldRefactoringStep implements Refacto
                         PsiField assignee = (PsiField) lResolved;
 
                         if (containsReferencesToField(originalExpressionMethod, assignee)) {
-                            return new Result(constructorExpression);
+                            PsiMethod constructor = PsiTreeUtil.getParentOfType(constructorExpression, PsiMethod.class);
+                            if (constructor != null) {
+                                constructorAssignmentExpressions.put(constructor, constructorExpression);
+                            }
                         }
                     }
                 }
             }
+
+            if (constructorAssignmentExpressions.size() >= clazz.getConstructors().length) {
+                return new Result(new HashSet<PsiExpression>(constructorAssignmentExpressions.values()));
+            }
+
+
+
             return null;
         }
 

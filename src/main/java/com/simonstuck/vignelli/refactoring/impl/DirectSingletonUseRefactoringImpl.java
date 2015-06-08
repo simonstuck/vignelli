@@ -162,6 +162,7 @@ public class DirectSingletonUseRefactoringImpl extends Refactoring implements Re
 
         private final RefactoringStepResult result;
         private boolean success = false;
+        private ConvertToConstructorAssignedFieldRefactoringStep.Result convertToConstructorAssignedFieldStepResult;
 
         private RefactoringStepCompletionHandler(RefactoringStepResult result) {
             this.result = result;
@@ -170,8 +171,8 @@ public class DirectSingletonUseRefactoringImpl extends Refactoring implements Re
         @Override
         public void visitElement(ConvertToConstructorAssignedFieldRefactoringStep convertToConstructorAssignedFieldRefactoringStep) {
             super.visitElement(convertToConstructorAssignedFieldRefactoringStep);
-            ConvertToConstructorAssignedFieldRefactoringStep.Result convertToConstructorAssignedFieldStepResult = (ConvertToConstructorAssignedFieldRefactoringStep.Result) result;
-            currentRefactoringStep = createIntroduceParameterRefactoringStep(convertToConstructorAssignedFieldStepResult.getConstructorExpression());
+            convertToConstructorAssignedFieldStepResult = (ConvertToConstructorAssignedFieldRefactoringStep.Result) result;
+            currentRefactoringStep = createIntroduceParameterRefactoringStep(convertToConstructorAssignedFieldStepResult.getConstructorExpressions().iterator().next());
             success = true;
         }
 
