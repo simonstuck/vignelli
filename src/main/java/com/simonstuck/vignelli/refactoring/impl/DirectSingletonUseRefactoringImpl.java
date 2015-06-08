@@ -178,9 +178,8 @@ public class DirectSingletonUseRefactoringImpl extends Refactoring implements Re
         }
 
         boolean tryLaunchingNextIntroduceParameterRefactoringStep() {
-
             PsiExpression constructorAssignment = null;
-            while (constructorAssignmentExpressionsIterator.hasNext()) {
+            while (constructorAssignmentExpressionsIterator != null && constructorAssignmentExpressionsIterator.hasNext()) {
                 constructorAssignment = constructorAssignmentExpressionsIterator.next();
                 if (constructorAssignment.isValid()) {
                     break;
