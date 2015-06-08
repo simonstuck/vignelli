@@ -31,6 +31,7 @@ import com.simonstuck.vignelli.refactoring.step.impl.TypeMigrationRefactoringSte
 import com.simonstuck.vignelli.util.IOUtil;
 
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -51,6 +52,7 @@ public class DirectSingletonUseRefactoringImpl extends Refactoring implements Re
     private RefactoringStep currentRefactoringStep;
     private TypeMigrationRefactoringStep typeMigrationRefactoringStep;
     private TypeMigrationParameterUpdater typeMigrationParameterUpdater;
+    private Iterator<PsiExpression> constructorAssignmentExpressionsIterator;
     private Set<PsiClass> allApplicableInterfaces;
 
     public DirectSingletonUseRefactoringImpl(PsiMethodCallExpression getInstanceElement, RefactoringTracker tracker, Project project, PsiFile file) {
@@ -162,7 +164,6 @@ public class DirectSingletonUseRefactoringImpl extends Refactoring implements Re
 
         private final RefactoringStepResult result;
         private boolean success = false;
-        private ConvertToConstructorAssignedFieldRefactoringStep.Result convertToConstructorAssignedFieldStepResult;
 
         private RefactoringStepCompletionHandler(RefactoringStepResult result) {
             this.result = result;
@@ -171,14 +172,38 @@ public class DirectSingletonUseRefactoringImpl extends Refactoring implements Re
         @Override
         public void visitElement(ConvertToConstructorAssignedFieldRefactoringStep convertToConstructorAssignedFieldRefactoringStep) {
             super.visitElement(convertToConstructorAssignedFieldRefactoringStep);
-            convertToConstructorAssignedFieldStepResult = (ConvertToConstructorAssignedFieldRefactoringStep.Result) result;
-            currentRefactoringStep = createIntroduceParameterRefactoringStep(convertToConstructorAssignedFieldStepResult.getConstructorExpressions().iterator().next());
-            success = true;
+            ConvertToConstructorAssignedFieldRefactoringStep.Result convertToConstructorAssignedFieldStepResult = (ConvertToConstructorAssignedFieldRefactoringStep.Result) result;
+            constructorAssignmentExpressionsIterator = convertToConstructorAssignedFieldStepResult.getConstructorExpressions().iterator();
+            success = tryLaunchingNextIntroduceParameterRefactoringStep();
+        }
+
+        boolean tryLaunchingNextIntroduceParameterRefactoringStep() {
+
+            PsiExpression constructorAssignment = null;
+            while (constructorAssignmentExpressionsIterator.hasNext()) {
+                constructorAssignment = constructorAssignmentExpressionsIterator.next();
+                if (constructorAssignment.isValid()) {
+                    break;
+                }
+            }
+
+            if (constructorAssignment != null && constructorAssignment.isValid()) {
+                currentRefactoringStep = createIntroduceParameterRefactoringStep(constructorAssignment);
+                return true;
+            } else {
+                return false;
+            }
         }
 
         @Override
         public void visitElement(IntroduceParameterRefactoringStep introduceParameterRefactoringStep) {
             super.visitElement(introduceParameterRefactoringStep);
+
+            if (tryLaunchingNextIntroduceParameterRefactoringStep()) {
+                success = true;
+                return;
+            }
+
             findAllApplicableInterfacesWithProgressIndicator();
 
             if (allApplicableInterfaces.isEmpty()) {

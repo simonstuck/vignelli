@@ -4,6 +4,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiMethodCallExpression;
 import com.simonstuck.vignelli.inspection.improvement.ImprovementOpportunity;
+import com.simonstuck.vignelli.psi.util.PsiElementUtil;
 import com.simonstuck.vignelli.refactoring.impl.DirectSingletonUseRefactoringImpl;
 import com.simonstuck.vignelli.refactoring.Refactoring;
 import com.simonstuck.vignelli.refactoring.RefactoringEngineComponent;
@@ -19,6 +20,9 @@ public class DirectSingletonUseImprovementOpportunity implements ImprovementOppo
 
     @Override
     public void beginRefactoring() {
+        if (PsiElementUtil.isAnyNullOrInvalid(getInstanceElement)) {
+            return;
+        }
         Project project = getInstanceElement.getProject();
         RefactoringTracker tracker = project.getComponent(RefactoringEngineComponent.class);
         PsiFile file = getInstanceElement.getContainingFile();
