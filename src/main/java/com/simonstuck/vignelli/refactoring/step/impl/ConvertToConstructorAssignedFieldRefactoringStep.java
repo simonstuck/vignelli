@@ -208,7 +208,7 @@ public class ConvertToConstructorAssignedFieldRefactoringStep implements Refacto
                 }
             }
 
-            if (constructorAssignmentExpressions.size() >= clazz.getConstructors().length) {
+            if (constructorAssignmentExpressions.size() >= clazz.getConstructors().length && clazz.getConstructors().length > 0) {
                 return new Result(new HashSet<PsiExpression>(constructorAssignmentExpressions.values()));
             }
 
