@@ -77,7 +77,8 @@ public class DirectSingletonUseIdentificationEngine implements IdentificationEng
 
         PsiClass containingClazz = PsiTreeUtil.getParentOfType(method, PsiClass.class);
 
-        return !hasNonPrivateConstructor(containingClazz)
+        return containingClazz != null
+                && !hasNonPrivateConstructor(containingClazz)
                 && method.getName().equals(GET_INSTANCE_NAME)
                 && (method.getParameterList().getParametersCount() == 0);
     }

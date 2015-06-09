@@ -23,6 +23,7 @@
         <group id="Vignelli.EvaluationMenu" text="Vignelli" description="Vignelli Evaluation Menu" icon="/vignelli_icon_13.png" popup="true">
             <add-to-group group-id="AnalyzeMenu" anchor="last"  />
             <action id="Vignelli.CollectMetrics" class="com.simonstuck.vignelli.evaluation.action.CollectMetricsAnAction" text="Collect Code Metrics" description="Collect code metrics" />
+            <action id="Vignelli.CollectPerformanceData" class="com.simonstuck.vignelli.evaluation.action.CollectPerformanceDataAnAction" text="Collect Performance Data" description="Collect Performance Data" />
             <action id="Vignelli.RateComplexMethods" class="com.simonstuck.vignelli.evaluation.action.RateComplexMethodsAnAction" text="Rate Methods (complex/non-complex)" description="Decide whether your methods are complex or not" />
             <action id="Vignelli.StaticCallsSingletonAnalysis" class="com.simonstuck.vignelli.evaluation.action.StaticCallsSingletonAnalysisAnAction" text="Classify Singletons" description="Decide whether Classes are singletons or not" />
         </group>
