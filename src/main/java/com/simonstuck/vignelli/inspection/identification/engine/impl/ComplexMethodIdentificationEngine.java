@@ -21,7 +21,7 @@ public class ComplexMethodIdentificationEngine implements IdentificationEngine<C
     private static final Logger LOG = Logger.getInstance(ComplexMethodIdentificationEngine.class.getName());
 
     //TODO: Find a sensible value for this
-    private static final double LIKELIHOOD_THRESHOLD = 0.9;
+    private static final double LIKELIHOOD_THRESHOLD = 0.5;
 
     @Override
     public Set<ComplexMethodIdentification> process(PsiElement element) {

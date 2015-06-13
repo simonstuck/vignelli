@@ -65,8 +65,8 @@ public class MetricsUtil {
     }
 
     private static class NestedCodeBlockVisitor extends JavaRecursiveElementVisitor {
-        private int maxDepth = 0;
-        private int currentDepth = 0;
+        private int maxDepth = -1;
+        private int currentDepth = -1;
 
         @Override
         public void visitCodeBlock(PsiCodeBlock block) {
