@@ -55,7 +55,7 @@ public class TrainWreckIdentificationEngine implements IdentificationEngine {
         int typeDifference = methodChain.calculateTypeDifference();
         boolean containsProjectExternalCalls = methodChain.containsProjectExternalCalls();
 
-        return !containsProjectExternalCalls && isFullTrainWreck(typeDifference) || isShortTrainWreck(typeDifference, methodChain.getLength(), methodChain.containsStaticCalls());
+        return !containsProjectExternalCalls && (isFullTrainWreck(typeDifference) || isShortTrainWreck(typeDifference, methodChain.getLength(), methodChain.containsStaticCalls()));
     }
 
     /**

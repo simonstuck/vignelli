@@ -26,6 +26,7 @@
             <action id="Vignelli.CollectPerformanceData" class="com.simonstuck.vignelli.evaluation.action.CollectPerformanceDataAnAction" text="Collect Performance Data" description="Collect Performance Data" />
             <action id="Vignelli.RateComplexMethods" class="com.simonstuck.vignelli.evaluation.action.RateComplexMethodsAnAction" text="Rate Methods (complex/non-complex)" description="Decide whether your methods are complex or not" />
             <action id="Vignelli.StaticCallsSingletonAnalysis" class="com.simonstuck.vignelli.evaluation.action.StaticCallsSingletonAnalysisAnAction" text="Classify Singletons" description="Decide whether Classes are singletons or not" />
+            <action id="Vignelli.MethodChainsList" class="com.simonstuck.vignelli.evaluation.action.MethodChainsListAnAction" text="List Method Chains in Project" description="List all method chains in the current project" />
         </group>
     </actions>
 

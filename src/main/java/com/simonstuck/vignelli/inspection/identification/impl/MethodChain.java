@@ -96,11 +96,11 @@ public class MethodChain {
     public boolean containsProjectExternalCalls() {
 
         GlobalSearchScope searchScope = GlobalSearchScope.projectScope(finalCall.getProject());
-        PsiExpression currentExpression = finalCall;
+        PsiExpression currentExpression = finalCall.getMethodExpression().getQualifierExpression();
         while (currentExpression != null) {
             PsiType newType = currentExpression.getType();
             PsiClass classForCurrentType = PsiTypesUtil.getPsiClass(newType);
-            if (classForCurrentType != null) {
+            if (newType != PsiType.VOID && classForCurrentType != null) {
                 String qualifiedName = classForCurrentType.getQualifiedName();
                 if (qualifiedName != null && classFinder.findClass(searchScope, qualifiedName) == null) {
                     return true;
