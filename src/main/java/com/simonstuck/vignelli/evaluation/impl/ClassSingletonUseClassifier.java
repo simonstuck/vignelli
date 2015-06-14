@@ -43,12 +43,15 @@ public class ClassSingletonUseClassifier implements PsiElementEvaluator<Set<Stat
                 if (method.getName().equals("getInstance")) {
                     EditorUtil.navigateToElement(expression);
 
-                    int selection = Messages.showDialog(method.getName(), "Is call an instance retrieval call?", DIALOG_OPTIONS, 1, 0, Messages.getQuestionIcon(), null);
+                    PsiClass theClazz = PsiTreeUtil.getParentOfType(method, PsiClass.class);
+                    String theClazzName = theClazz != null ? theClazz.getQualifiedName() : "SomeClazz";
+                    int selection = Messages.showDialog(theClazzName + "::" + method.getName(), "Is call an instance retrieval call?", DIALOG_OPTIONS, 1, 0, Messages.getQuestionIcon(), null);
                     manualClassification = selection == 0;
                 }
 
 
-                final StaticCallSingletonEvaluation callEvaluation = new StaticCallSingletonEvaluation(expression.getText(), !identifications.isEmpty(), manualClassification);
+                boolean vignelliClassification = !identifications.isEmpty() ? identifications.iterator().next().getMethodCall() == expression : false;
+                final StaticCallSingletonEvaluation callEvaluation = new StaticCallSingletonEvaluation(expression.getText(), vignelliClassification, manualClassification);
                 evaluations.add(callEvaluation);
             }
         }
