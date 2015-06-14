@@ -1,23 +1,17 @@
 package com.simonstuck.vignelli.evaluation.impl;
 
-import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiField;
-import com.intellij.psi.PsiMember;
 import com.intellij.psi.PsiMethod;
-import com.intellij.psi.PsiReference;
-import com.intellij.psi.search.GlobalSearchScope;
-import com.intellij.psi.search.searches.ReferencesSearch;
+import com.intellij.psi.PsiMethodCallExpression;
+import com.intellij.psi.PsiModifier;
 import com.intellij.psi.util.PsiTreeUtil;
-import com.intellij.psi.util.PsiTypesUtil;
 import com.simonstuck.vignelli.evaluation.PsiElementEvaluator;
-import com.simonstuck.vignelli.evaluation.datamodel.ClassSingletonUseClassification;
-import com.simonstuck.vignelli.evaluation.datamodel.SingletonClassClassification;
-import com.simonstuck.vignelli.evaluation.datamodel.SingletonMethodCallPrediction;
+import com.simonstuck.vignelli.evaluation.datamodel.StaticCallSingletonEvaluation;
 import com.simonstuck.vignelli.inspection.identification.engine.impl.DirectSingletonUseIdentificationEngine;
 import com.simonstuck.vignelli.inspection.identification.impl.DirectSingletonUseIdentification;
-import com.simonstuck.vignelli.psi.util.ClassUtil;
+import com.simonstuck.vignelli.psi.util.EditorUtil;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -25,77 +19,39 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-public class ClassSingletonUseClassifier implements PsiElementEvaluator<ClassSingletonUseClassification> {
+public class ClassSingletonUseClassifier implements PsiElementEvaluator<Set<StaticCallSingletonEvaluation>> {
 
-    @NotNull
-    private final Project project;
-    @NotNull
-    private final PsiElementEvaluator<SingletonClassClassification> classIsSingletonClassifier;
-
-    public ClassSingletonUseClassifier(@NotNull Project project, @NotNull PsiElementEvaluator<SingletonClassClassification> classIsSingletonClassifier) {
-        this.project = project;
-        this.classIsSingletonClassifier = classIsSingletonClassifier;
-    }
+    public static final String[] DIALOG_OPTIONS = new String[]{"yes", "no"};
 
     @Override
-    public EvaluationResult<ClassSingletonUseClassification> evaluate(@NotNull PsiElement element) {
+    public EvaluationResult<Set<StaticCallSingletonEvaluation>> evaluate(@NotNull PsiElement element) {
         PsiClass clazz = (PsiClass) element;
 
-        Collection<PsiMember> allStaticMembers = ClassUtil.getNonPrivateStaticMembers(clazz);
-        Collection<PsiMember> staticMembersWithSameClassReturnType = new HashSet<PsiMember>();
-        for (PsiMember member : allStaticMembers) {
-            if (member instanceof  PsiField) {
-                PsiClass memberClass = PsiTypesUtil.getPsiClass(((PsiField) member).getType());
-                if (memberClass != null && PsiTreeUtil.isAncestor(memberClass, clazz, false)) {
-                    staticMembersWithSameClassReturnType.add(member);
+        Set<StaticCallSingletonEvaluation> evaluations = new HashSet<StaticCallSingletonEvaluation>();
+
+        @SuppressWarnings("unchecked")
+        final Collection<PsiMethodCallExpression> methodCallExpressions = PsiTreeUtil.collectElementsOfType(clazz, PsiMethodCallExpression.class);
+        final DirectSingletonUseIdentificationEngine directSingletonUseIdentificationEngine = new DirectSingletonUseIdentificationEngine();
+        for (PsiMethodCallExpression expression : methodCallExpressions) {
+            PsiMethod method = expression.resolveMethod();
+            if (method != null && method.hasModifierProperty(PsiModifier.STATIC)) {
+                final Set<DirectSingletonUseIdentification> identifications = directSingletonUseIdentificationEngine.process(expression);
+
+
+                boolean manualClassification = false;
+
+                if (method.getName().equals("getInstance")) {
+                    EditorUtil.navigateToElement(expression);
+
+                    int selection = Messages.showDialog(method.getName(), "Is call an instance retrieval call?", DIALOG_OPTIONS, 1, 0, Messages.getQuestionIcon(), null);
+                    manualClassification = selection == 0;
                 }
-            } else if (member instanceof  PsiMethod) {
-                PsiClass memberClass = PsiTypesUtil.getPsiClass(((PsiMethod) member).getReturnType());
-                if (memberClass != null && PsiTreeUtil.isAncestor(memberClass, clazz, false)) {
-                    staticMembersWithSameClassReturnType.add(member);
-                }
-            } else {
-                staticMembersWithSameClassReturnType.add(member);
+
+
+                final StaticCallSingletonEvaluation callEvaluation = new StaticCallSingletonEvaluation(expression.getText(), !identifications.isEmpty(), manualClassification);
+                evaluations.add(callEvaluation);
             }
         }
-
-        if (staticMembersWithSameClassReturnType.isEmpty()) {
-            // definitely not a singleton, move on
-            ClassSingletonUseClassification classification = new ClassSingletonUseClassification(clazz.getQualifiedName(), new SingletonClassClassification(false));
-            return new PsiElementEvaluator.EvaluationResult.Default<ClassSingletonUseClassification>(PsiElementEvaluator.EvaluationResult.Outcome.COMPLETED, classification);
-        } else {
-            // ask if singleton
-            PsiElementEvaluator.EvaluationResult<SingletonClassClassification> classificationResult = classIsSingletonClassifier.evaluate(clazz);
-
-            if (classificationResult.getOutcome() == PsiElementEvaluator.EvaluationResult.Outcome.COMPLETED) {
-                assert  classificationResult.getEvaluation() != null;
-                ClassSingletonUseClassification classification = new ClassSingletonUseClassification(clazz.getQualifiedName(), classificationResult.getEvaluation());
-                // go through all calls to all static methods and check
-
-                for (PsiMember method : allStaticMembers) {
-                    Collection<PsiReference> methodCalls = ReferencesSearch.search(method, GlobalSearchScope.allScope(project)).findAll();
-                    for (PsiReference staticRef : methodCalls) {
-                        classification.addMethodCallPrediction(staticRef.getElement().getText(), new SingletonMethodCallPrediction(isReferenceIdentifiedAsDirectSingletonUse(staticRef)));
-                    }
-                }
-                return new PsiElementEvaluator.EvaluationResult.Default<ClassSingletonUseClassification>(classificationResult.getOutcome(), classification);
-            } else {
-                return new PsiElementEvaluator.EvaluationResult.Default<ClassSingletonUseClassification>(classificationResult.getOutcome(), null);
-            }
-        }
-    }
-
-    private boolean isReferenceIdentifiedAsDirectSingletonUse(PsiReference staticRef) {
-        PsiClass parentClazz = PsiTreeUtil.getParentOfType(staticRef.getElement(), PsiClass.class, false);
-        if (parentClazz != null) {
-            Set<DirectSingletonUseIdentification> identifications = new DirectSingletonUseIdentificationEngine().process(parentClazz);
-
-            for (DirectSingletonUseIdentification id : identifications) {
-                if (PsiTreeUtil.isAncestor(id.getMethodCall(), staticRef.getElement(), false)) {
-                    return true;
-                }
-            }
-        }
-        return false;
+        return new PsiElementEvaluator.EvaluationResult.Default<Set<StaticCallSingletonEvaluation>>(EvaluationResult.Outcome.COMPLETED, evaluations);
     }
 }

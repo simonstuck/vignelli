@@ -17,9 +17,12 @@ import com.simonstuck.vignelli.evaluation.PsiElementEvaluator;
 import com.simonstuck.vignelli.evaluation.datamodel.ClassSingletonUseClassification;
 import com.simonstuck.vignelli.evaluation.datamodel.ProjectStaticCallsSingletonClassifications;
 import com.simonstuck.vignelli.evaluation.datamodel.SingletonClassClassification;
+import com.simonstuck.vignelli.evaluation.datamodel.StaticCallSingletonEvaluation;
 import com.simonstuck.vignelli.evaluation.impl.ClassSingletonUseClassifier;
 import com.simonstuck.vignelli.evaluation.impl.IntelliJManualUserSingletonClassifier;
 import com.simonstuck.vignelli.evaluation.io.AtomicallyReplacingFileWriter;
+import com.simonstuck.vignelli.psi.util.MethodCallUtil;
+import com.simonstuck.vignelli.psi.util.PsiElementUtil;
 import com.simonstuck.vignelli.util.IOUtil;
 
 import org.jetbrains.annotations.NotNull;
@@ -30,6 +33,9 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 
 public class StaticCallsSingletonAnalysisAnAction extends AnAction  {
 
@@ -46,8 +52,6 @@ public class StaticCallsSingletonAnalysisAnAction extends AnAction  {
         File directory = chooseDirectory(project);
         File resultsFile = IOUtil.getFirstAvailableFile(directory, RESULTS_FILE_BASENAME, JSON_EXTENSION);
 
-        ProjectStaticCallsSingletonClassifications projectStaticCallsSingletonClassifications = new ProjectStaticCallsSingletonClassifications(project.getName());
-
         AtomicallyReplacingFileWriter resultsWriter = new AtomicallyReplacingFileWriter(resultsFile);
         Gson gson = new Gson();
 
@@ -57,18 +61,21 @@ public class StaticCallsSingletonAnalysisAnAction extends AnAction  {
         PsiElementEvaluator.EvaluationResult.Outcome currentOutcome = PsiElementEvaluator.EvaluationResult.Outcome.COMPLETED;
 
         Iterator<PsiClass> classIterator = classes.iterator();
+
+        List<StaticCallSingletonEvaluation> evaluations = new LinkedList<StaticCallSingletonEvaluation>();
+
         while (classIterator.hasNext() && currentOutcome == PsiElementEvaluator.EvaluationResult.Outcome.COMPLETED) {
             PsiClass clazz = classIterator.next();
 
             PsiElementEvaluator<SingletonClassClassification> classIsSingletonClassifier = new IntelliJManualUserSingletonClassifier();
-            ClassSingletonUseClassifier classifier = new ClassSingletonUseClassifier(project, classIsSingletonClassifier);
-            PsiElementEvaluator.EvaluationResult<ClassSingletonUseClassification> classificationResult = classifier.evaluate(clazz);
+            ClassSingletonUseClassifier classifier = new ClassSingletonUseClassifier();
+            PsiElementEvaluator.EvaluationResult<Set<StaticCallSingletonEvaluation>> classificationResult = classifier.evaluate(clazz);
 
             if (classificationResult.getOutcome() == PsiElementEvaluator.EvaluationResult.Outcome.COMPLETED) {
-                projectStaticCallsSingletonClassifications.addClassSingletonUseClassification(classificationResult.getEvaluation());
+                evaluations.addAll(classificationResult.getEvaluation());
             }
 
-            String jsonResults = gson.toJson(projectStaticCallsSingletonClassifications);
+            String jsonResults = gson.toJson(evaluations);
             LOG.info(jsonResults);
             try {
                 resultsWriter.replaceWith(jsonResults);
@@ -78,6 +85,7 @@ public class StaticCallsSingletonAnalysisAnAction extends AnAction  {
 
             currentOutcome = classificationResult.getOutcome();
         }
+
         Messages.showDialog(project, "Singleton Classification finished", "Singleton Classification", new String[]{"OK"}, 0, Messages.getInformationIcon());
 
     }
