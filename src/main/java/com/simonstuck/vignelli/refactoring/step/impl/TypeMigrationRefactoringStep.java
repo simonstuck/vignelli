@@ -4,6 +4,8 @@ import com.intellij.openapi.application.Application;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiMethod;
+import com.intellij.psi.PsiModifier;
 import com.intellij.psi.PsiReference;
 import com.intellij.psi.PsiType;
 import com.intellij.psi.search.GlobalSearchScope;
@@ -26,6 +28,7 @@ import com.simonstuck.vignelli.util.IOUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -160,12 +163,14 @@ public class TypeMigrationRefactoringStep implements RefactoringStep {
                 return new Result(true);
             }
 
-            final PsiReference otherClassReference = ReferencesSearch.search(otherClass, new LocalSearchScope(thisClass)).findFirst();
-            if (otherClassReference == null) {
-                return new Result(true);
-            } else {
-                return null;
+            final Collection<PsiReference> otherClassReferences = ReferencesSearch.search(otherClass, new LocalSearchScope(thisClass)).findAll();
+            for (PsiReference reference : otherClassReferences) {
+                PsiMethod containingMethod = PsiTreeUtil.getParentOfType(reference.getElement(), PsiMethod.class);
+                if (containingMethod != null && !containingMethod.hasModifierProperty(PsiModifier.STATIC)) {
+                    return null;
+                }
             }
+            return new Result(true);
         }
     }
 
