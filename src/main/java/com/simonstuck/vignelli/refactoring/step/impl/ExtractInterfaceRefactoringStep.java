@@ -5,12 +5,14 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiMethod;
+import com.intellij.psi.PsiModifier;
 import com.intellij.psi.PsiParameter;
 import com.intellij.psi.PsiParameterList;
 import com.intellij.psi.PsiReference;
 import com.intellij.psi.PsiTypeElement;
 import com.intellij.psi.search.LocalSearchScope;
 import com.intellij.psi.search.searches.ReferencesSearch;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.util.PsiTypesUtil;
 import com.intellij.refactoring.extractInterface.ExtractInterfaceHandler;
 import com.intellij.util.Query;
@@ -137,8 +139,11 @@ public class ExtractInterfaceRefactoringStep implements RefactoringStep {
             Query<PsiReference> search = ReferencesSearch.search(clazz, new LocalSearchScope(currentClass));
             Collection<PsiReference> references = search.findAll();
 
-            if (!references.isEmpty()) {
-                return true;
+            for (PsiReference reference : references) {
+                PsiMethod containingMethod = PsiTreeUtil.getParentOfType(reference.getElement(), PsiMethod.class);
+                if (containingMethod != null && !containingMethod.hasModifierProperty(PsiModifier.STATIC)) {
+                    return true;
+                }
             }
 
             Set<PsiMethod> methods = getDefinedMethods(currentClass);
