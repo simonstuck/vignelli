@@ -9,12 +9,10 @@
 <p>There appears to be a "Train Wreck" in your code.</p>
 <code>${code}</code>
 <h2>What is a Train Wreck?</h2>
-<blockquote cite="http://c2.com/cgi/wiki?TrainWreck">
-    <p>The train wreck anti pattern occurs when a series of method calls are appended to one another all in one line of code. If you find yourself spending a lot of time reading through a series of method calls and trying to figure out what the line of code is actually doing, you probably are dealing with a train wreck.</p>
-    <p class="cite">
-        <a href="http://c2.com/cgi/wiki?TrainWreck">http://c2.com/cgi/wiki?TrainWreck</a>
-    </p>
-</blockquote>
+<p>In short, a train wreck is a method call chain that navigates the structure of the program to retrieve data that is needed for a computation.</p>
+<p>For example, consider the method call chain <span class="code">customer.getAddress().getZipCode()</span> which asks the <span class="code">customer</span> for its <span class="code">address</span>, only to ask that for its <span class="code">zip code</span>.</p>
+<p>The problem is that not only does the current class now know about the <span class="code">customer</span>, it also knows about its <span class="address">address</span> and more specifically about the <span class="code">zip code</span> of this address. This makes the design fragile. Should any of the classes change, this may affect the current class, even though it does not own any address or zip code directly.</p>
+<p>Instead, methods should only ever tell their neighbour objects to perform a certain task, they should never ask for data in order to do the task themselves.</p>
 ${if improvement}
 <h2>Improvement</h2>
 <p><a href="vignelli://improve">Refactor this!</a></p>
