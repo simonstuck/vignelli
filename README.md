@@ -6,7 +6,7 @@ Vignelli is an IntelliJ IDEA plugin that aims to improve code quality by highlig
 
 Vignelli is an IntelliJ IDEA plugin that helps developers improve their code design by continuously observing the code and looking for possible design faults. Once a potential problem has been found and the plugin can find a way to automatically refactor the code, the tool provides step-by-step guides on how to refactor the code to eradicate the code smell. 
 
-This work was conducted as part of my final year project at Imperial College London, hence more information is available [http://simonstuck.com/uploads/vignelli-report.pdf](in the report).
+This work was conducted as part of my final year project at Imperial College London, hence more information is available [in the report](http://simonstuck.com/uploads/vignelli-report.pdf).
 
 ### Currently Supported Features
 Vignelli currently supports the following features:
